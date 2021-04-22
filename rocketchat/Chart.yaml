@@ -6,6 +6,7 @@ dependencies:
   - name: mongodb
     repository: https://charts.bitnami.com/bitnami
     version: 7.x.x
+    condition: mongodb.enabled
 description: Prepare to take off with the ultimate chat platform, experience the next level of team communications
 keywords:
 - chat
