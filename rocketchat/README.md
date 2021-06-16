@@ -2,12 +2,12 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
-> **WARNING**: Upgrading to chart version 1.1.x or higher (Rocket.Chat 1.0+) might require extra steps to retain the MongoDB data. See [Upgrading to 1.1.0](###-To-1.1.0) for more details.
+> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](###-To-3.1.0) for more details.
 
 ## TL;DR;
 
 ```console
-$ helm install stable/rocketchat --set mongodb.mongodbPassword=$(echo -n $(openssl rand -base64 32)),mongodb.mongodbRootPassword=$(echo -n $(openssl rand -base64 32))
+$ helm install stable/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
 ```
 
 ## Introduction
@@ -18,7 +18,7 @@ In addition, this chart supports scaling of Rocket.Chat for increased server cap
 
 ## Prerequisites Details
 
-The chart has an optional dependency on the [MongoDB](https://github.com/kubernetes/charts/tree/master/stable/mongodb) chart.
+The chart has an optional dependency on the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart.
 By default, the MongoDB chart requires PV support on underlying infrastructure (may be disabled).
 
 ## Installing the Chart
@@ -60,7 +60,7 @@ Parameter | Description | Default
 `minAvailable` | Minimum number / percentage of pods that should remain scheduled | `1` |
 `externalMongodbUrl` | MongoDB URL if using an externally provisioned MongoDB | `""`
 `externalMongodbOplogUrl` | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set | `""`
-`mongodb.enabled` | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/helm/charts/tree/master/stable/mongodb#configuration) for more information | `true`
+`mongodb.enabled` | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information | `true`
 `persistence.enabled` | Enable persistence using a PVC. This is not necessary if you're using the default (and recommended) [GridFS](https://rocket.chat/docs/administrator-guides/file-upload/) file storage | `false`
 `persistence.storageClass` | Storage class of the PVC to use | `""`
 `persistence.accessMode` | Access mode of the PVC | `ReadWriteOnce`
@@ -107,9 +107,9 @@ $ helm install --name rocketchat -f values.yaml stable/rocketchat
 ### Database Setup
 
 Rocket.Chat uses a MongoDB instance to presist its data.
-By default, the [MongoDB](https://github.com/kubernetes/charts/tree/master/stable/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
+By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
 Please refer to this chart for additional MongoDB configuration options.
-If you are using chart defaults, make sure to set at least the `mongodb.mongodbRootPassword`, `mongodb.mongodbUsername` and `mongodb.mongodbPassword` values. 
+If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword`, `mongodb.auth.username` and `mongodb.auth.password` values. 
 > **WARNING**: The root credentials are used to connect to the MongoDB OpLog
 
 #### Using an External Database
@@ -132,12 +132,37 @@ To increase the capacity of the server, you can scale up the number of Rocket.Ch
 $ kubectl scale --replicas=3 deployment/rocketchat
 ```
 
-By default, this chart creates one MongoDB instance as a Primary in a replicaset.  This is the minimum requirement to run Rocket.Chat 1.x+.    You can also scale up the capacity and availability of the MongoDB cluster independently.  Please see the [MongoDB chart](https://github.com/kubernetes/charts/tree/master/stable/mongodb) for configuration information.
+By default, this chart creates one MongoDB instance as a Primary in a replicaset.  This is the minimum requirement to run Rocket.Chat 1.x+.    You can also scale up the capacity and availability of the MongoDB cluster independently.  Please see the [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) for configuration information.
 
 For information on running Rocket.Chat in scaled configurations, see the [documentation](https://rocket.chat/docs/installation/docker-containers/high-availability-install/#guide-to-install-rocketchat-as-ha-with-mongodb-replicaset-as-backend) for more details.
 
 ## Upgrading
 
+### To 3.1.0
+
+Due to changes on upstream [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#to-800), many MongoDB variables have been renamed (including it's PersistentVolumeClaims), which also need to be changed for this package. The most important being:
+  - `replicas` is renamed to `replicaCount`.
+  - Authentication parameters are reorganized under the `auth.*` parameter:
+    - `usePassword` is renamed to `auth.enabled`.
+    - `mongodbRootPassword`, `mongodbUsername`, `mongodbPassword`, `mongodbDatabase`, and `replicaSet.key` are now `auth.rootPassword`, `auth.username`, `auth.password`, `auth.database`, and `auth.replicaSetKey` respectively.
+  - `securityContext.*` is deprecated in favor of `podSecurityContext` and `containerSecurityContext`.
+  - Parameters prefixed with `mongodb` are renamed removing the prefix. E.g. `mongodbEnableIPv6` is renamed to `enableIPv6`.
+  - Parameters affecting Arbiter nodes are reorganized under the `arbiter.*` parameter.
+
+Since mongodb has no backwards compatibility guarantee and recomends creating a new deployment and migrating your data, we recomend that too. This could be done with the following steps:
+
+1. Create a new Rocket.Chat deployment. You may reuse your existing values, which can be checked with `helm get values <release_name>`, keeping in mind the changes mentioned above. 
+2. Copy the database over. This could be done with: 
+  ```
+  kubectl exec <old_release_name>-mongodb-primary-0 -- mongodump -d <database_name> -u <old_mongodb_user> -p <old_mongodb_password> --archive | kubectl exec -i <new_release_name>-mongodb-0 -- mongorestore -d <database_name> -u <new_mongodb_user> -p <new_mongodb_password> --archive --drop
+  ```  
+  Example: 
+  ```console
+  kubectl exec my-rocketchat-mongodb-primary-0 -- mongodump -d rocketchat -u rocketchat -p changeme --archive | kubectl exec -i my-rocketchat2-mongodb-0 -- mongorestore -d rocketchat -u rocketchat -p changeme --archive --drop
+  ```
+  Note: If you are using PersistentVolumes for Rocket.Chat storage they will need to be copied over too.
+1. Validate if the update completed sucessfully 
+2. Remove the old deployment and change the corresponding ingress.
 ### To 1.1.0
 
 Rocket.Chat version 1.x requires a MongoDB ReplicaSet to be configured. When using the dependent `stable/mongodb` chart (`mongodb.enabled=true`), enabling ReplicaSet will drop the PVC and create new ones. Make sure to backup your current MongoDB and restore it after the upgrade.
