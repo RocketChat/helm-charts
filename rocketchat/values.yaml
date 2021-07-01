@@ -3,7 +3,7 @@
 ##
 image:
   repository: docker.io/rocketchat/rocket.chat
-  tag: 3.7.2
+  tag: 3.14.5
   pullPolicy: IfNotPresent
 
 ## Host for the application
@@ -65,21 +65,20 @@ mongodb:
   ## Enable or disable MongoDB dependency completely.
   enabled: true
 
-  # mongodbRootPassword:
+  # auth.rootPassword:
 
-  mongodbUsername: rocketchat
-  # mongodbPassword:
-  mongodbDatabase: rocketchat
-
-  replicaSet:
-    enabled: true
-    replicas:
-      secondary: 0
-      arbiter: 0
+  auth.username: rocketchat
+  # auth.password:
+  auth.database: rocketchat
+  
+  architecture: replicaset
+  replicaCount: 1
+  arbiter:
+    enabled: false
     pdb:
-      minAvailable:
-        secondary: 0
-        arbiter: 0
+      minAvailable: 0
+  pdb:
+    minAvailable: 0
 
    # key:
 

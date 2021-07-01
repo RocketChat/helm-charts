@@ -13,7 +13,7 @@ $ helm repo add rocketchat https://rocketchat.github.io/helm-charts
 ```
 
 ```bash
-$ helm install --set mongodb.mongodbUsername=rocketchat,mongodb.mongodbPassword=changeme,mongodb.mongodbDatabase=rocketchat,mongodb.mongodbRootPassword=root-changeme my-rocketchat rocketchat/rocketchat
+$ helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=changeme,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-changeme my-rocketchat rocketchat/rocketchat
 ```
 
 ### Helm2
