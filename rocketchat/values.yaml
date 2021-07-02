@@ -6,6 +6,9 @@ image:
   tag: 3.14.5
   pullPolicy: IfNotPresent
 
+
+imagePullSecrets: []
+
 ## Host for the application
 ##
 # host:
