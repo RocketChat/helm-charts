@@ -78,6 +78,8 @@ spec:
         ports:
         - name: http
           containerPort: 3000
+        - name: metrics
+          containerPort: 9458
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
