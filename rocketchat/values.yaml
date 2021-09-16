@@ -162,6 +162,9 @@ service:
 
   port: 80
 
+## Optional custom labels for the deployment resource.
+deploymentLabels: {}
+
 ## Optional Pod Labels.
 podLabels: {}
 
