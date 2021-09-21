@@ -53,6 +53,9 @@ affinity: {}
 #         - e2e-az1
 #         - e2e-az2
 
+## Use an existing secret file with the MongoDB Url and OplogUrl
+existingSecret: ""
+
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl:  # mongodb://user:password@localhost:27017/rocketchat
 externalMongodbOplogUrl:  # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
