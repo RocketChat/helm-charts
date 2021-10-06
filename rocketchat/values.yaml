@@ -7,7 +7,7 @@ image:
 
 ## Host for the application
 ##
-# host:
+host: rocketchat.example.com
 
 replicaCount: 1
 minAvailable: 1
@@ -69,7 +69,7 @@ mongodb:
     username: rocketchat
     # password:
     database: rocketchat
-
+  
   architecture: replicaset
   replicaCount: 1
   arbiter:

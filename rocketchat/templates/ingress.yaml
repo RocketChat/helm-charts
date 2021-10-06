@@ -1,6 +1,6 @@
 {{- $ingress := .Values.ingress -}}
 {{- if $ingress.enabled -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "rocketchat.fullname" . }}
@@ -31,7 +31,10 @@ spec:
     http:
       paths:
       - path: {{ $ingress.path }}
+        pathType: Prefix
         backend:
-          serviceName: {{ template "rocketchat.fullname" . }}
-          servicePort: http
+          service:
+            name: {{ template "rocketchat.fullname" . }}
+            port:
+              name: http
 {{- end }}
