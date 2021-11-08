@@ -139,9 +139,11 @@ ingress:
   enabled: false
   annotations:
     {}
+  # ingressClassName: "nxinx"
+  annotations: {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
-  tls:
+  tls: {}
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
