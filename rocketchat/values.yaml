@@ -2,8 +2,7 @@
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
 image:
-  repository: docker.io/rocketchat/rocket.chat
-  tag: 3.14.5
+  repository: registry.rocket.chat/rocketchat/rocket.chat
   pullPolicy: IfNotPresent
 
 ## Host for the application
@@ -21,7 +20,7 @@ smtp:
   port: 587
 
 # Extra env vars for Rocket.Chat:
-extraEnv:  # |
+extraEnv:
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
   # - name: MONGO_OPLOG_URL
@@ -32,7 +31,7 @@ extraEnv:  # |
 ## The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
 ## The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured.
 ##
-podAntiAffinity: ""
+podAntiAffinity: ''
 
 ## If anti-affinity is enabled sets the topologyKey to use for anti-affinity.
 ## This can be changed to, for example, failure-domain.beta.kubernetes.io/zone
@@ -54,8 +53,8 @@ affinity: {}
 #         - e2e-az2
 
 ## MongoDB URL if using an externally provisioned MongoDB
-externalMongodbUrl:  # mongodb://user:password@localhost:27017/rocketchat
-externalMongodbOplogUrl:  # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
+externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
+externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 
 ##
 ## MongoDB chart configuration
@@ -70,7 +69,7 @@ mongodb:
     username: rocketchat
     # password:
     database: rocketchat
-  
+
   architecture: replicaset
   replicaCount: 1
   arbiter:
@@ -80,7 +79,7 @@ mongodb:
   pdb:
     minAvailable: 0
 
-   # key:
+    # key:
 
   persistence:
     enabled: true
@@ -138,7 +137,8 @@ serviceAccount:
 ###
 ingress:
   enabled: false
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
   tls:
@@ -169,7 +169,8 @@ deploymentLabels: {}
 podLabels: {}
 
 ## Optional Pod Annotations.
-podAnnotations: {}
+podAnnotations:
+  {}
   # prometheus.io/port: "9458"
   # prometheus.io/path: "/metrics"
   # prometheus.io/scrape: "true"

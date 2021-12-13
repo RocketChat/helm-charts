@@ -45,7 +45,7 @@ spec:
       {{- end }}
       containers:
       - name: rocketchat
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
         - name: DEPLOY_PLATFORM
