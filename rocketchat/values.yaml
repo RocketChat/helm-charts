@@ -5,6 +5,9 @@ image:
   repository: registry.rocket.chat/rocketchat/rocket.chat
   pullPolicy: IfNotPresent
 
+
+imagePullSecrets: []
+
 ## Host for the application
 ##
 # host:
