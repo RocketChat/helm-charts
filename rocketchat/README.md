@@ -63,7 +63,7 @@ Parameter | Description | Default
 `podAntiAffinityTopologyKey` | If anti-affinity is enabled sets the topologyKey to use for anti-affinity. This can be changed to, for example `failure-domain.beta.kubernetes.io/zone`| `kubernetes.io/hostname` |
 | `affinity` | Assign custom affinity rules to the RocketChat instance https://kubernetes.io/docs/concepts/configuration/assign-pod-node/ | `{}` |
 `minAvailable` | Minimum number / percentage of pods that should remain scheduled | `1` |
-`existingSecret` | An already existing secret containing MongoDB Connection URL | `""`
+`existingMongodbSecret` | An already existing secret containing MongoDB Connection URL | `""`
 `externalMongodbUrl` | MongoDB URL if using an externally provisioned MongoDB | `""`
 `externalMongodbOplogUrl` | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set | `""`
 `mongodb.enabled` | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information | `true`
@@ -147,7 +147,7 @@ For information on running Rocket.Chat in scaled configurations, see the [docume
 
 This chart provides several ways to manage the Connection for MongoDB
 * Values passed to the chart (externalMongodbUrl, externalMongodbOplogUrl)
-* An ExistingSecret containing the MongoURL and MongoOplogURL
+* An ExistingMongodbSecret containing the MongoURL and MongoOplogURL
 ```yaml
 apiVersion: v1
 kind: Secret
