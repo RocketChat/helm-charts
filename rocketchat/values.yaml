@@ -29,6 +29,9 @@ extraEnv:
   # - name: MONGO_OPLOG_URL
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
+## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
+#registrationToken: ""
+
 ## Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node.
 ## The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided.
 ## The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.

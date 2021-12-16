@@ -92,6 +92,13 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: mail-url
         {{- end }}
+        {{- if .Values.registrationToken }}
+        - name: REG_TOKEN
+          valueFrom: 
+            secretKeyRef: 
+              name: {{ template "rocketchat.fullname" . }}
+              key: reg-token
+        {{- end }}
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}
 {{- end }}

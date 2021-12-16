@@ -10,6 +10,11 @@
 $ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
 ```
 
+If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
+```console
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32)),registrationToken=<paste the token here>
+```
+
 ## Introduction
 
 This chart bootstraps a [Rocket.Chat](https://rocket.chat/) Deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager. It provisions a fully featured Rocket.Chat installation.
@@ -89,6 +94,7 @@ Parameter | Description | Default
 `readinessProbe.timeoutSeconds` | When the probe times out | `5`
 `readinessProbe.failureThreshold` | Minimum consecutive failures for the probe | `3`
 `readinessProbe.successThreshold` | Minimum consecutive successes for the probe | `1`
+`registrationToken` | Registration Token for [Rocket.Chat Cloud ](https://cloud.rocket.chat) | ""
 `service.annotations` | Annotations for the Rocket.Chat service | `{}`
 `service.labels` | Additional labels for the Rocket.Chat service | `{}`
 `service.type` | The service type to use | `ClusterIP`
