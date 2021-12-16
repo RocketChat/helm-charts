@@ -58,16 +58,16 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        {{- if .Values.existingSecret }}
+        {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.existingSecret }}
+              name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
         - name: MONGO_OPLOG_URL
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.existingSecret }}
+              name: {{ .Values.existingMongodbSecret }}
               key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
