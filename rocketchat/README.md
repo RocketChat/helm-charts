@@ -49,7 +49,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 Parameter | Description | Default
 --- | --- | ---
 `image.repository` | Image repository | `docker.io/rocketchat/rocket.chat`
-`image.tag` | Image tag | `3.7.2`
+`image.tag` | Image tag | `3.18.3`
 `image.pullPolicy` | Image pull policy | `IfNotPresent`
 `host` | Hostname for Rocket.Chat. Also used for ingress (if enabled) | `""`
 `replicaCount` | Number of replicas to run | `1`
