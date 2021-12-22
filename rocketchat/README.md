@@ -2,7 +2,7 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
-> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](###-To-3.1.0) for more details.
+> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](#to-310) for more details.
 
 ## TL;DR;
 
