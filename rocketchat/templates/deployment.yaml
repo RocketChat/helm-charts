@@ -99,6 +99,13 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: reg-token
         {{- end }}
+        {{- if .Values.license }}
+        - name: ROCKETCHAT_LICENSE
+          valueFrom: 
+            secretKeyRef: 
+              name: {{ template "rocketchat.fullname" . }}
+              key: license
+        {{- end }}
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
