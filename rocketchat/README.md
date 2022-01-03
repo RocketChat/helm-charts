@@ -82,7 +82,7 @@ Parameter | Description | Default
 `ingress.annotations` | Annotations for the ingress | `{}`
 `ingress.path` | Path of the ingress | `/`
 `ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/federation/extensions/v1beta1/definitions/#_v1beta1_ingresstls) items | `[]`
-`license` | Contents of the Enterprise License file, if appliable | `""`
+`license` | Contents of the Enterprise License file, if applicable | `""`
 `livenessProbe.enabled` | Turn on and off liveness probe | `true`
 `livenessProbe.initialDelaySeconds` | Delay before liveness probe is initiated | `60`
 `livenessProbe.periodSeconds` | How often to perform the probe | `15`
