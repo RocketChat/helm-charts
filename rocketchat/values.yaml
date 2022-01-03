@@ -31,6 +31,9 @@ extraEnv:
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
 
+## Specifies an Enterprise License
+# license: ""
+
 ## Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node.
 ## The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided.
 ## The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
