@@ -18,6 +18,9 @@ jobs:
           echo "ROCKETCHAT_VERSION=$ROCKETCHAT_VERSION" >> $GITHUB_ENV
           [[ -z "$(echo ${{ env.ROCKETCHAT_VERSION }} | grep rc)" ]] && echo "CANDIDATE=false" >> $GITHUB_ENV
 
+      # this section was for when this PR was meant to be added to the main rocketchat repo, so it could be part of the main app release process
+      # -------------------------------------------------
+
       # - name: Set SSH key for helm-chart repo
       #   if: env.CANDIDATE == 'false'
       #   uses: webfactory/ssh-agent@v0.5.3
@@ -30,7 +33,7 @@ jobs:
 
       # - name: Clone helm repo (gh-pages)
       #   run: "git clone --branch gh-pages git@github.com:${{ env.HELM_REPO }} gh-pages"
-
+      # -------------------------------------------------
 
       - name: Clone helm repo (master)
         uses: actions/checkout@v2
