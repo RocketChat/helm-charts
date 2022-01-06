@@ -25,11 +25,26 @@ jobs:
       #       ssh-private-key: ${{ secrets.HELM_REPO_SSH_KEY }}
 
       # not using the checkout action because we need to push to this repo using the ssh-agent we just set up above
-      - name: Clone helm repo (master)
-        run: "git clone git@github.com:${{ env.HELM_REPO }} helm-charts"
+      # - name: Clone helm repo (master)
+      #   run: "git clone git@github.com:${{ env.HELM_REPO }} helm-charts"
 
+      # - name: Clone helm repo (gh-pages)
+      #   run: "git clone --branch gh-pages git@github.com:${{ env.HELM_REPO }} gh-pages"
+
+
+      - name: Clone helm repo (master)
+        uses: actions/checkout@v2
+        with:
+          repository: "${{ env.HELM_REPO }}"
+          path: './helm-charts'
+      
       - name: Clone helm repo (gh-pages)
-        run: "git clone --branch gh-pages git@github.com:${{ env.HELM_REPO }} gh-pages"
+        uses: actions/checkout@v2
+        with:
+          repository: "${{ env.HELM_REPO }}"
+          ref: 'gh-pages'
+          path: './gh-pages'
+      
 
       - name: Clone tests repo
         uses: actions/checkout@v2
