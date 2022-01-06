@@ -12,9 +12,7 @@ Be sure you have helm3 binary insalled, add this repository and install rocketch
 $ helm repo add rocketchat https://rocketchat.github.io/helm-charts
 ```
 
-```bash
-$ helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=changeme,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-changeme my-rocketchat rocketchat/rocketchat
-```
+And check our rocketchat server helm chart folder for more instructions [here](https://github.com/RocketChat/helm-charts/tree/master/rocketchat)
 
 ### Helm2
 

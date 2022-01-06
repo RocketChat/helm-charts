@@ -2,12 +2,17 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
-> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](###-To-3.1.0) for more details.
+> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](#to-310) for more details.
 
 ## TL;DR;
 
 ```console
-$ helm install stable/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
+```
+
+If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
+```console
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32)),registrationToken=<paste the token here>
 ```
 
 ## Introduction
@@ -26,7 +31,7 @@ By default, the MongoDB chart requires PV support on underlying infrastructure (
 To install the chart with the release name `rocketchat`:
 
 ```console
-$ helm install --name rocketchat stable/rocketchat
+$ helm install rocketchat rocketchat/rocketchat
 ```
 
 ## Uninstalling the Chart
@@ -44,7 +49,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 Parameter | Description | Default
 --- | --- | ---
 `image.repository` | Image repository | `docker.io/rocketchat/rocket.chat`
-`image.tag` | Image tag | `3.7.2`
+`image.tag` | Image tag | `3.18.3`
 `image.pullPolicy` | Image pull policy | `IfNotPresent`
 `host` | Hostname for Rocket.Chat. Also used for ingress (if enabled) | `""`
 `replicaCount` | Number of replicas to run | `1`
@@ -58,6 +63,7 @@ Parameter | Description | Default
 `podAntiAffinityTopologyKey` | If anti-affinity is enabled sets the topologyKey to use for anti-affinity. This can be changed to, for example `failure-domain.beta.kubernetes.io/zone`| `kubernetes.io/hostname` |
 | `affinity` | Assign custom affinity rules to the RocketChat instance https://kubernetes.io/docs/concepts/configuration/assign-pod-node/ | `{}` |
 `minAvailable` | Minimum number / percentage of pods that should remain scheduled | `1` |
+`existingMongodbSecret` | An already existing secret containing MongoDB Connection URL | `""`
 `externalMongodbUrl` | MongoDB URL if using an externally provisioned MongoDB | `""`
 `externalMongodbOplogUrl` | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set | `""`
 `mongodb.enabled` | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information | `true`
@@ -76,6 +82,7 @@ Parameter | Description | Default
 `ingress.annotations` | Annotations for the ingress | `{}`
 `ingress.path` | Path of the ingress | `/`
 `ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/federation/extensions/v1beta1/definitions/#_v1beta1_ingresstls) items | `[]`
+`license` | Contents of the Enterprise License file, if applicable | `""`
 `livenessProbe.enabled` | Turn on and off liveness probe | `true`
 `livenessProbe.initialDelaySeconds` | Delay before liveness probe is initiated | `60`
 `livenessProbe.periodSeconds` | How often to perform the probe | `15`
@@ -88,6 +95,7 @@ Parameter | Description | Default
 `readinessProbe.timeoutSeconds` | When the probe times out | `5`
 `readinessProbe.failureThreshold` | Minimum consecutive failures for the probe | `3`
 `readinessProbe.successThreshold` | Minimum consecutive successes for the probe | `1`
+`registrationToken` | Registration Token for [Rocket.Chat Cloud ](https://cloud.rocket.chat) | ""
 `service.annotations` | Annotations for the Rocket.Chat service | `{}`
 `service.labels` | Additional labels for the Rocket.Chat service | `{}`
 `service.type` | The service type to use | `ClusterIP`
@@ -101,7 +109,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-$ helm install --name rocketchat -f values.yaml stable/rocketchat
+$ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ```
 
 ### Database Setup
@@ -135,6 +143,23 @@ $ kubectl scale --replicas=3 deployment/rocketchat
 By default, this chart creates one MongoDB instance as a Primary in a replicaset.  This is the minimum requirement to run Rocket.Chat 1.x+.    You can also scale up the capacity and availability of the MongoDB cluster independently.  Please see the [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) for configuration information.
 
 For information on running Rocket.Chat in scaled configurations, see the [documentation](https://rocket.chat/docs/installation/docker-containers/high-availability-install/#guide-to-install-rocketchat-as-ha-with-mongodb-replicaset-as-backend) for more details.
+
+### Manage MongoDB secrets
+
+This chart provides several ways to manage the Connection for MongoDB
+* Values passed to the chart (externalMongodbUrl, externalMongodbOplogUrl)
+* An ExistingMongodbSecret containing the MongoURL and MongoOplogURL
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+type: Opaque
+data:
+  mongo-uri: mongodb://user:password@localhost:27017/rocketchat
+  mongo-oplog-uri: mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
+```
+
 
 ## Upgrading
 
