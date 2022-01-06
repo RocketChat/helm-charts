@@ -18,11 +18,11 @@ jobs:
           echo "ROCKETCHAT_VERSION=$ROCKETCHAT_VERSION" >> $GITHUB_ENV
           [[ -z "$(echo ${{ env.ROCKETCHAT_VERSION }} | grep rc)" ]] && echo "CANDIDATE=false" >> $GITHUB_ENV
 
-      - name: Set SSH key for helm-chart repo
-        if: env.CANDIDATE == 'false'
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-            ssh-private-key: ${{ secrets.HELM_REPO_SSH_KEY }}
+      # - name: Set SSH key for helm-chart repo
+      #   if: env.CANDIDATE == 'false'
+      #   uses: webfactory/ssh-agent@v0.5.3
+      #   with:
+      #       ssh-private-key: ${{ secrets.HELM_REPO_SSH_KEY }}
 
       # not using the checkout action because we need to push to this repo using the ssh-agent we just set up above
       - name: Clone helm repo (master)
