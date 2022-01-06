@@ -75,9 +75,9 @@ jobs:
 
       - name: Test helm upgrade
         run: |
-          helm repo add r0zbot https://r0zbot.github.io/helm-charts #TODO CHANGE THIS
+          helm repo add r0zbot https://rocketchat.github.io/helm-charts
           helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-upgrade-rocketchat r0zbot/rocketchat
-          sleep 20
+          sleep 40
           timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-upgrade-rocketchat" -o jsonpath='{ .items[0].metadata.name }') 8888:3000 &
           sleep 60
           ./test_scripts/wait_http.sh http://127.0.0.1:8888
