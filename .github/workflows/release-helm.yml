@@ -77,10 +77,10 @@ jobs:
         run: |
           helm repo add rocketchat https://rocketchat.github.io/helm-charts
           helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-upgrade-rocketchat rocketchat/rocketchat
-          sleep 40
-          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-upgrade-rocketchat" -o jsonpath='{ .items[0].metadata.name }') 8888:3000 &
           echo waiting for pod to be created
-          sleep 100
+          sleep 80
+          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-upgrade-rocketchat" -o jsonpath='{ .items[0].metadata.name }') 8888:3000 &
+          sleep 40
           ./test_scripts/wait_http.sh http://127.0.0.1:8888
           . ./test_scripts/basic_test.sh http://127.0.0.1:8888
           helm upgrade test-upgrade-rocketchat rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
