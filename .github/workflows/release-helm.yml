@@ -7,7 +7,7 @@ on:
 jobs:
   update_helm_chart:
     env:
-      HELM_REPO: r0zbot/helm-charts #TODO: mudar!
+      HELM_REPO: "${{ github.repository }}" # This repo
       TESTS_REPO: RocketChat/rocketchat-release-tests
     runs-on: ubuntu-18.04
     if: github.event_name == 'release'
