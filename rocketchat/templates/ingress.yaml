@@ -1,6 +1,6 @@
 {{- $ingress := .Values.ingress -}}
 {{- if $ingress.enabled -}}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ template "rocketchat.fullname" . }}
@@ -14,6 +14,9 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
+{{- if .Values.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+{{- end }}
 {{- if $ingress.tls }}
   tls:
   {{- range $ingress.tls }}
@@ -31,7 +34,10 @@ spec:
     http:
       paths:
       - path: {{ $ingress.path }}
+        pathType: ImplementationSpecific
         backend:
-          serviceName: {{ template "rocketchat.fullname" . }}
-          servicePort: http
+          service:
+            name: {{ template "rocketchat.fullname" . }}
+            port:
+              name: http
 {{- end }}

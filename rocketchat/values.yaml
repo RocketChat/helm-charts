@@ -9,7 +9,7 @@ imagePullSecrets: []
 
 ## Host for the application
 ##
-# host:
+host: rocketchat.example.com
 
 replicaCount: 1
 minAvailable: 1
@@ -80,7 +80,7 @@ mongodb:
     username: rocketchat
     # password:
     database: rocketchat
-
+  
   architecture: replicaset
   replicaCount: 1
   arbiter:
@@ -150,9 +150,11 @@ ingress:
   enabled: false
   annotations:
     {}
+  # ingressClassName: "nxinx"
+  annotations: {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
-  tls:
+  tls: {}
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
