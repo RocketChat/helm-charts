@@ -34,7 +34,7 @@ spec:
     http:
       paths:
       - path: {{ $ingress.path }}
-        pathType: ImplementationSpecific
+        pathType: Prefix
         backend:
           service:
             name: {{ template "rocketchat.fullname" . }}
