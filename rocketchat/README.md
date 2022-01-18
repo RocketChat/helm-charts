@@ -89,6 +89,7 @@ Parameter | Description | Default
 `livenessProbe.timeoutSeconds` | When the probe times out | `5`
 `livenessProbe.failureThreshold` | Minimum consecutive failures for the probe | `3`
 `livenessProbe.successThreshold` | Minimum consecutive successes for the probe | `1`
+`microservices` | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture | `false`
 `readinessProbe.enabled` | Turn on and off readiness probe | `true`
 `readinessProbe.initialDelaySeconds` | Delay before readiness probe is initiated | `10`
 `readinessProbe.periodSeconds` | How often to perform the probe | `15`

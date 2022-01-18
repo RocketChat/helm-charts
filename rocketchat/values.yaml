@@ -7,6 +7,10 @@ image:
 
 imagePullSecrets: []
 
+## Deploy as micro-services?
+# Monolithic architecture, by default
+microservices: false
+
 ## Host for the application
 ##
 host: rocketchat.example.com
