@@ -1,3 +1,4 @@
+{{- if not .Values.microservices }}
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
 metadata:
@@ -173,3 +174,4 @@ spec:
                   app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
+{{- end }} # if Microservices
