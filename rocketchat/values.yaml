@@ -192,6 +192,11 @@ podAnnotations:
   # prometheus.io/path: "/metrics"
   # prometheus.io/scrape: "true"
 
+## Optional Prometheus scraping Settings
+prometheusScraping:
+  enabled: false
+  port: 9458
+
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
