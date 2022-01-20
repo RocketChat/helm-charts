@@ -83,6 +83,8 @@ Parameter | Description | Default
 `ingress.path` | Path of the ingress | `/`
 `ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/federation/extensions/v1beta1/definitions/#_v1beta1_ingresstls) items | `[]`
 `license` | Contents of the Enterprise License file, if applicable | `""`
+`prometheusScraping.enabled` | Turn on and off /metrics endpoint for Prometheus scraping | `false`
+`prometheusScraping.port` | Port to use for the metrics for Prometheus to scrap on | `9458`
 `livenessProbe.enabled` | Turn on and off liveness probe | `true`
 `livenessProbe.initialDelaySeconds` | Delay before liveness probe is initiated | `60`
 `livenessProbe.periodSeconds` | How often to perform the probe | `15`
