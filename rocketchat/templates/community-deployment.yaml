@@ -107,6 +107,12 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: license
         {{- end }}
+        {{- if .Values.prometheusScraping.enabled }}
+        - name: OVERWRITE_SETTING_Prometheus_Enabled
+          value: "true"
+        - name: OVERWRITE_SETTING_Prometheus_Port
+          value: "{{ .Values.prometheusScraping.port }}"
+        {{- end }}
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
