@@ -1,4 +1,4 @@
-{{- if not .Values.microservices }}
+#{{- if not .Values.microservices }}
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
 metadata:
@@ -52,6 +52,10 @@ spec:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.microservices }}
+        # TODO: remove that ugly hack
+        image: rocketchat/rocket.chat:3.17.0
+        {{- end}}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
@@ -113,6 +117,35 @@ spec:
         - name: OVERWRITE_SETTING_Prometheus_Port
           value: "{{ .Values.prometheusScraping.port }}"
         {{- end }}
+        # Environment variables for microservices option
+        {{- if .Values.microservices }}
+        - name: OVERWRITE_SETTING_Prometheus_Port
+          value: "9100"
+        - name: OVERWRITE_SETTING_Prometheus_Enabled
+          value: "true"
+        - name: DISABLE_DB_WATCH
+          value: "true"
+        - name: DISABLE_PRESENCE_MONITOR
+          value: "true"
+        - name: TRANSPORTER
+          value: nats://nats:4222
+        - name: MOLECULER_LOG_LEVEL
+          value: info
+        - name: HEARTBEAT_INTERVAL
+          value: '10'
+        - name: HEARTBEAT_TIMEOUT
+          value: '30'
+        - name: RETRY_ENABLED
+          value: 'yes'
+        - name: MS_METRICS
+          value: 'true'
+        - name: SERVICES_ALLOWED
+          value: 'banner,media,meteor,nps,room,team,uikit-core-app,authorization-livechat,search,authorization-tokenpass,license,ee-settings'
+        # - name: INTERNAL_SERVICES_ONLY
+        #   value: "true"
+        - name: SKIP_PROCESS_EVENT_REGISTRATION
+          value: "false"
+        {{- end}} # end of microservices envvar. options
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}
 {{- end }}
@@ -180,4 +213,4 @@ spec:
                   app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
-{{- end }} # if Microservices
+#{{- end }} # if Microservices
