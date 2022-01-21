@@ -79,11 +79,6 @@ spec:
         # - name: BALANCE_STRATEGY
         #   value: CpuUsage
         # imagePullPolicy: Always
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: app
-          effect: NoSchedule
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -185,11 +180,6 @@ spec:
         # - name: BALANCE_STRATEGY
         #   value: CpuUsage
         # imagePullPolicy: Always
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: app
-          effect: NoSchedule
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -293,11 +283,6 @@ spec:
         # - name: BALANCE_STRATEGY
         #   value: CpuUsage
         # imagePullPolicy: Always
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: app
-          effect: NoSchedule
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -544,11 +529,6 @@ spec:
               # the NATS Server to gracefully terminate the client connections.
               #
               command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: db
-          effect: NoSchedule
 
 # # # # # # # # # # # # # 
 # Presence µService     #
@@ -626,11 +606,6 @@ spec:
         # - name: BALANCE_STRATEGY
         #   value: CpuUsage
         # imagePullPolicy: Always
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: app
-          effect: NoSchedule
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -731,11 +706,6 @@ spec:
         # - name: BALANCE_STRATEGY
         #   value: CpuUsage
         # imagePullPolicy: Always
-      tolerations:
-        - key: node-type
-          operator: Equal
-          value: app
-          effect: NoSchedule
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
