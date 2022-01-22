@@ -1,4 +1,4 @@
-# {{- if .Values.microservices }}
+# {{- if .Values.microservices.enabled }}
 # apiVersion: apps/v1
 # kind: Deployment
 # metadata:

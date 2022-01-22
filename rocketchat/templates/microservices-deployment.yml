@@ -4,36 +4,38 @@
 # Pedro T. R. Pinheiro - Adapted for Helm templ. system (Jan/2021)    #
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
-{{- if .Values.microservices }}
+{{- if .Values.microservices.enabled }}
 # # # # # # # # # # # # # 
 # Account µService      #
 # # # # # # # # # # # # # 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{ .Release.Name }}-accounts
   labels:
-    DeploymentName: accounts-service
-  name: accounts-service
+    #DeploymentName: accounts-service
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
-  revisionHistoryLimit: 0
+  replicas: {{ .Values.microservices.accounts.replicas }}
   selector:
     matchLabels:
-      DeploymentName: accounts-service
+      #DeploymentName: accounts-service
+      app.kubernetes.io/name: {{ .Release.Name }}-accounts
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
-      # annotations:
-      #   prometheus.io/path: '/metrics'
-      #   prometheus.io/scrape: 'true'
-      #   prometheus.io/port: '9100'
       labels:
-        DeploymentName: accounts-service
+        #DeploymentName: accounts-service
+        app.kubernetes.io/name: {{ .Release.Name }}-accounts
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: accounts-service
@@ -89,11 +91,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: accounts-service
+  name: {{ include "rocketchat.name" . }}-accounts
   annotations:
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9458"
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -102,7 +106,8 @@ spec:
     port: 9458
     protocol: TCP
   selector:
-    DeploymentName: accounts-service
+      app.kubernetes.io/name: {{ .Release.Name }}-accounts
+      app.kubernetes.io/instance: {{ .Release.Name }}
 
 # # # # # # # # # # # # # # 
 # Authorization µService  #
@@ -112,29 +117,32 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{ .Release.Name }}-authorization
   labels:
-    DeploymentName: authorization-service
-  name: authorization-service
+    #DeploymentName: accounts-service
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.microservices.authorization.replicas }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      DeploymentName: authorization-service
+      #DeploymentName: authorization-service
+      app.kubernetes.io/name: {{ .Release.Name }}-authorization
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
-      # annotations:
-      #   prometheus.io/path: '/metrics'
-      #   prometheus.io/scrape: 'true'
-      #   prometheus.io/port: '9100'
       labels:
-        DeploymentName: authorization-service
+        #DeploymentName: authorization-service
+        app.kubernetes.io/name: {{ .Release.Name }}-authorization
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: authorization-service
@@ -190,11 +198,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: authorization-service
+  name: {{ .Release.Name }}-authorization
   annotations:
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9458"
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -203,7 +213,8 @@ spec:
     port: 9458
     protocol: TCP
   selector:
-    DeploymentName: authorization-service
+    app.kubernetes.io/name: {{ .Release.Name }}-authorization
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
 # # # # # # # # # # # # # 
 # DDP Streamer µService #
@@ -213,15 +224,21 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{ .Release.Name }}-ddp-streamer
   labels:
-    DeploymentName: ddp-streamer
-  name: ddp-streamer
+    #DeploymentName: accounts-service
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.microservices.ddpStreamer.replicas }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      DeploymentName: ddp-streamer
+      #DeploymentName: ddp-streamer
+      app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -235,7 +252,9 @@ spec:
       #   prometheus.io/scrape: 'true'
       #   prometheus.io/port: '9100'
       labels:
-        DeploymentName: ddp-streamer
+        #DeploymentName: ddp-streamer
+        app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: ddp-streamer
@@ -296,12 +315,15 @@ kind: Service
 metadata:
   name: ddp-streamer
   annotations:
+    #TODO: make that as Ingress-agnostic as possible
     traefik.backend.circuitbreaker: NetworkErrorRatio() > 0.5
     traefik.backend.loadbalancer.method: drr
     traefik.ingress.kubernetes.io/affinity: "true"
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9458"
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
 spec:
   type: ClusterIP
   sessionAffinity: None
@@ -315,7 +337,8 @@ spec:
     port: 9458
     protocol: TCP
   selector:
-    DeploymentName: ddp-streamer
+    app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
 # TODO: rewrite this
 ---
@@ -334,7 +357,7 @@ spec:
   - match: Host(`{{ .Values.host }}`) && (PathPrefix(`/sockjs`) || PathPrefix(`/websocket`))
     kind: Rule
     services:
-    - name: ddp-streamer
+    - name: {{ .Release.Name }}-ddp-streamer
       port: 3000
       sticky:
         cookie:
@@ -355,7 +378,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nats-svc
+  name: {{ .Release.Name }}-nats-svc
+  labels:
+    #DeploymentName: accounts-service
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     prometheus.io/path: /metrics
     prometheus.io/port: "7777"
@@ -370,7 +399,8 @@ spec:
     targetPort: 8080
     port: 8080
   selector:
-    app: nats
+    app.kubernetes.io/name: {{ .Release.Name }}-nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
 # # # # # # # # # # # # # 
 # NATS Stateful Set     #
@@ -388,16 +418,20 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: nats
+  name: {{ .Release.Name }}-nats
   labels:
-    app: nats
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     prometheus.io/path: '/metrics'
     prometheus.io/scrape: 'true'
     prometheus.io/port: '7777'
 spec:
   selector:
-    app: nats
+    app.kubernetes.io/name: {{ .Release.Name }}-nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
   clusterIP: None
   ports:
   - name: client
@@ -416,9 +450,12 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: nats
+  name: {{ .Release.Name }}-nats
   labels:
-    app: nats
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     prometheus.io/path: '/metrics'
     prometheus.io/scrape: 'true'
@@ -426,13 +463,15 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: nats
-  replicas: 1
+      app.kubernetes.io/name: {{ .Release.Name }}-nats
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  replicas: {{ .Values.microservices.nats.replicas }}
   serviceName: "nats"
   template:
     metadata:
       labels:
-        app: nats
+        app.kubernetes.io/name: {{ .Release.Name }}-nats
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       # Common volumes for the containers
       volumes:
@@ -538,29 +577,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{ .Release.Name }}-presence
   labels:
-    DeploymentName: presence-service
-  name: presence-service
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.microservices.presence.replicas }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      DeploymentName: presence-service
+      app.kubernetes.io/name: {{ .Release.Name }}-presence
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
-      # annotations:
-      #   prometheus.io/path: '/metrics'
-      #   prometheus.io/scrape: 'true'
-      #   prometheus.io/port: '9100'
       labels:
-        DeploymentName: presence-service
+        app.kubernetes.io/name: {{ .Release.Name }}-presence
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: presence-service
@@ -616,11 +655,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: presence-service
+  name: {{ .Release.Name }}-presence
   annotations:
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9458"
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -629,7 +670,8 @@ spec:
     port: 9458
     protocol: TCP
   selector:
-    DeploymentName: presence-service
+    app.kubernetes.io/name: {{ .Release.Name }}-presence
+    app.kubernetes.io/instance: {{ .Release.Name }}
 
 # # # # # # # # # # # # # 
 # Stream Hub µService   #
@@ -638,29 +680,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: {{ .Release.Name }}-stream-hub
   labels:
-    DeploymentName: stream-hub
-  name: stream-hub
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.microservices.streamHub.replicas }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      DeploymentName: stream-hub
+      app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
+      app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 0
+      maxUnavailable: 1
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
-      # annotations:
-      #   prometheus.io/path: '/metrics'
-      #   prometheus.io/scrape: 'true'
-      #   prometheus.io/port: '9100'
       labels:
-        DeploymentName: stream-hub
+        app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
       - name: stream-hub
@@ -716,11 +758,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: stream-hub
+  name: {{ .Release.Name }}-stream-hub
   annotations:
-    prometheus.io/path: /metrics
-    prometheus.io/port: "9458"
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -729,5 +773,6 @@ spec:
     port: 9458
     protocol: TCP
   selector:
-    DeploymentName: stream-hub
+    app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
+    app.kubernetes.io/instance: {{ .Release.Name }}
 {{end}} # End of "microservices" condition

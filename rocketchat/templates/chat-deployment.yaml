@@ -51,7 +51,7 @@ spec:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.microservices }}
+        {{- if .Values.microservices.enabled }}
         # TODO: remove that ugly hack
         image: rocketchat/rocket.chat:3.17.0
         {{- end}}
@@ -117,17 +117,13 @@ spec:
           value: "{{ .Values.prometheusScraping.port }}"
         {{- end }}
         # Environment variables for microservices option
-        {{- if .Values.microservices }}
-        - name: OVERWRITE_SETTING_Prometheus_Port
-          value: "9100"
-        - name: OVERWRITE_SETTING_Prometheus_Enabled
-          value: "true"
+        {{- if .Values.microservices.enabled }}
         - name: DISABLE_DB_WATCH
           value: "true"
         - name: DISABLE_PRESENCE_MONITOR
           value: "true"
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: HEARTBEAT_INTERVAL
