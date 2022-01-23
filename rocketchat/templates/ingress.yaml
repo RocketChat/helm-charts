@@ -30,7 +30,10 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  - host: {{ .Values.host }}
+  - 
+  {{- if .Values.host }}
+    host: {{ .Values.host }}
+  {{- end }}
     http:
       paths:
       - path: {{ $ingress.path }}
