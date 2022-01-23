@@ -82,7 +82,7 @@ mongodb:
   auth:
     # rootPassword:
     username: rocketchat
-    # password:
+    # password: 
     database: rocketchat
   
   architecture: replicaset
@@ -108,6 +108,8 @@ mongodb:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 8Gi
+  
+  volumePermissions: {enabled: true}
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
