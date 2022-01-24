@@ -154,6 +154,7 @@ serviceAccount:
 ###
 ingress:
   enabled: false
+  pathType: Prefix
   annotations:
     {}
   # ingressClassName: "nxinx"
