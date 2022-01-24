@@ -2,6 +2,8 @@
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
 image:
+  ## NOTE: for microsservices, those two itens get ignored, 
+  ## for now. 
   repository: registry.rocket.chat/rocketchat/rocket.chat
   pullPolicy: IfNotPresent
 
@@ -225,7 +227,7 @@ readinessProbe:
 microservices: 
   enabled: false
 
-  # Parameters for each deployment: 
+  ## Parameters for each deployment: 
   presence: 
     replicas: 1
   ddpStreamer:
@@ -239,7 +241,8 @@ microservices:
   nats: 
     replicas: 1 
 
-  # Parameters for each Kubernetes service
+  ## Parameters for each Kubernetes service
+  # NOTE: reserved for future usage still
   presenceService: 
   ddpStreamerService: 
   natsService: 
