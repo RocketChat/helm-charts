@@ -7,10 +7,6 @@ image:
 
 imagePullSecrets: []
 
-## Deploy as micro-services?
-# Monolithic architecture, by default
-microservices: false
-
 ## Host for the application
 ##
 host: rocketchat.example.com
@@ -215,3 +211,36 @@ readinessProbe:
   timeoutSeconds: 5
   failureThreshold: 3
   successThreshold: 1
+
+# # # # # # # # # # # # # # # # #
+#   M I C R O S E R V I C E S   #
+#  Only available to E.E users  #
+# # # # # # # # # # # # # # # # #
+
+## Deploy as microservices?
+# Monolithic architecture, by default
+microservices: 
+  enabled: false
+
+  # Parameters for each deployment: 
+  presence: 
+    replicas: 1
+  ddpStreamer:
+    replicas: 1 
+  streamHub: 
+    replicas: 1
+  accounts: 
+    replicas: 1
+  authorization:
+    replicas: 1 
+  nats: 
+    replicas: 1 
+
+  # Parameters for each Kubernetes service
+  presenceService: 
+  ddpStreamerService: 
+  natsService: 
+  streamHubService: 
+  accountsService: 
+  authorizationService: 
+  natsService: 
