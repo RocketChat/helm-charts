@@ -65,7 +65,7 @@ spec:
               key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: HEARTBEAT_INTERVAL
@@ -172,7 +172,7 @@ spec:
               key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: HEARTBEAT_INTERVAL
@@ -284,7 +284,7 @@ spec:
               key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: PORT
@@ -629,7 +629,7 @@ spec:
               key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: HEARTBEAT_INTERVAL
@@ -732,7 +732,7 @@ spec:
               key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
-          value: nats://nats:4222
+          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: info
         - name: HEARTBEAT_INTERVAL
