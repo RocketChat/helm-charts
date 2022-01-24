@@ -37,7 +37,7 @@ spec:
     http:
       paths:
       - path: {{ $ingress.path }}
-        pathType: {{ if $ingress.pathType }} {{ $ingress.pathType }} {{ else }} {{ print "ImplementationSpecific" }} {{ end }}
+        pathType: {{ if $ingress.pathType }} {{ $ingress.pathType }} {{ else }} {{ print "Prefix" }} {{ end }}
         backend:
           service:
             name: {{ template "rocketchat.fullname" . }}
