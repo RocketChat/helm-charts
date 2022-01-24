@@ -30,11 +30,14 @@ spec:
   {{- end }}
 {{- end }}
   rules:
-  - host: {{ .Values.host }}
+  - 
+  {{- if .Values.host }}
+    host: {{ .Values.host }}
+  {{- end }}
     http:
       paths:
       - path: {{ $ingress.path }}
-        pathType: Prefix
+        pathType: {{ if $ingress.pathType }} {{ $ingress.pathType }} {{ else }} {{ print "Prefix" }} {{ end }}
         backend:
           service:
             name: {{ template "rocketchat.fullname" . }}

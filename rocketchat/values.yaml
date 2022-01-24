@@ -8,8 +8,8 @@ image:
 imagePullSecrets: []
 
 ## Host for the application
-##
-host: rocketchat.example.com
+## set it to a domain pointing to your loadbalancer
+# host:
 
 replicaCount: 1
 minAvailable: 1
@@ -78,7 +78,7 @@ mongodb:
   auth:
     # rootPassword:
     username: rocketchat
-    # password:
+    # password: 
     database: rocketchat
   
   architecture: replicaset
@@ -104,6 +104,8 @@ mongodb:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 8Gi
+  
+  volumePermissions: {enabled: true}
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -148,6 +150,7 @@ serviceAccount:
 ###
 ingress:
   enabled: false
+  pathType: Prefix
   annotations:
     {}
   # ingressClassName: "nxinx"

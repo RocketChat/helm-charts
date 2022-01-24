@@ -79,6 +79,7 @@ Parameter | Description | Default
 `serviceAccount.create` | Specifies whether a ServiceAccount should be created | `true`
 `serviceAccount.name` | Name of the ServiceAccount to use. If not set and create is true, a name is generated using the fullname template | `""`
 `ingress.enabled` | If `true`, an ingress is created | `false`
+`ingress.pathType` | Sets the value for pathType for the created Ingress resource | `Prefix`
 `ingress.annotations` | Annotations for the ingress | `{}`
 `ingress.path` | Path of the ingress | `/`
 `ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/federation/extensions/v1beta1/definitions/#_v1beta1_ingresstls) items | `[]`
