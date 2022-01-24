@@ -12,8 +12,8 @@ imagePullSecrets: []
 microservices: false
 
 ## Host for the application
-##
-host: rocketchat.example.com
+## set it to a domain pointing to your loadbalancer
+# host:
 
 replicaCount: 1
 minAvailable: 1
