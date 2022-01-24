@@ -39,7 +39,7 @@ spec:
     spec:
       containers:
       - name: accounts-service
-        image: rocketchat/account-service:3.17.0
+        image: "rocketchat/account-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -146,7 +146,7 @@ spec:
     spec:
       containers:
       - name: authorization-service
-        image: rocketchat/authorization-service:3.17.0
+        image: rocketchat/authorization-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -258,7 +258,7 @@ spec:
     spec:
       containers:
       - name: ddp-streamer
-        image: rocketchat/ddp-streamer-service:3.17.0
+        image: rocketchat/ddp-streamer-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -603,7 +603,7 @@ spec:
     spec:
       containers:
       - name: presence-service
-        image: rocketchat/presence-service:3.17.0
+        image: rocketchat/presence-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -706,7 +706,7 @@ spec:
     spec:
       containers:
       - name: stream-hub
-        image: rocketchat/stream-hub-service:3.17.0
+        image: rocketchat/stream-hub-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
