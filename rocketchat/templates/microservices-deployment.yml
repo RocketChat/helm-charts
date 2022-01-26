@@ -18,6 +18,9 @@ metadata:
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+{{ toYaml .Values.deploymentLabels | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.microservices.accounts.replicas }}
   selector:
@@ -124,6 +127,9 @@ metadata:
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+{{ toYaml .Values.deploymentLabels | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.microservices.authorization.replicas }}
   revisionHistoryLimit: 0
@@ -231,6 +237,9 @@ metadata:
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+{{ toYaml .Values.deploymentLabels | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.microservices.ddpStreamer.replicas }}
   revisionHistoryLimit: 0
@@ -583,6 +592,9 @@ metadata:
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+{{ toYaml .Values.deploymentLabels | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.microservices.presence.replicas }}
   revisionHistoryLimit: 0
@@ -686,6 +698,9 @@ metadata:
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+{{ toYaml .Values.deploymentLabels | indent 4 }}
+    {{- end }}
 spec:
   replicas: {{ .Values.microservices.streamHub.replicas }}
   revisionHistoryLimit: 0
