@@ -39,6 +39,9 @@ spec:
         #DeploymentName: accounts-service
         app.kubernetes.io/name: {{ .Release.Name }}-accounts
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+        {{- end }}
     spec:
       containers:
       - name: accounts-service
@@ -101,6 +104,9 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
     {{- end }}
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -149,6 +155,9 @@ spec:
         #DeploymentName: authorization-service
         app.kubernetes.io/name: {{ .Release.Name }}-authorization
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+        {{- end }}
     spec:
       containers:
       - name: authorization-service
@@ -211,6 +220,9 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
     {{- end }}
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -264,6 +276,9 @@ spec:
         #DeploymentName: ddp-streamer
         app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+        {{- end }}
     spec:
       containers:
       - name: ddp-streamer
@@ -333,6 +348,9 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
     {{- end }}
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   type: ClusterIP
   sessionAffinity: None
@@ -612,6 +630,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}-presence
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+        {{- end }}
     spec:
       containers:
       - name: presence-service
@@ -674,6 +695,9 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
     {{- end }}
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -718,6 +742,9 @@ spec:
       labels:
         app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
         app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+        {{- end }}
     spec:
       containers:
       - name: stream-hub
@@ -780,6 +807,9 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
     {{- end }}
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
 spec:
   type: ClusterIP
   ports:
