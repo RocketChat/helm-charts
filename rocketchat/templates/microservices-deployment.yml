@@ -5,6 +5,7 @@
 #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
 
 {{- if .Values.microservices.enabled }}
+{{- $service := .Values.service -}}
 # # # # # # # # # # # # # 
 # Account µService      #
 # # # # # # # # # # # # # 
