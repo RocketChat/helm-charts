@@ -1,3 +1,4 @@
+{{- if .Values.podDisruptionBudget.enabled }}
 {{- if gt ( .Values.replicaCount | int ) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -14,4 +15,5 @@ spec:
       app.kubernetes.io/name: {{ include "rocketchat.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
   minAvailable: {{ .Values.minAvailable }}
+{{- end }}
 {{- end }}

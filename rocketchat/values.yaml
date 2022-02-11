@@ -217,6 +217,9 @@ readinessProbe:
   failureThreshold: 3
   successThreshold: 1
 
+podDisruptionBudget: 
+  enabled: true
+
 # # # # # # # # # # # # # # # # #
 #   M I C R O S E R V I C E S   #
 #  Only available to E.E users  #
