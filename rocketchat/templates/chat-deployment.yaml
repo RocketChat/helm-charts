@@ -182,8 +182,6 @@ spec:
         - name: tmp
           mountPath: /tmp
         {{- if .Values.extraVolumeMounts }}
-        - name: batata
-          mountPath: /batata
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
         {{- end }}
       volumes:

@@ -26,10 +26,6 @@ smtp:
 
 # Extra env vars for Rocket.Chat:
 extraEnv:
-  # - name: "batata"
-  #   value: "aaaaaa"
-  #   aaaa: 
-  #     - aaaa: "aaaaaaa"
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
   # - name: MONGO_OPLOG_URL
