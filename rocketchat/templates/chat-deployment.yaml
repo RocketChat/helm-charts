@@ -152,7 +152,7 @@ spec:
           containerPort: 3000
         {{- if .Values.prometheusScraping.enabled }}
         - name: metrics
-          containerPort: "{{ .Values.prometheusScraping.port }}"
+          containerPort: {{ .Values.prometheusScraping.port }}
         {{- end}}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
