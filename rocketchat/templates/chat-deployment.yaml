@@ -150,8 +150,10 @@ spec:
         ports:
         - name: http
           containerPort: 3000
+        {{- if .Values.prometheusScraping.enabled }}
         - name: metrics
-          containerPort: 9458
+          containerPort: {{ .Values.prometheusScraping.port }}
+        {{- end}}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
