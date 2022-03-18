@@ -153,8 +153,6 @@ serviceAccount:
 ingress:
   enabled: false
   pathType: Prefix
-  annotations:
-    {}
   # ingressClassName: "nxinx"
   annotations: {}
     # kubernetes.io/ingress.class: "nginx"
@@ -252,4 +250,3 @@ microservices:
   streamHubService: 
   accountsService: 
   authorizationService: 
-  natsService: 
