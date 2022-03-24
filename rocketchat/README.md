@@ -111,6 +111,7 @@ Parameter | Description | Default
 `service.type` | The service type to use | `ClusterIP`
 `service.port` | The service port | `80`
 `service.nodePort` | The node port used if the service is of type `NodePort` | `""`
+`podDisruptionBudget.enabled` | Enable or disable PDB for RC deployment | `true`
 `podLabels` | Additional pod labels for the Rocket.Chat pods | `{}`
 `podAnnotations` | Additional pod annotations for the Rocket.Chat pods | `{}`
 

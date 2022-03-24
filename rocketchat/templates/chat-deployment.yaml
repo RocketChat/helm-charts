@@ -140,8 +140,10 @@ spec:
         ports:
         - name: http
           containerPort: 3000
+        {{- if .Values.prometheusScraping.enabled }}
         - name: metrics
-          containerPort: 9458
+          containerPort: {{ .Values.prometheusScraping.port }}
+        {{- end}}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
@@ -169,7 +171,11 @@ spec:
         volumeMounts:
         - name: rocket-data
           mountPath: /app/uploads
+        - name: tmp
+          mountPath: /tmp
       volumes:
+      - name: tmp
+        emptyDir: {}
       - name: rocket-data
       {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:

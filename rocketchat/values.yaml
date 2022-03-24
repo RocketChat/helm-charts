@@ -153,8 +153,6 @@ serviceAccount:
 ingress:
   enabled: false
   pathType: Prefix
-  annotations:
-    {}
   # ingressClassName: "nxinx"
   annotations: {}
     # kubernetes.io/ingress.class: "nginx"
@@ -217,6 +215,9 @@ readinessProbe:
   failureThreshold: 3
   successThreshold: 1
 
+podDisruptionBudget: 
+  enabled: true
+
 # # # # # # # # # # # # # # # # #
 #   M I C R O S E R V I C E S   #
 #  Only available to E.E users  #
@@ -249,4 +250,3 @@ microservices:
   streamHubService: 
   accountsService: 
   authorizationService: 
-  natsService: 
