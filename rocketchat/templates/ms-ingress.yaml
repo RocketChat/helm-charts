@@ -37,13 +37,19 @@ spec:
   {{- end }}
     http:
       paths:
-      - backend:
-          serviceName: {{ .Release.Name }}-ddp-streamer
-          servicePort: 3000
-        path: /sockjs
-      - backend:
-          serviceName: {{ .Release.Name }}-ddp-streamer
-          servicePort: 3000
-        path: /websocket
+      - path: /sockjs
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-ddp-streamer
+            port:
+              name: http
+      - path: /websocket
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-ddp-streamer
+            port:
+              name: http
 {{- end }}
 {{- end }}
