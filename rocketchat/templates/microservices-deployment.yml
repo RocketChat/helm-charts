@@ -278,7 +278,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ddp-streamer
+  name: {{ .Release.Name }}-ddp-streamer
   annotations:
     #TODO: make that as Ingress-agnostic as possible
     traefik.backend.circuitbreaker: NetworkErrorRatio() > 0.5
