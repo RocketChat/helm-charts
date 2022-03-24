@@ -404,7 +404,7 @@ spec:
         ports:
         - containerPort: 7777
           name: metrics
-        command:
+        args:
         - -connz
         - -routez
         - -subz
