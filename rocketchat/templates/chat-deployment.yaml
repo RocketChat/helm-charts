@@ -56,7 +56,7 @@ spec:
         # monolithic installations, however, microsservices are, for
         # now, only available through Dockerhub.
         # Also, they ignore image flags at values.yaml.
-        image: registry.rocket.chat/rocket.chat:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/rocketchat/rocket.chat:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         {{- end}}
         env:
         - name: DEPLOY_PLATFORM

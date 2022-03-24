@@ -85,7 +85,7 @@
 #         #   value: "true"
 #         - name: SKIP_PROCESS_EVENT_REGISTRATION
 #           value: "false"
-#         image: registry.rocket.chat/rocket.chat:3.17.0
+#         image: registry.rocket.chat/rocketchat/rocket.chat:3.17.0
 #         #imagePullPolicy: Always
 #         name: chat
 #         ports:

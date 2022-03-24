@@ -43,7 +43,7 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: "rocketchat/account-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
+        image: registry.rocket.chat/rocketchat/account-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -141,7 +141,7 @@ spec:
     spec:
       containers:
       - name: authorization-service
-        image: registry.rocket.chat/authorization-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/rocketchat/authorization-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -238,7 +238,7 @@ spec:
     spec:
       containers:
       - name: ddp-streamer
-        image: registry.rocket.chat/ddp-streamer-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/rocketchat/ddp-streamer-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -517,7 +517,7 @@ spec:
     spec:
       containers:
       - name: presence-service
-        image: registry.rocket.chat/presence-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/rocketchat/presence-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -614,7 +614,7 @@ spec:
     spec:
       containers:
       - name: stream-hub
-        image: registry.rocket.chat/stream-hub-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/rocketchat/stream-hub-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
