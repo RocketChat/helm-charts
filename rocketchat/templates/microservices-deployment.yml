@@ -6,15 +6,14 @@
 
 {{- if .Values.microservices.enabled }}
 {{- $service := .Values.service -}}
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 # Account µService      #
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-accounts
   labels:
-    #DeploymentName: accounts-service
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -26,7 +25,6 @@ spec:
   replicas: {{ .Values.microservices.accounts.replicas }}
   selector:
     matchLabels:
-      #DeploymentName: accounts-service
       app.kubernetes.io/name: {{ .Release.Name }}-accounts
       app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
@@ -37,7 +35,6 @@ spec:
   template:
     metadata:
       labels:
-        #DeploymentName: accounts-service
         app.kubernetes.io/name: {{ .Release.Name }}-accounts
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if .Values.podLabels }}
@@ -45,7 +42,7 @@ spec:
         {{- end }}
     spec:
       containers:
-      - name: accounts-service
+      - name: account-service
         image: "rocketchat/account-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
         env:
         {{- if .Values.existingMongodbSecret }}
@@ -54,22 +51,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
@@ -83,11 +70,6 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: 'true'
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: 'false'
-        # - name: BALANCE_STRATEGY
-        #   value: CpuUsage
-        # imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -119,9 +101,9 @@ spec:
       app.kubernetes.io/name: {{ .Release.Name }}-accounts
       app.kubernetes.io/instance: {{ .Release.Name }}
 
-# # # # # # # # # # # # # # 
+# # # # # # # # # # # # # #
 # Authorization µService  #
-# # # # # # # # # # # # # # 
+# # # # # # # # # # # # # #
 
 ---
 apiVersion: apps/v1
@@ -129,7 +111,6 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-authorization
   labels:
-    #DeploymentName: accounts-service
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -142,7 +123,6 @@ spec:
   revisionHistoryLimit: 0
   selector:
     matchLabels:
-      #DeploymentName: authorization-service
       app.kubernetes.io/name: {{ .Release.Name }}-authorization
       app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
@@ -153,7 +133,6 @@ spec:
   template:
     metadata:
       labels:
-        #DeploymentName: authorization-service
         app.kubernetes.io/name: {{ .Release.Name }}-authorization
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if .Values.podLabels }}
@@ -162,7 +141,7 @@ spec:
     spec:
       containers:
       - name: authorization-service
-        image: rocketchat/authorization-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/authorization-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -170,22 +149,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
@@ -199,11 +168,6 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: 'true'
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: 'false'
-        # - name: BALANCE_STRATEGY
-        #   value: CpuUsage
-        # imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -235,9 +199,9 @@ spec:
     app.kubernetes.io/name: {{ .Release.Name }}-authorization
     app.kubernetes.io/instance: {{ .Release.Name }}
 
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 # DDP Streamer µService #
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 
 ---
 apiVersion: apps/v1
@@ -245,7 +209,6 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-ddp-streamer
   labels:
-    #DeploymentName: accounts-service
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
@@ -255,10 +218,8 @@ metadata:
     {{- end }}
 spec:
   replicas: {{ .Values.microservices.ddpStreamer.replicas }}
-  revisionHistoryLimit: 0
   selector:
     matchLabels:
-      #DeploymentName: ddp-streamer
       app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
       app.kubernetes.io/instance: {{ .Release.Name }}
   strategy:
@@ -268,13 +229,7 @@ spec:
     type: RollingUpdate
   template:
     metadata:
-      creationTimestamp: null
-      # annotations:
-      #   prometheus.io/path: '/metrics'
-      #   prometheus.io/scrape: 'true'
-      #   prometheus.io/port: '9100'
       labels:
-        #DeploymentName: ddp-streamer
         app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if .Values.podLabels }}
@@ -283,7 +238,7 @@ spec:
     spec:
       containers:
       - name: ddp-streamer
-        image: rocketchat/ddp-streamer-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/ddp-streamer-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -291,22 +246,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
@@ -322,11 +267,6 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: 'true'
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: 'false'
-        # - name: BALANCE_STRATEGY
-        #   value: CpuUsage
-        # imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -368,71 +308,10 @@ spec:
     app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
     app.kubernetes.io/instance: {{ .Release.Name }}
 
-# TODO: rewrite this
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  annotations:
-    # add an annotation indicating the issuer to use.
-    cert-manager.io/cluster-issuer: production-cert-issuer
-  name: ddp-streamer-route
-spec:
-  entryPoints:
-    - web
-    - websecure
-  routes:
-  - match: Host(`{{ .Values.host }}`) && (PathPrefix(`/sockjs`) || PathPrefix(`/websocket`))
-    kind: Rule
-    services:
-    - name: {{ .Release.Name }}-ddp-streamer
-      port: 3000
-      sticky:
-        cookie:
-          httpOnly: true
-          name: cookie
-          secure: true
-          sameSite: none
-      strategy: RoundRobin
-      weight: 10
-#  tls:
-#    secretName: bench-rocket-chat-tls
 
-# # # # # # # # # # # # # 
-# NATS Service Entry    #
-# # # # # # # # # # # # # 
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}-nats-svc
-  labels:
-    #DeploymentName: accounts-service
-    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
-    helm.sh/chart: {{ include "rocketchat.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-  annotations:
-    prometheus.io/path: /metrics
-    prometheus.io/port: "7777"
-    prometheus.io/scrape: "true"
-spec:
-  type: ClusterIP
-  ports:
-  - name: http
-    targetPort: 7777
-    port: 7777
-  - name: metrics
-    targetPort: 8080
-    port: 8080
-  selector:
-    app.kubernetes.io/name: {{ .Release.Name }}-nats
-    app.kubernetes.io/instance: {{ .Release.Name }}
-
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 # NATS Stateful Set     #
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -521,18 +400,19 @@ spec:
       terminationGracePeriodSeconds: 60
       containers:
       - name: nats-exporter
-        image: synadia/prometheus-nats-exporter:latest
+        image: natsio/prometheus-nats-exporter:0.9.1
         ports:
         - containerPort: 7777
           name: metrics
         command:
-         - "/prometheus-nats-exporter"
-         - "-varz"
-         - "-channelz"
-         - "-connz"
-         - "http://127.0.0.1:8222"
+        - -connz
+        - -routez
+        - -subz
+        - -varz
+        - -use_internal_server_id
+        - http://localhost:8222/
       - name: nats
-        image: nats:2.1.8-alpine3.11
+        image: nats:2.4.0-alpine
         ports:
         - containerPort: 4222
           name: client
@@ -597,9 +477,9 @@ spec:
               #
               command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
 
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 # Presence µService     #
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 
 ---
 apiVersion: apps/v1
@@ -637,7 +517,7 @@ spec:
     spec:
       containers:
       - name: presence-service
-        image: rocketchat/presence-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/presence-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -645,22 +525,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
@@ -674,11 +544,6 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: 'true'
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: 'false'
-        # - name: BALANCE_STRATEGY
-        #   value: CpuUsage
-        # imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -710,9 +575,9 @@ spec:
     app.kubernetes.io/name: {{ .Release.Name }}-presence
     app.kubernetes.io/instance: {{ .Release.Name }}
 
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 # Stream Hub µService   #
-# # # # # # # # # # # # # 
+# # # # # # # # # # # # #
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -749,7 +614,7 @@ spec:
     spec:
       containers:
       - name: stream-hub
-        image: rocketchat/stream-hub-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: registry.rocket.chat/stream-hub-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -786,11 +651,6 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: 'true'
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: 'false'
-        # - name: BALANCE_STRATEGY
-        #   value: CpuUsage
-        # imagePullPolicy: Always
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

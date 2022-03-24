@@ -85,7 +85,7 @@
 #         #   value: "true"
 #         - name: SKIP_PROCESS_EVENT_REGISTRATION
 #           value: "false"
-#         image: rocketchat/rocket.chat:3.17.0
+#         image: registry.rocket.chat/rocket.chat:3.17.0
 #         #imagePullPolicy: Always
 #         name: chat
 #         ports:
@@ -158,7 +158,7 @@
 #   - match: Host(`{{ .Values.host }}`)
 #     kind: Rule
 #     services:
-#     - name: {{ template "rocketchat.fullname" . }}   
+#     - name: {{ template "rocketchat.fullname" . }}
 #       port: 3000
 #       sticky:
 #         cookie:
