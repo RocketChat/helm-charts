@@ -1,5 +1,10 @@
 name: Draft new release
 
+
+env:
+  INFO_URL: "https://releases.rocket.chat/latest/info"
+  THIS_REPOSITORY: ${{ github.repository }}
+
 on:
   schedule:
     # every day at 6 o'clock
@@ -8,9 +13,6 @@ on:
 
 
 jobs:
-  env:
-    INFO_URL: "https://releases.rocket.chat/latest/info"
-    THIS_REPOSITORY: ${{ github.repository }}
 
   create_draft:
     runs-on: ubuntu-latest
