@@ -1,11 +1,17 @@
-name: Creare draft release
+name: Draft new release
 
 on:
   schedule:
-    - cron: ""
+    # every day at 6 o'clock
+    # # basically every 24 hours
+    - cron: "0 6 * * *"
 
 
 jobs:
+  env:
+    INFO_URL: "https://releases.rocket.chat/latest/info"
+    THIS_REPOSITORY: ${{ github.repository }}
+
   create_draft:
     runs-on: ubuntu-latest
 
@@ -15,17 +21,18 @@ jobs:
 
       - name: Get latest release version
         run: |
-          latest_version=$(curl -s https://relases.rocket.chat/latest/info | jq -r .tag)
+          info_url=${{ env.INFO_URL }}
+          latest_version=$(curl -s "$info_url" | jq -r .tag)
           echo "[DEBUG] LATEST_VERSION: $latest_version"
           echo "LATEST_VERSION=$latest_version" >> $GITHUB_ENV
 
       - name: Is current helm tag the latest
         id: is_not_latest
         run: |
-          current_helm_version=$(
-            git -c 'versionsort.suffix=-' ls-remote -t --exit-code --refs --sort=-v:refname "https://github.com/$GITHUB_REPOSITORY" '*' |
+          current_helm_version="$(
+            git -c 'versionsort.suffix=-' ls-remote -t --exit-code --refs --sort=-v:refname "https://github.com/$THIS_REPOSITORY" '*' |
                   sed -En '1!q;s/^[[:xdigit:]]+[[:space:]]+refs\/tags\/(.+)/\1/gp'
-          )
+          )"
           echo "[DEBUG] CURRENT_VERSION: $current_helm_version"
           latest_version=${{ env.LATEST_VERSION }}
 
@@ -44,7 +51,7 @@ jobs:
             echo "::set-output name=is_not_latest::true"
           fi
 
-      - name: Open draft release
+      - name: Draft a new release
         if: ${{ steps.is_not_latest.outputs.is_not_latest }} == "true"
         uses: marvinpinto/action-automatic-releases@master
         with:
