@@ -230,6 +230,9 @@ microservices:
 
   logLevel: warn
 
+  heartbeatInterval: 10
+  heartbeatTimeout: 30
+
   ## Parameters for each deployment:
   presence:
     replicas: 1
