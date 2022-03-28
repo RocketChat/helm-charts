@@ -1,18 +1,17 @@
 {{- if .Values.microservices.enabled }}
-{{- $service := .Values.service -}}
+  {{- if .Values.prometheusScraping.enabled }}
+    {{- $service := .Values.service -}}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Release.Name }}-presence
   annotations:
-    {{- if .Values.prometheusScraping.enabled }}
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- with $service.annotations }}
+      {{- toYaml . | nindent 4 }}
     {{- end }}
-{{- with $service.annotations }}
-{{ toYaml . | indent 4 }}
-{{- end }}
 spec:
   type: ClusterIP
   ports:
@@ -23,4 +22,5 @@ spec:
   selector:
     app.kubernetes.io/name: {{ .Release.Name }}-presence
     app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- end }}
 {{- end }}
