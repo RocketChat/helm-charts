@@ -66,4 +66,4 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
-{{- end }} # End of "microservices" condition
+{{- end }}

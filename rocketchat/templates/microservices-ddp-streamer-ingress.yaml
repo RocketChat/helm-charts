@@ -52,4 +52,4 @@ spec:
             port:
               name: http
 {{- end }}
-{{- end }} # End of "microservices" condition
+{{- end }}

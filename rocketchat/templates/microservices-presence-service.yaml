@@ -23,4 +23,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ .Release.Name }}-presence
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }} # End of "microservices" condition
+{{- end }}

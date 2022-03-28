@@ -176,4 +176,4 @@
 #               #
 #               command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
 
-# {{end}} # End of "microservices" condition
+# {{end}}

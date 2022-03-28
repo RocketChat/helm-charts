@@ -28,4 +28,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end }} # End of "microservices" condition
+{{- end }}
