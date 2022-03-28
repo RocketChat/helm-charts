@@ -7,6 +7,10 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 10.x.x
     condition: mongodb.enabled
+  - name: nats
+    repository: https://nats-io.github.io/k8s/helm/charts
+    version: 10.x.x
+    condition: microservices.enabled
 description: Prepare to take off with the ultimate chat platform, experience the next level of team communications
 keywords:
   - chat

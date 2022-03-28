@@ -252,3 +252,6 @@ microservices:
   streamHubService:
   accountService:
   authorizationService:
+
+nats:
+  image: nats:2.4.0-alpine
