@@ -55,9 +55,9 @@ spec:
         - name: PORT
           value: '3000'
         - name: HEARTBEAT_INTERVAL
-          value: '10'
+          value: {{ .Values.microservices.heartbeatInterval | quote }}
         - name: HEARTBEAT_TIMEOUT
-          value: '30'
+          value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
         - name: MS_METRICS

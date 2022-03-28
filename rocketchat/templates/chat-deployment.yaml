@@ -124,15 +124,15 @@ spec:
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
-          value: info
+          value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
-          value: '10'
+          value: {{ .Values.microservices.heartbeatInterval | quote }}
         - name: HEARTBEAT_TIMEOUT
-          value: '30'
+          value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
         - name: MS_METRICS
-          value: 'true'
+          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
         {{- end}} # end of microservices envvar. options
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}
