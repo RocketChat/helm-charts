@@ -254,4 +254,5 @@ microservices:
   authorizationService:
 
 nats:
-  image: nats:2.4.0-alpine
+  nats:
+    image: nats:2.4-alpine
