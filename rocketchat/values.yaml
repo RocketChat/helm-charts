@@ -238,8 +238,6 @@ microservices:
     replicas: 1
   ddpStreamer:
     replicas: 1
-  streamHub:
-    replicas: 1
   account:
     replicas: 1
   authorization:
