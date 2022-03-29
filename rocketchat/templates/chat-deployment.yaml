@@ -49,15 +49,8 @@ spec:
       {{- end }}
       containers:
       - name: rocketchat
-        image: "{{ .Values.image.repository }}:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.microservices.enabled }}
-        # Helm now uses the same version both for microservices and
-        # monolithic installations, however, microsservices are, for
-        # now, only available through Dockerhub.
-        # Also, they ignore image flags at values.yaml.
-        image: registry.rocket.chat/rocketchat/rocket.chat:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
-        {{- end}}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart

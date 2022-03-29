@@ -2,8 +2,6 @@
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
 image:
-  ## NOTE: for microsservices, those two itens get ignored,
-  ## for now.
   repository: registry.rocket.chat/rocketchat/rocket.chat
   pullPolicy: IfNotPresent
 
