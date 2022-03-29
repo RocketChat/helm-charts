@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: account-service
-        image: rocketchat/account-service:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
+        image: "rocketchat/account-service:{{ .Values.image.tag | default .Chart.AppVersion }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
