@@ -49,15 +49,8 @@ spec:
       {{- end }}
       containers:
       - name: rocketchat
-        image: "{{ .Values.image.repository }}:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.microservices.enabled }}
-        # Helm now uses the same version both for microservices and 
-        # monolithic installations, however, microsservices are, for 
-        # now, only available through Dockerhub. 
-        # Also, they ignore image flags at values.yaml. 
-        image: rocketchat/rocket.chat:{{ if .Values.image.tag }}{{ .Values.image.tag }}{{ else }}{{ .Chart.AppVersion }}{{ end }}
-        {{- end}}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
@@ -101,15 +94,15 @@ spec:
         {{- end }}
         {{- if .Values.registrationToken }}
         - name: REG_TOKEN
-          valueFrom: 
-            secretKeyRef: 
+          valueFrom:
+            secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: reg-token
         {{- end }}
         {{- if .Values.license }}
         - name: ROCKETCHAT_LICENSE
-          valueFrom: 
-            secretKeyRef: 
+          valueFrom:
+            secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: license
         {{- end }}
@@ -121,28 +114,18 @@ spec:
         {{- end }}
         # Environment variables for microservices option
         {{- if .Values.microservices.enabled }}
-        - name: DISABLE_DB_WATCH
-          value: "true"
-        - name: DISABLE_PRESENCE_MONITOR
-          value: "true"
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
-          value: info
+          value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
-          value: '10'
+          value: {{ .Values.microservices.heartbeatInterval | quote }}
         - name: HEARTBEAT_TIMEOUT
-          value: '30'
+          value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
         - name: MS_METRICS
-          value: 'true'
-        - name: SERVICES_ALLOWED
-          value: 'banner,media,meteor,nps,room,team,uikit-core-app,authorization-livechat,search,authorization-tokenpass,license,ee-settings'
-        # - name: INTERNAL_SERVICES_ONLY
-        #   value: "true"
-        - name: SKIP_PROCESS_EVENT_REGISTRATION
-          value: "false"
+          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
         {{- end}} # end of microservices envvar. options
 {{- with .Values.extraEnv }}
 {{ tpl . $ | indent 8 }}

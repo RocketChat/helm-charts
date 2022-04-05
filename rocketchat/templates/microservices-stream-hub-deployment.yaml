@@ -1,0 +1,79 @@
+{{- if .Values.microservices.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-stream-hub
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- if .Values.deploymentLabels }}
+      {{- toYaml .Values.deploymentLabels | nindent 4 }}
+    {{- end }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Release.Name }}-stream-hub
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- if .Values.podLabels }}
+          {{- toYaml .Values.podLabels | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+      - name: stream-hub
+        image: "rocketchat/stream-hub-service:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        env:
+        {{- if .Values.existingMongodbSecret }}
+        - name: MONGO_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.existingMongodbSecret }}
+              key: mongo-uri
+        - name: MONGO_OPLOG_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.existingMongodbSecret }}
+              key: mongo-oplog-uri
+        {{- else }}
+        - name: MONGO_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "rocketchat.fullname" . }}
+              key: mongo-uri
+        - name: MONGO_OPLOG_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "rocketchat.fullname" . }}
+              key: mongo-oplog-uri
+        {{- end }}
+        - name: TRANSPORTER
+          value: nats://{{ .Release.Name }}-nats:4222
+        - name: MOLECULER_LOG_LEVEL
+          value: {{ .Values.microservices.logLevel | quote }}
+        - name: HEARTBEAT_INTERVAL
+          value: {{ .Values.microservices.heartbeatInterval | quote }}
+        - name: HEARTBEAT_TIMEOUT
+          value: {{ .Values.microservices.heartbeatTimeout | quote }}
+        - name: RETRY_ENABLED
+          value: 'yes'
+        - name: MS_METRICS
+          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+{{- end }}

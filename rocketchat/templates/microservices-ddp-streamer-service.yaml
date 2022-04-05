@@ -1,0 +1,33 @@
+{{- if .Values.microservices.enabled }}
+{{- $service := .Values.service -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-ddp-streamer
+  annotations:
+    {{- if .Values.prometheusScraping.enabled }}
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
+    {{- end }}
+    {{- with $service.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+  - name: http
+    targetPort: 3000
+    port: 3000
+    protocol: TCP
+  {{- if .Values.prometheusScraping.enabled }}
+  - name: metrics
+    targetPort: 9458
+    port: 9458
+    protocol: TCP
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: {{ .Release.Name }}-ddp-streamer
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
