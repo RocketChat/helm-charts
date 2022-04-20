@@ -86,11 +86,19 @@ spec:
           value: https://{{ .Values.host }}
         {{- end }}
         {{- if .Values.smtp.enabled }}
+        {{- if not .Values.smtp.existingSecret }}
         - name: MAIL_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mail-url
+        {{- else }}
+        - name: MAIL_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.smtp.existingSecret }}
+              key: mail-url
+        {{- end }}
         {{- end }}
         {{- if .Values.registrationToken }}
         - name: REG_TOKEN

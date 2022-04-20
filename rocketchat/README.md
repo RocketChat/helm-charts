@@ -54,6 +54,7 @@ Parameter | Description | Default
 `host` | Hostname for Rocket.Chat. Also used for ingress (if enabled) | `""`
 `replicaCount` | Number of replicas to run | `1`
 `smtp.enabled` | Enable SMTP for sending mails | `false`
+`smtp.existingSecret` | Use existing secret for SMTP account | `""`
 `smtp.username` | Username of the SMTP account | `""`
 `smtp.password` | Password of the SMTP account | `""`
 `smtp.host` | Hostname of the SMTP server | `""`
