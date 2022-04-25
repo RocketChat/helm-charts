@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   endpoints:
-    - port: {{ .Values.prometheusScraping.port }}
+    - port: {{ .Values.serviceMonitor.port }}
       path: {{ .Values.serviceMonitor.path }}
       interval: {{ .Values.serviceMonitor.interval }}
   selector:
