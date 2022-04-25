@@ -194,6 +194,13 @@ prometheusScraping:
   enabled: false
   port: 9458
 
+serviceMonitor:
+## @param serviceMonitor.enabled Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator
+##
+  enabled: false
+  interval: 30s
+  path: /metrics
+
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
