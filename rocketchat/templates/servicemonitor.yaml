@@ -1,0 +1,21 @@
+{{- if and .Values.serviceMonitor.enabled .Values.prometheusScraping.enabled}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "rocketchat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  endpoints:
+    - port: {{ .Values.prometheusScraping.port }}
+      path: {{ .Values.serviceMonitor.path }}
+      interval: {{ .Values.serviceMonitor.interval }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+      helm.sh/chart: {{ include "rocketchat.chart" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
