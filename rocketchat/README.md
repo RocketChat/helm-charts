@@ -89,7 +89,6 @@ Parameter | Description | Default
 `prometheusScraping.port` | Port to use for the metrics for Prometheus to scrap on | `9458`
 `serviceMonitor.enabled` | Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator (prometheusScraping should be enabled) | `false`
 `serviceMonitor.interval` | The interval at which metrics should be scraped | `30s`
-`serviceMonitor.path` | /metrics endpoint for Prometheus scraping | `/metrics`
 `serviceMonitor.port` | The port name at which container exposes Prometheus metrics | `metrics`
 `livenessProbe.enabled` | Turn on and off liveness probe | `true`
 `livenessProbe.initialDelaySeconds` | Delay before liveness probe is initiated | `60`

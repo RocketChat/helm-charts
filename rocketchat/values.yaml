@@ -202,9 +202,6 @@ serviceMonitor:
   ## metrics.serviceMonitor.interval The interval at which metrics should be scraped
   ##
   interval: 30s
-  ## metrics.serviceMonitor.path The path at which metrics should be scraped
-  ##
-  path: /metrics
   ## metrics.serviceMonitor.port The port name at which container exposes Prometheus metrics
   ##
   port: metrics
