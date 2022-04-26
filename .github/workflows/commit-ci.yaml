@@ -36,6 +36,15 @@ jobs:
       - name: Pull dependencies
         run: helm dependency update ./helm-charts/rocketchat
 
+      - name: Generate helm package
+        run: helm package ./helm-charts/rocketchat # && cp rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz gh-pages/charts/
+
+      # - name: Install helm package
+      #   run: helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
+
+      # - name: Test helm installation
+      #   run: helm test --logs test-install-rocketchat
+
       - name: Test helm installation
         run: |
           helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat rocketchat-*.tgz
