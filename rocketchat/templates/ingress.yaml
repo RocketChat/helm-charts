@@ -43,4 +43,20 @@ spec:
             name: {{ template "rocketchat.fullname" . }}
             port:
               name: http
+      {{- if .Values.microservices.enabled }}
+      - path: /sockjs
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-ddp-streamer
+            port:
+              name: http
+      - path: /websocket
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-ddp-streamer
+            port:
+              name: http
+      {{- end }}
 {{- end }}
