@@ -140,6 +140,10 @@ securityContext:
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
   create: true
+  
+  # Annotations to add to the ServiceAccount
+  annotations: {}
+  # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/dummyRole
 
   # The name of the ServiceAccount to use.
   # If not set and create is true, a name is generated using the fullname template
