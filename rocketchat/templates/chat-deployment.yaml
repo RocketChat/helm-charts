@@ -100,14 +100,14 @@ spec:
               key: mail-url
         {{- end }}
         {{- end }}
-        {{- if .Values.registrationToken }}
+        {{- if and .Values.registrationToken .Release.IsInstall }}
         - name: REG_TOKEN
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: reg-token
         {{- end }}
-        {{- if .Values.license }}
+        {{- if and .Values.license .Release.IsInstall }}
         - name: ROCKETCHAT_LICENSE
           valueFrom:
             secretKeyRef:
