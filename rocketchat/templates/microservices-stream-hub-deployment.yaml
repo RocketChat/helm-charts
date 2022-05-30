@@ -34,7 +34,7 @@ spec:
     spec:
       containers:
       - name: stream-hub
-        image: "rocketchat/stream-hub-service:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        image: "{{ .Values.microservices.streamHub.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
