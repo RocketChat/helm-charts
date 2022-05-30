@@ -251,7 +251,7 @@ microservices:
   presence:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/rocket.chat
+      repository: registry.rocket.chat/rocketchat/presence-service
       pullPolicy: IfNotPresent
   ddpStreamer:
     replicas: 1
