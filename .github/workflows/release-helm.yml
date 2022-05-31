@@ -97,6 +97,26 @@ jobs:
           fi
 
           echo "Tests passed!"
+    
+      - name: (Microservices) Test helm installation
+        run: |
+          helm install --set microservices.enabled=true,mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat-microservices rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
+          echo waiting for pod to be created
+          sleep 80
+          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }') 8889:3000 &
+          sleep 5
+          ./test_scripts/wait_http.sh http://127.0.0.1:8889
+          . ./test_scripts/basic_test.sh http://127.0.0.1:8889
+          helm test --logs test-install-rocketchat-microservices
+
+          echo "Seeing if information persisted across updates"
+          test_endpoint "$base_url/api/v1/channels.messages?roomId=GENERAL" -H "$userId" -H "$authToken"
+          if [[ "$response" != *"This is a test message from $TEST_USER"* ]]; then
+            echo "Couldn't find sent message. Something is wrong!"
+            exit 2
+          fi
+
+          echo "Tests passed!"
           
 
       - name: Re-generate helm index
