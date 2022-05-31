@@ -251,27 +251,27 @@ microservices:
   presence:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/presence-service
+      repository: rocketchat/presence-service
       pullPolicy: IfNotPresent
   ddpStreamer:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/ddp-streamer-service
+      repository: rocketchat/ddp-streamer-service
       pullPolicy: IfNotPresent
   account:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/account-service
+      repository: rocketchat/account-service
       pullPolicy: IfNotPresent
   authorization:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/authorization-service
+      repository: rocketchat/authorization-service
       pullPolicy: IfNotPresent
   streamHub:
     replicas: 1
     image:
-      repository: registry.rocket.chat/rocketchat/stream-hub-service
+      repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
   nats:
     replicas: 1
