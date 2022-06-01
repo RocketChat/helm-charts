@@ -31,7 +31,7 @@ spec:
     {{- end }}
     protocol: TCP
   {{- if .Values.prometheusScraping.enabled }}
-  - name: moleculerMetrics
+  - name: moleculer-metrics
     port: 9458
     targetPort: 9458
     protocol: TCP
