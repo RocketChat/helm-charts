@@ -217,7 +217,7 @@ podAnnotations:
 ## Optional Prometheus scraping Settings
 prometheusScraping:
   enabled: false
-  port: 9458
+  port: 9100 # Avoid using 9458: conflicts with Moleculer Exporter
 
 serviceMonitor:
   ## serviceMonitor.enabled Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator
