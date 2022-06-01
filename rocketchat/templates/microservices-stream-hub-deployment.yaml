@@ -71,6 +71,14 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+        volumeMounts: 
+        {{- if .Values.extraVolumeMounts }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
+        {{- end }}   
+      volumes:
+      {{- if .Values.extraVolumes }}
+      {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
+      {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

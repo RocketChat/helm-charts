@@ -51,3 +51,18 @@ Return the apiVersion of deployment.
 {{- print "apps/v1" -}}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Renders a value that contains template. 
+Note: This function was lent from Bitnami Common Library Chart (cf. 
+https://github.com/bitnami/charts/blob/master/bitnami/common/templates/_tplvalues.tpl)
+Usage:
+{{ include "common.tplvalues.render" ( dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "common.tplvalues.render" -}}
+    {{- if typeIs "string" .value }}
+        {{- tpl .value .context }}
+    {{- else }}
+        {{- tpl (.value | toYaml) .context }}
+    {{- end }}
+{{- end -}}

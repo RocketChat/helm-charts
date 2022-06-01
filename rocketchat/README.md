@@ -60,6 +60,8 @@ Parameter | Description | Default
 `smtp.host` | Hostname of the SMTP server | `""`
 `smtp.port` | Port of the SMTP server | `587`
 `extraEnv` | Extra environment variables for Rocket.Chat. Used with `tpl` function, so this needs to be a string | `""`
+`extraVolumes` | Extra volumes allowing inclusion of certificates or any sort of file that might be required (see bellow) | `[]`
+`extraVolumeMounts` | Where the aforementioned extra volumes should be mounted inside the container | `[]`
 `podAntiAffinity` | Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node. The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided. The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node. The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured. | `""` |
 `podAntiAffinityTopologyKey` | If anti-affinity is enabled sets the topologyKey to use for anti-affinity. This can be changed to, for example `failure-domain.beta.kubernetes.io/zone`| `kubernetes.io/hostname` |
 | `affinity` | Assign custom affinity rules to the RocketChat instance https://kubernetes.io/docs/concepts/configuration/assign-pod-node/ | `{}` |
@@ -145,6 +147,23 @@ This chart supports using an existing MongoDB instance. Use the `` configuration
 extraEnv: |
   - name: MONGO_OPTIONS
     value: '{"ssl": "true"}'
+```
+### Specifying aditional volumes
+
+Sometimes, it's needed to include extra sets of files by means of exposing 
+them to the container as a mountpoint. The most common use case is the 
+inclusion of SSL CA certificates. 
+
+```yaml
+extraVolumes: 
+  - name: etc-certs
+    hostPath:
+    - path: /etc/ssl/certs
+      type: Directory
+extraVolumeMounts: 
+  - mountPath: /etc/ssl/certs
+    name: etc-certs   
+    readOnly: true
 ```
 
 ### Increasing Server Capacity and HA Setup

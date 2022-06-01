@@ -28,6 +28,27 @@ extraEnv:
   # - name: MONGO_OPLOG_URL
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
+# Extra volumes for Rocket.Chat...
+extraVolumes: 
+  # - name: etc-certs
+  #   hostPath:
+  #     path: /etc/ssl/certs
+  #     type: Directory
+  # - name: usr-certs
+  #   hostPath:
+  #     path: /usr/share/ca-certificates
+  #     type: Directory
+
+# ... and where they should be mounted inside the container
+extraVolumeMounts: 
+  # - mountPath: /etc/ssl/certs
+  #   name: etc-certs   
+  #   readOnly: true
+  # - mountPath: /usr/share/ca-certificates
+  #   name: usr-certs   
+  #   readOnly: true
+
+
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
 
