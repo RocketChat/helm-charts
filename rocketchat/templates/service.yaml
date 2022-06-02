@@ -30,16 +30,18 @@ spec:
     nodePort: {{ $service.nodePort }}
     {{- end }}
     protocol: TCP
-  {{- if .Values.prometheusScraping.enabled }}
+{{- if .Values.prometheusScraping.enabled }}
+  {{- if .Values.microservices.enabled }}
   - name: moleculer-metrics
     port: 9458
     targetPort: 9458
     protocol: TCP
+  {{- end }}
   - name: metrics
     port: {{ .Values.prometheusScraping.port }}
     targetPort: {{ .Values.prometheusScraping.port }}
     protocol: TCP
-  {{- end }}
+{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
