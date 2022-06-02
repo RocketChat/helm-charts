@@ -29,7 +29,7 @@ extraEnv:
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
 # Extra volumes for Rocket.Chat...
-extraVolumes: 
+extraVolumes:
   # - name: etc-certs
   #   hostPath:
   #     path: /etc/ssl/certs
@@ -40,14 +40,13 @@ extraVolumes:
   #     type: Directory
 
 # ... and where they should be mounted inside the container
-extraVolumeMounts: 
+extraVolumeMounts:
   # - mountPath: /etc/ssl/certs
-  #   name: etc-certs   
+  #   name: etc-certs
   #   readOnly: true
   # - mountPath: /usr/share/ca-certificates
-  #   name: usr-certs   
+  #   name: usr-certs
   #   readOnly: true
-
 
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
@@ -60,7 +59,7 @@ extraVolumeMounts:
 ## The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node.
 ## The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured.
 ##
-podAntiAffinity: ''
+podAntiAffinity: ""
 
 ## If anti-affinity is enabled sets the topologyKey to use for anti-affinity.
 ## This can be changed to, for example, failure-domain.beta.kubernetes.io/zone
@@ -82,7 +81,7 @@ affinity: {}
 #         - e2e-az2
 
 ## Use an existing secret file with the MongoDB Url and OplogUrl
-existingMongodbSecret: ''
+existingMongodbSecret: ""
 
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
@@ -95,6 +94,8 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 mongodb:
   ## Enable or disable MongoDB dependency completely.
   enabled: true
+
+  initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:
     # rootPassword:
@@ -126,7 +127,7 @@ mongodb:
     accessMode: ReadWriteOnce
     size: 8Gi
 
-  volumePermissions: {enabled: true}
+  volumePermissions: { enabled: true }
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -161,7 +162,7 @@ securityContext:
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
   create: true
-  
+
   # Annotations to add to the ServiceAccount
   annotations: {}
   # eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/dummyRole
@@ -177,7 +178,8 @@ ingress:
   enabled: false
   pathType: Prefix
   # ingressClassName: "nxinx"
-  annotations: {}
+  annotations:
+    {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
   tls: {}
