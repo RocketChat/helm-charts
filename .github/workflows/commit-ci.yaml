@@ -1,9 +1,6 @@
 name: On commit CI
 
-on:
-  push:
-    branches: 
-      - master
+on: [push]
 
 jobs: 
   test-helm: 
