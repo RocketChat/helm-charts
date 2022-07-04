@@ -48,7 +48,7 @@ jobs:
           echo waiting for pod to be created
           sleep 10
           export POD=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
-          kubectl wait --for-condition=Ready pod/${POD}
+          kubectl wait --for=condition=Ready pod/${POD}
           timeout 60 kubectl port-forward --pod-running-timeout=1m0s --namespace default ${POD} 8888:3000 &
           sleep 5
           kubectl get pods
