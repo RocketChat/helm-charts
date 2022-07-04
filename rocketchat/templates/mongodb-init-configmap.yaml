@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: rocketchat-mongodb-fix-clustermonitor-role-configmap
+  name: {{ .Release.Name }}-mongodb-fix-clustermonitor-role-configmap
   labels:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
