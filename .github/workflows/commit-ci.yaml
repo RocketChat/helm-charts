@@ -49,9 +49,10 @@ jobs:
           sleep 80
           timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }') 8888:3000 &
           sleep 5
+          kubectl get pods
           kubectl logs $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
           kubectl get svc
-          kubectl describe $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
+          kubectl describe pod $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
           ./test_scripts/wait_http.sh http://127.0.0.1:8888
           . ./test_scripts/basic_test.sh http://127.0.0.1:8888
           helm test --logs test-install-rocketchat
