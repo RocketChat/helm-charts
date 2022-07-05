@@ -70,7 +70,7 @@ jobs:
           kubectl create namespace microservices
           helm install --namespace microservices --set microservices.enabled=true,mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat-microservices rocketchat-*.tgz
           echo waiting for pod to be created
-          export POD=$(kubectl get pods --namespace microservices -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }') 8889:3000 &
+          export POD=$(kubectl get pods --namespace microservices -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }')
           kubectl wait --for=condition=Ready --timeout 600s pod/${POD}
           echo forwarding the port
           kubectl port-forward --pod-running-timeout=1m0s --namespace default ${POD} 8888:3000 &
