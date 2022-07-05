@@ -73,7 +73,7 @@ jobs:
           export POD=$(kubectl get pods --namespace microservices -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }')
           kubectl --namespace microservices wait --for=condition=Ready --timeout 600s pod/${POD}
           echo forwarding the port
-          kubectl port-forward --pod-running-timeout=1m0s --namespace microservices ${POD} 8888:3000 &
+          kubectl port-forward --pod-running-timeout=1m0s --namespace microservices ${POD} 8889:3000 &
           echo waiting a bit
           sleep 5
           ./test_scripts/wait_http.sh http://127.0.0.1:8889
