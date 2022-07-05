@@ -95,7 +95,7 @@ mongodb:
   ## Enable or disable MongoDB dependency completely.
   enabled: true
 
-  initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
+  initdbScriptsConfigMap: "{{ .Release.Name | tpl }}-rocketchat-mongodb-fix-clustermonitor-role-configmap"
 
   auth:
     # rootPassword:
