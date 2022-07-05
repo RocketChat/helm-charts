@@ -46,15 +46,12 @@ jobs:
         run: |
           helm install --set mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat rocketchat-*.tgz
           echo waiting for pod to be created
-          sleep 10
           export POD=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
-          while true; do kubectl get pods; sleep 30; done
-          timeout 60 kubectl port-forward --pod-running-timeout=1m0s --namespace default ${POD} 8888:3000 &
+          kubectl wait --for=condition=Ready --timeout 600s pod/${POD}
+          echo forwarding the port
+          kubectl port-forward --pod-running-timeout=1m0s --namespace default ${POD} 8888:3000 &
+          echo waiting a bit
           sleep 5
-          kubectl get pods
-          kubectl logs $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
-          kubectl get svc
-          kubectl describe pod $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat" -o jsonpath='{ .items[0].metadata.name }')
           ./test_scripts/wait_http.sh http://127.0.0.1:8888
           . ./test_scripts/basic_test.sh http://127.0.0.1:8888
           helm test --logs test-install-rocketchat
@@ -72,8 +69,11 @@ jobs:
         run: |
           helm install --namespace microservices --set microservices.enabled=true,mongodb.auth.username=rocketchat,mongodb.auth.password=testpass,mongodb.auth.database=rocketchat,mongodb.auth.rootPassword=root-testpass test-install-rocketchat-microservices rocketchat-*.tgz
           echo waiting for pod to be created
-          sleep 80
-          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace microservices $(kubectl get pods --namespace microservices -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }') 8889:3000 &
+          export POD=$(kubectl get pods --namespace microservices -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }') 8889:3000 &
+          kubectl wait --for=condition=Ready --timeout 600s pod/${POD}
+          echo forwarding the port
+          kubectl port-forward --pod-running-timeout=1m0s --namespace default ${POD} 8888:3000 &
+          echo waiting a bit
           sleep 5
           ./test_scripts/wait_http.sh http://127.0.0.1:8889
           . ./test_scripts/basic_test.sh http://127.0.0.1:8889
