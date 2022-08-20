@@ -85,7 +85,7 @@ Parameter | Description | Default
 `ingress.pathType` | Sets the value for pathType for the created Ingress resource | `Prefix`
 `ingress.annotations` | Annotations for the ingress | `{}`
 `ingress.path` | Path of the ingress | `/`
-`ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/federation/extensions/v1beta1/definitions/#_v1beta1_ingresstls) items | `[]`
+`ingress.tls` | A list of [IngressTLS](https://kubernetes.io/docs/reference/kubernetes-api/service-resources/ingress-v1/#IngressSpec) items | `[]`
 `license` | Contents of the Enterprise License file, if applicable | `""`
 `prometheusScraping.enabled` | Turn on and off /metrics endpoint for Prometheus scraping | `false`
 `prometheusScraping.port` | Port to use for the metrics for Prometheus to scrap on | `9458`
