@@ -227,6 +227,9 @@ serviceMonitor:
   ## metrics.serviceMonitor.interval The interval at which metrics should be scraped
   ##
   interval: 30s
+  ## serviceMonitor.labels Labels to add to the ServiceMonitor resource
+  ##
+  labels: {}
   ## metrics.serviceMonitor.port The port name at which container exposes Prometheus metrics
   ##
   port: metrics
