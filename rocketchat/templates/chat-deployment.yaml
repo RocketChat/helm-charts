@@ -135,8 +135,8 @@ spec:
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
         {{- end}} # end of microservices envvar. options
-{{- with .Values.extraEnv }}
-{{ tpl . $ | indent 8 }}
+{{- if .Values.extraEnv }}
+{{ toYaml .Values.extraEnv | indent 8 }}
 {{- end }}
         ports:
         - name: http

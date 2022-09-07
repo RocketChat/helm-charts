@@ -22,7 +22,7 @@ smtp:
   port: 587
 
 # Extra env vars for Rocket.Chat:
-extraEnv:
+extraEnv: []
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
   # - name: MONGO_OPLOG_URL
