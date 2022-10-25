@@ -136,7 +136,7 @@ spec:
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
         {{- end}} # end of microservices envvar. options
 {{- with .Values.extraEnv }}
-{{ tpl . $ | indent 8 }}
+	{{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
 {{- end }}
         ports:
         - name: http
