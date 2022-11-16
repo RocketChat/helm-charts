@@ -238,6 +238,7 @@ serviceMonitor:
 ##
 livenessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 60
   periodSeconds: 15
   timeoutSeconds: 5
@@ -246,6 +247,7 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 10
   periodSeconds: 15
   timeoutSeconds: 5
