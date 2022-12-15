@@ -36,6 +36,8 @@ spec:
       - name: authorization-service
         image: "{{ .Values.microservices.authorization.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         env:
+        - name: PORT
+          value: '3000'
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
           valueFrom:
@@ -61,6 +63,9 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+        ports:
+        - name: http
+          containerPort: 3000
         {{- if .Values.microservices.livenessProbe.enabled }}
         livenessProbe:
           httpGet:

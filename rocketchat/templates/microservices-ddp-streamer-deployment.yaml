@@ -62,6 +62,9 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+        ports:
+        - name: http
+          containerPort: 3000
         {{- if .Values.microservices.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
