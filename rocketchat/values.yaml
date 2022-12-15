@@ -277,7 +277,7 @@ microservices:
     enabled: true
     initialDelaySeconds: 2
     periodSeconds: 15
-    timeoutSeconds: 5
+    timeoutSeconds: 2
     failureThreshold: 2
     successThreshold: 1
 
@@ -285,7 +285,7 @@ microservices:
     enabled: true
     initialDelaySeconds: 2
     periodSeconds: 15
-    timeoutSeconds: 5
+    timeoutSeconds: 2
     failureThreshold: 2
     successThreshold: 1
 
