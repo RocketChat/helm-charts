@@ -270,6 +270,25 @@ microservices:
   heartbeatInterval: 10
   heartbeatTimeout: 30
 
+  ## Liveness and readiness probe values specific for microservices
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 2
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 2
+    successThreshold: 1
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 2
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 2
+    successThreshold: 1
+
   ## Parameters for each deployment:
   presence:
     replicas: 1
