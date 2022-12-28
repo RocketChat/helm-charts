@@ -132,7 +132,7 @@ $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ### Database Setup
 
 Rocket.Chat uses a MongoDB instance to presist its data.
-By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
+By default, the [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) is deployed and a single MongoDB instance is created as the primary in a replicaset.  
 Please refer to this chart for additional MongoDB configuration options.
 If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword`, `mongodb.auth.username` and `mongodb.auth.password` values. 
 > **WARNING**: The root credentials are used to connect to the MongoDB OpLog
