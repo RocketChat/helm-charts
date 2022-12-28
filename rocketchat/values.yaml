@@ -96,6 +96,8 @@ mongodb:
   enabled: true
 
   initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
+  image:
+    tag: 5.0
 
   auth:
     # rootPassword:
