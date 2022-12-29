@@ -148,7 +148,7 @@ extraEnv: |
   - name: MONGO_OPTIONS
     value: '{"ssl": "true"}'
 ```
-### Specifying aditional volumes
+### Specifying additional volumes
 
 Sometimes, it's needed to include extra sets of files by means of exposing 
 them to the container as a mountpoint. The most common use case is the 
