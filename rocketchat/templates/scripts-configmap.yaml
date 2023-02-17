@@ -1,0 +1,40 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "rocketchat.fullname" . }}-scripts"
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+data:
+  verifyMongodb.js: |
+    const versions = [
+      "4.0",
+      "4.2",
+      "4.4",
+      "5.0",
+      "6.0"
+    ];
+    // [0]=mongosh path, [1]=mongosh path, [2]=connection string, [3]=script path, [4]=new tag
+    const newVersion = process.argv[4].split('.').splice(0, 2).join('.');
+    const currentVersion = db.version().split('.').splice(0, 2).join('.');
+    if (currentVersion === newVersion) quit(0);
+    const featureCompatibilityVersionResp = db.adminCommand({ getParameter:
+      1, featureCompatibilityVersion: 1 });
+    if (!featureCompatibilityVersionResp.ok) {
+      print("failed to read current feature compatibility version");
+      quit(1);
+    }
+    const featureCompatibilityVersion = featureCompatibilityVersionResp.featureCompatibilityVersion.version;
+    if (featureCompatibilityVersion !== currentVersion) {
+      print("current feature compatibility version is incompatible with the mongodb version you're trying to update to");
+      quit(1);
+    }
+    if (versions.indexOf(newVersion) - versions.indexOf(currentVersion) !== 1) {
+      print("you can't skip a mongodb version while updating, please read our update documentation for more information");
+      quit(1);
+    }
+    quit(0);
