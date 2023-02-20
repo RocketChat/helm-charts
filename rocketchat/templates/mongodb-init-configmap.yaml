@@ -1,6 +1,6 @@
 ---
-{{ $config := lookup "v1" "ConfigMap" .Release.Namespace "rocketchat-mongodb-fix-clustermonitor-role-configmap" }}
-  {{ if not $config }}
+{{/* {{ $config := lookup "v1" "ConfigMap" .Release.Namespace "rocketchat-mongodb-fix-clustermonitor-role-configmap" }} */}}
+{{/*   {{ if not $config }} */}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 data:
-  user_set_role_clusrerMonitor.sh: |
+  user_set_role_clusterMonitor.sh: |
     #! /bin/bash
 
     # #include <everything>
@@ -28,10 +28,8 @@ data:
       # Shouldn't be looping over all dbs, but currently no way of knowing which db is for rocketchat
       # and which might not be.
       # Either way, having clusterMonitor role shouldn't hurt 
-      local databases=($MONGODB_DATABASE)
-      databases+=($MONGODB_EXTRA_DATABASES)
-      local usernames=($MONGODB_USERNAME)
-      usernames+=($MONGODB_EXTRA_USERNAMES)
+      local databases=(${MONGODB_EXTRA_DATABASES/,/ })
+      local usernames+=(${MONGODB_EXTRA_USERNAMES/,/ })
       # each array should be of the same length
       local database username last=$((${#databases[@]}-1))
       for idx in $(seq 0 $last); do
@@ -59,4 +57,4 @@ data:
     }
 
     main
-  {{end}}
+  {{/* {{end}} */}}

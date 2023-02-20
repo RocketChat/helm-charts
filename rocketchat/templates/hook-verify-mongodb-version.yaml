@@ -1,0 +1,36 @@
+# https://kubernetes.io/docs/concepts/workloads/pods/
+apiVersion: v1
+kind: Pod
+metadata:
+  name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
+  annotations:
+    "helm.sh/hook": pre-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  containers:
+  - name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
+    {{- $registry := .Values.mongodb.image.registry }}
+    {{- $name := .Values.mongodb.image.repository }}
+    {{- $tag := .Values.mongodb.image.tag }}
+    image: {{ printf "%s/%s:%s" $registry $name $tag | quote }}
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: MONGODB_HOST
+        value: {{ include "rocketchat.mongodb.url" . | quote }}
+    volumeMounts:
+      - mountPath: /tmp
+        name: mongodb-script
+    command:
+      - sh
+      - -c
+      - 'mongosh "$MONGODB_HOST" /tmp/verifyMongodb.js {{ .Values.mongodb.image.tag }}'
+  restartPolicy: Never
+  volumes:
+    - name: mongodb-script
+      configMap:
+        name: "{{ include "rocketchat.fullname" . }}-scripts"
+        items:
+          - key: verifyMongodb.js
+            path: verifyMongodb.js
+---
+
