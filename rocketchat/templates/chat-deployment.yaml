@@ -47,6 +47,7 @@ spec:
         fsGroup: {{ .Values.securityContext.fsGroup }}
         runAsUser: {{ .Values.securityContext.runAsUser }}
       {{- end }}
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" . }}
       containers:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
