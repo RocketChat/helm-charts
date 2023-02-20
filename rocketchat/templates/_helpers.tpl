@@ -1,4 +1,4 @@
-{{/* vim: set filetype=mustache: */}}
+{{/* vim: set filetype=helm: */}}
 {{/*
 Expand the name of the chart.
 */}}
@@ -73,9 +73,9 @@ Usage:
         {{- print .Values.externalMongodbUrl }}
     {{- else }}
         {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := (first .Values.mongodb.auth.usernames) }}
-        {{- $password := (first .Values.mongodb.auth.passwords) }}
-        {{- $database := (first .Values.mongodb.auth.databases) }}
+        {{- $user := required "usernames array must have at least one extry" (first .Values.mongodb.auth.usernames) }}
+        {{- $password := required "passwords array must have at least one extry" (first .Values.mongodb.auth.passwords) }}
+        {{- $database := required "databases array must have at least one extry" (first .Values.mongodb.auth.databases) }}
         {{- $port := .Values.mongodb.service.ports.mongodb }}
         {{- $rs := .Values.mongodb.replicaSetName }}
         {{- printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs }}
@@ -89,7 +89,7 @@ Usage:
     {{- else }}
         {{- $service := include "rocketchat.mongodb.fullname" . }}
         {{- $user := .Values.mongodb.auth.rootUser }}
-        {{- $password := .Values.mongodb.auth.rootPassword }}
+        {{- $password := required "root password must be provided" .Values.mongodb.auth.rootPassword }}
         {{- $port := .Values.mongodb.service.ports.mongodb }}
         {{- $rs := .Values.mongodb.replicaSetName }}
         {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
