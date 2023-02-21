@@ -1,3 +1,4 @@
+{{- if .Values.mongodb.enabled }}
 ---
 {{/* {{ $config := lookup "v1" "ConfigMap" .Release.Namespace "rocketchat-mongodb-fix-clustermonitor-role-configmap" }} */}}
 {{/*   {{ if not $config }} */}}
@@ -58,3 +59,4 @@ data:
 
     main
   {{/* {{end}} */}}
+{{- end }}

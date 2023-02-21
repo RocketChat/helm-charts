@@ -1,3 +1,4 @@
+{{- if .Values.mongodb.enabled }}
 # https://kubernetes.io/docs/concepts/workloads/pods/
 apiVersion: v1
 kind: Pod
@@ -32,5 +33,4 @@ spec:
         items:
           - key: verifyMongodb.js
             path: verifyMongodb.js
----
-
+{{- end }}
