@@ -2,7 +2,7 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
-> **WARNING**: Upgrading to chart version 3.1.x or higher might require extra steps to retain the MongoDB data. See [Upgrading to 3.1.0](#to-310) for more details.
+> **WARNING**: Upgrading to chart version 5.4.3 or higher might require extra steps to successfully update MongoDB and Rocket.Chat. See [Upgrading to 5.4.3](#to-543) for more details.
 
 ## TL;DR;
 
@@ -19,7 +19,7 @@ $ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(ec
 
 This chart bootstraps a [Rocket.Chat](https://rocket.chat/) Deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager. It provisions a fully featured Rocket.Chat installation.
 
-In addition, this chart supports scaling of Rocket.Chat for increased server capacity and high availability.  For more information on Rocket.Chat and its capabilities, see its [documentation](https://rocket.chat/docs/).
+In addition, this chart supports scaling of Rocket.Chat for increased server capacity and high availability (requires enterprise license).  For more information on Rocket.Chat and its capabilities, see its [documentation](https://rocket.chat/docs/).
 
 ## Prerequisites Details
 
@@ -33,6 +33,23 @@ To install the chart with the release name `rocketchat`:
 ```console
 $ helm install rocketchat rocketchat/rocketchat
 ```
+
+Usage of `Values.yaml` file is recommended over using command line arguments `--set`. You must set at least the database password and root password in the values file.
+
+```yaml
+mongodb:
+  auth:
+    passwords:
+      - rocketchat
+    rootPassword: rocketchatroot
+```
+
+Now use the following command to deploy
+```shell
+helm install rocketchat -f Values.yaml rocketchat/rocketchat
+```
+
+> Starting chart version 5.4.3, due to mongodb dependency, username, password and database entries must be arrays of the same length. Rocket.Chat will use the first entries of those arrays for its own use. `mongodb.auth.usernames` array defaults to `{rocketchat}` and `mongodb.auth.databases` array defaults to `{rocketchat}`
 
 ## Uninstalling the Chart
 
@@ -197,40 +214,34 @@ data:
 
 ## Upgrading
 
-### To 3.1.0
+### To 5.4.3
 
-Due to changes on upstream [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#to-800), many MongoDB variables have been renamed (including it's PersistentVolumeClaims), which also need to be changed for this package. The most important being:
-  - `replicas` is renamed to `replicaCount`.
-  - Authentication parameters are reorganized under the `auth.*` parameter:
-    - `usePassword` is renamed to `auth.enabled`.
-    - `mongodbRootPassword`, `mongodbUsername`, `mongodbPassword`, `mongodbDatabase`, and `replicaSet.key` are now `auth.rootPassword`, `auth.username`, `auth.password`, `auth.database`, and `auth.replicaSetKey` respectively.
-  - `securityContext.*` is deprecated in favor of `podSecurityContext` and `containerSecurityContext`.
-  - Parameters prefixed with `mongodb` are renamed removing the prefix. E.g. `mongodbEnableIPv6` is renamed to `enableIPv6`.
-  - Parameters affecting Arbiter nodes are reorganized under the `arbiter.*` parameter.
+Due to changes on upstream MongoDB chart, some variables have been renamed (previously deprecated), which, in turn changed how this chart generates its manifests. Values that need changing -
+- `mongodb.auth.username` is no longer supported, and has been changed to `mongodb.auth.usernames` array. If you set it to something custom (defaults to `rocketchat`), make sure you update it to an array and the entry is the **first** entry in that array as that's what Rocket.Chat will use to connect to the database.
+- `mongodb.auth.password` is no longer supported either and has been changed to `mongodb.auth.passwords` array. Update your values file to make it an array and make sure it's the first entry of that array.
+- `mongodb.auth.database` is no longer supported either and has been changed to its plural version, `mongodb.auth.databases`. Update your values file, convert it to an array and make sure it's the first entry of that list.
+- `mongodb.auth.rootUsername` and `mongodb.auth.rootPassword` are staying the same.
 
-Since mongodb has no backwards compatibility guarantee and recomends creating a new deployment and migrating your data, we recomend that too. This could be done with the following steps:
+*`usernames`, `passwords` and `databases` arrays must be of the same length. Rocket.Chat chart will use the first entry for its mongodb connection string in `MONGO_URL` and `MONGO_OPLOG_URL`.*
 
-1. Create a new Rocket.Chat deployment. You may reuse your existing values, which can be checked with `helm get values <release_name>`, keeping in mind the changes mentioned above. 
-2. Copy the database over. This could be done with: 
-  ```
-  kubectl exec <old_release_name>-mongodb-primary-0 -- mongodump -d <database_name> -u <old_mongodb_user> -p <old_mongodb_password> --archive | kubectl exec -i <new_release_name>-mongodb-0 -- mongorestore -d <database_name> -u <new_mongodb_user> -p <new_mongodb_password> --archive --drop
-  ```  
-  Example: 
-  ```console
-  kubectl exec my-rocketchat-mongodb-primary-0 -- mongodump -d rocketchat -u rocketchat -p changeme --archive | kubectl exec -i my-rocketchat2-mongodb-0 -- mongorestore -d rocketchat -u rocketchat -p changeme --archive --drop
-  ```
-  Note: If you are using PersistentVolumes for Rocket.Chat storage they will need to be copied over too.
-1. Validate if the update completed sucessfully 
-2. Remove the old deployment and change the corresponding ingress.
-### To 1.1.0
+On each chart update, the used image tag gets updated, **in most cases**. Same is true for the MongoDB chart we use as our dependency. Pre-5.4.3, we had been using the chart version 10.x.x, but starting 5.4.3, the dependency chart version has been bumped to the latest available version, 13.x.x. This chart defaults to mongodb 6.0.x as of the time of writing this.
 
-Rocket.Chat version 1.x requires a MongoDB ReplicaSet to be configured. When using the dependent `stable/mongodb` chart (`mongodb.enabled=true`), enabling ReplicaSet will drop the PVC and create new ones. Make sure to backup your current MongoDB and restore it after the upgrade.
+As a warning, this chart will not handle MongoDB upgrades and will depend on the user to make sure it's running on the supported version. The upgrade will fail if any of the following requirements are not met -
+- must not skip a MongoDB release. E.g. 4.2.x to 5.0.x will fail
+- current `featureCompatibilityVersion` must be compatible with the version user is trying to upgrade to. E.g. if current database version and feature compatibility is 4.4 and 4.2 respectively, but user is trying to upgrade to 5.0, it'll fail
 
-### To 1.0.0
+The chart will not check if the mongodb version is supported by the Rocket.Chat version considering deployments, that might occur in an airgapped environment. It is up to the user to make sure of that. Users can check Rocket.Chat's release notes to confirm that.
 
-Backwards compatibility is not guaranteed unless you modify the labels used on the chart's deployments.
-Use the workaround below to upgrade from versions previous to 1.0.0. The following example assumes that the release name is rocketchat:
+To get the currently deployed MongoDB version, the easiest method is to get into the mongo shell and running `db.version()`.
 
-```console
-$ kubectl delete deployment rocketchat-rocketchat --cascade=false
+It is advised to pin your MongoDB dependency in the values file.
+```yaml
+mongodb:
+  image:
+    tag: # find from https://hub.docker.com/r/bitnami/mongodb/tags
 ```
+
+Refernces:
+- [Run a shell inside a container (to check mongodb version)](https://kubernetes.io/docs/tasks/debug/debug-application/get-shell-running-container/)
+- [MongoDB upgrade official documentation](https://www.mongodb.com/docs/manual/tutorial/upgrade-revision/)
+- [MongoDB helm chart options](https://artifacthub.io/packages/helm/bitnami/mongodb)
