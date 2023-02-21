@@ -99,9 +99,11 @@ mongodb:
 
   auth:
     # rootPassword:
-    username: rocketchat
-    # password:
-    database: rocketchat
+    usernames:
+      - rocketchat
+    # passwords:
+    databases:
+      - rocketchat
 
   architecture: replicaset
   replicaCount: 1
