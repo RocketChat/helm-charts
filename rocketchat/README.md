@@ -7,12 +7,12 @@
 ## TL;DR;
 
 ```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={$(echo -n $(openssl rand -base64 32))},mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
 ```
 
 If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
 ```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.password=$(echo -n $(openssl rand -base64 32)),mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32)),registrationToken=<paste the token here>
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={$(echo -n $(openssl rand -base64 32))},mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32)),registrationToken=<paste the token here>
 ```
 
 ## Introduction
@@ -150,8 +150,8 @@ $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 
 Rocket.Chat uses a MongoDB instance to presist its data.
 By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
-Please refer to this chart for additional MongoDB configuration options.
-If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword`, `mongodb.auth.username` and `mongodb.auth.password` values. 
+Please refer to this (MongoDB) chart for additional MongoDB configuration options.
+If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword` and `mongodb.auth.passwords` values. 
 > **WARNING**: The root credentials are used to connect to the MongoDB OpLog
 
 #### Using an External Database
