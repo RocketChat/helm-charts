@@ -4,17 +4,6 @@
 
 > **WARNING**: Upgrading to chart version 5.4.3 or higher might require extra steps to successfully update MongoDB and Rocket.Chat. See [Upgrading to 5.4.3](#to-543) for more details.
 
-## TL;DR;
-
-```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={$(echo -n $(openssl rand -base64 32))},mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32))
-```
-
-If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
-```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={$(echo -n $(openssl rand -base64 32))},mongodb.auth.rootPassword=$(echo -n $(openssl rand -base64 32)),registrationToken=<paste the token here>
-```
-
 ## Introduction
 
 This chart bootstraps a [Rocket.Chat](https://rocket.chat/) Deployment on a [Kubernetes](https://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager. It provisions a fully featured Rocket.Chat installation.
@@ -31,7 +20,12 @@ By default, the MongoDB chart requires PV support on underlying infrastructure (
 To install the chart with the release name `rocketchat`:
 
 ```console
-$ helm install rocketchat rocketchat/rocketchat
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
+```
+
+If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
+```console
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
 ```
 
 Usage of `Values.yaml` file is recommended over using command line arguments `--set`. You must set at least the database password and root password in the values file.
