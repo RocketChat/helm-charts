@@ -73,9 +73,9 @@ Usage:
         {{- print .Values.externalMongodbUrl }}
     {{- else }}
         {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := required "usernames array must have at least one extry" (first .Values.mongodb.auth.usernames) }}
-        {{- $password := required "passwords array must have at least one extry" (first .Values.mongodb.auth.passwords) }}
-        {{- $database := required "databases array must have at least one extry" (first .Values.mongodb.auth.databases) }}
+        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
+        {{- $password := required "passwords array must have at least one entry" (first .Values.mongodb.auth.passwords) }}
+        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
         {{- $port := .Values.mongodb.service.ports.mongodb }}
         {{- $rs := .Values.mongodb.replicaSetName }}
         {{- printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs }}
