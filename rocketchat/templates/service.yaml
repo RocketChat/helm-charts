@@ -22,6 +22,9 @@ metadata:
 {{- end }}
 spec:
   type: {{ $service.type }}
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports:
   - name: http
     port: {{ $service.port }}
