@@ -25,7 +25,7 @@ $ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={ro
 
 If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
 ```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords=rocketchatPassword,mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
 ```
 
 Usage of `Values.yaml` file is recommended over using command line arguments `--set`. You must set at least the database password and root password in the values file.
