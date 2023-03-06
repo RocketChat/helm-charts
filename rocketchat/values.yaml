@@ -202,7 +202,7 @@ service:
   port: 80
 
   ## Optional when LoadBalancer specified ServiceType.
-  LoadBalancerIP: nil
+  loadBalancerIP: ""
 
 ## Optional custom labels for the deployment resource.
 deploymentLabels: {}
