@@ -32,6 +32,10 @@ spec:
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.tolerations }}
+      tolerations:
+{{ toYaml .Values.tolerations | indent 8 }}
+      {{- end }}
       containers:
       - name: authorization-service
         image: "{{ .Values.microservices.authorization.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
