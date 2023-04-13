@@ -76,6 +76,9 @@ jobs:
       - name: Test helm installation
         run: helm test --logs test-install-rocketchat
 
+      - name: Uninstall current deployment
+        run: helm uninstall test-install-rocketchat
+
       - name: Test helm upgrade
         run: |
           helm repo add rocketchat https://rocketchat.github.io/helm-charts
