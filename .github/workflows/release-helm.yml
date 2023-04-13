@@ -9,7 +9,7 @@ jobs:
     env:
       HELM_REPO: "${{ github.repository }}" # This repo
       TESTS_REPO: RocketChat/rocketchat-release-tests
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     if: github.event_name == 'release'
     steps:
       - name: Parse environment variables
