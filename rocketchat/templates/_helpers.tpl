@@ -95,3 +95,12 @@ Usage:
         {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
     {{- end }}
 {{- end }}
+
+{{- define "rocketchat.kubeversion" -}}
+  {{- $kubeVersion := .Capabilities.KubeVersion.Version -}}
+  {{/* Special use case for Amazon EKS, Google GKE */}}
+  {{- if and (regexMatch "\\d+\\.\\d+\\.\\d+-(?:eks|gke).+" $kubeVersion) -}}
+    {{- $kubeVersion = regexFind "\\d+\\.\\d+\\.\\d+" $kubeVersion -}}
+  {{- end -}}
+  {{- $kubeVersion -}}
+{{- end -}}

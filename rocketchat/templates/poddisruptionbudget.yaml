@@ -1,8 +1,9 @@
 {{- if and (.Values.podDisruptionBudget.enabled) (gt ( .Values.replicaCount | int ) 1) }}
-{{- if semverCompare ">=1.21.0" .Capabilities.KubeVersion.GitVersion }}
-apiVersion: policy/v1
-{{- else }}
+{{- $kubeversion := include "rocketchat.kubeversion" . }}
+{{- if semverCompare "<=1.21.0" $kubeversion }}
 apiVersion: policy/v1beta1
+{{- else }}
+apiVersion: policy/v1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
