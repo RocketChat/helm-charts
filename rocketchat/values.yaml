@@ -316,3 +316,7 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+
+# Tolerations for pod assignment
+# Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
