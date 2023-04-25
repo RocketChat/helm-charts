@@ -1,157 +1,87 @@
 name: Update helm chart
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+env:
+  HELM_REPO: RocketChat/helm-charts
 
 jobs:
-  update_helm_chart:
-    env:
-      HELM_REPO: "${{ github.repository }}" # This repo
-      TESTS_REPO: RocketChat/rocketchat-release-tests
+  is-chart-working:
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
     steps:
-      - name: Parse environment variables
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          path: ./helm-charts
+      - name: Clone tests
+        uses: actions/checkout@v3
+        with:
+          repository: debdutdeb/rocket.chat.tests
+      - name: Setup k3d
+        uses: nolar/setup-k3d-k3s@v1
+      - name: Run tests
+        shell: bash
         run: |
-          export ROCKETCHAT_VERSION=${{ github.event.release.tag_name }}
-          echo "ROCKETCHAT_VERSION=$ROCKETCHAT_VERSION" >> $GITHUB_ENV
-          [[ -z "$(echo ${{ env.ROCKETCHAT_VERSION }} | grep rc)" ]] && echo "CANDIDATE=false" >> $GITHUB_ENV
+          sudo apt-get install --no-install-recommends -y jo jq
+          export ROCKETCHAT_TAG=${{ inputs.tag }}
+          export ROCKETCHAT_CHART_DIR=/tmp
+          bash ./run_k8s.bash
 
-      # this section was for when this PR was meant to be added to the main rocketchat repo, so it could be part of the main app release process
-      # -------------------------------------------------
-
-      # - name: Set SSH key for helm-chart repo
-      #   if: env.CANDIDATE == 'false'
-      #   uses: webfactory/ssh-agent@v0.5.3
-      #   with:
-      #       ssh-private-key: ${{ secrets.HELM_REPO_SSH_KEY }}
-
-      # not using the checkout action because we need to push to this repo using the ssh-agent we just set up above
-      # - name: Clone helm repo (master)
-      #   run: "git clone git@github.com:${{ env.HELM_REPO }} helm-charts"
-
-      # - name: Clone helm repo (gh-pages)
-      #   run: "git clone --branch gh-pages git@github.com:${{ env.HELM_REPO }} gh-pages"
-      # -------------------------------------------------
-
-      - name: Clone helm repo (master)
+  update-release:
+    needs:
+      - is-chart-working
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm repo
         uses: actions/checkout@v2
         with:
-          repository: "${{ env.HELM_REPO }}"
-          path: './helm-charts'
-      
+          repository: ${{ env.HELM_REPO }}
+          path: ./helm-charts
+
       - name: Clone helm repo (gh-pages)
         uses: actions/checkout@v2
         with:
-          repository: "${{ env.HELM_REPO }}"
-          ref: 'gh-pages'
-          path: './gh-pages'
-      
+          repository: ${{ env.HELM_REPO }}
+          ref: gh-pages
+          path: ./gh-pages
 
-      - name: Clone tests repo
-        uses: actions/checkout@v2
-        with:
-          repository: "${{ env.TESTS_REPO }}"
-          path: './test_scripts'
-      
-      - name: Setup k3d
-        uses: nolar/setup-k3d-k3s@v1
-
-      - name: Update chart and rocketchat versions 
+      - name: Update chart and rocketchat versions
+        shell: bash
         id: version
         run: |
-          sed -i -r '/^appVersion:/ s/ .+/ ${{ env.ROCKETCHAT_VERSION }}/' ./helm-charts/rocketchat/Chart.yaml
-          sed -i -r '/^version:/ s/ .+/ ${{ env.ROCKETCHAT_VERSION }}/' ./helm-charts/rocketchat/Chart.yaml
-      
+          sed -i -r '/^appVersion:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
+          sed -i -r '/^version:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
+
       - name: Pull dependencies
+        shell: bash
         run: helm dependency update ./helm-charts/rocketchat
-      
+
       - name: Generate helm package
-        run: helm package ./helm-charts/rocketchat && cp rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz gh-pages/charts/
-
-      - name: Install helm package
-        run: helm install --set mongodb.auth.passwords={testpass},mongodb.auth.rootPassword=root-testpass test-install-rocketchat rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
-
-      - name: Test helm installation
-        run: helm test --logs test-install-rocketchat
-
-      - name: Uninstall current deployment
-        run: helm uninstall test-install-rocketchat
-
-      - name: Test helm upgrade
-        run: |
-          helm repo add rocketchat https://rocketchat.github.io/helm-charts
-          helm install --set mongodb.auth.passwords={testpass},mongodb.auth.rootPassword=root-testpass test-upgrade-rocketchat rocketchat/rocketchat
-          echo waiting for pod to be created
-          sleep 80
-          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-upgrade-rocketchat" -o jsonpath='{ .items[0].metadata.name }') 8888:3000 &
-          sleep 5
-          ./test_scripts/wait_http.sh http://127.0.0.1:8888
-          . ./test_scripts/basic_test.sh http://127.0.0.1:8888
-          helm upgrade test-upgrade-rocketchat rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
-          helm test --logs test-install-rocketchat
-
-          echo "Seeing if information persisted across updates"
-          test_endpoint "$base_url/api/v1/channels.messages?roomId=GENERAL" -H "$userId" -H "$authToken"
-          if [[ "$response" != *"This is a test message from $TEST_USER"* ]]; then
-            echo "Couldn't find sent message. Somethings wrong!"
-            exit 2
-          fi
-
-          echo "Tests passed!"
-    
-      - name: (Microservices) Test helm installation
-        run: |
-          helm install --set microservices.enabled=true,mongodb.auth.passwords={testpass},mongodb.auth.rootPassword=root-testpass test-install-rocketchat-microservices rocketchat-${{ env.ROCKETCHAT_VERSION }}.tgz
-          echo waiting for pod to be created
-          sleep 80
-          timeout 360 kubectl port-forward --pod-running-timeout=1m0s --namespace default $(kubectl get pods --namespace default -l "app.kubernetes.io/name=rocketchat,app.kubernetes.io/instance=test-install-rocketchat-microservices" -o jsonpath='{ .items[0].metadata.name }') 8889:3000 &
-          sleep 5
-          ./test_scripts/wait_http.sh http://127.0.0.1:8889
-          . ./test_scripts/basic_test.sh http://127.0.0.1:8889
-          helm test --logs test-install-rocketchat-microservices
-
-          echo "Seeing if information persisted across updates"
-          test_endpoint "$base_url/api/v1/channels.messages?roomId=GENERAL" -H "$userId" -H "$authToken"
-          if [[ "$response" != *"This is a test message from $TEST_USER"* ]]; then
-            echo "Couldn't find sent message. Something is wrong!"
-            exit 2
-          fi
-
-          echo "Tests passed!"
-          
+        shell: bash
+        run: helm package ./helm-charts/rocketchat -d gh-pages/charts/
 
       - name: Re-generate helm index
         run: helm repo index ./gh-pages/
-      
+
       - name: Push to master
         uses: EndBug/add-and-commit@v7
         with:
-          add: 'rocketchat/Chart.yaml'
+          add: "rocketchat/Chart.yaml"
           cwd: helm-charts
           branch: master
-          message: "Chore: bump Rocket.Chat and chart version to ${{ env.ROCKETCHAT_VERSION }}"
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
           push: true
-          default_author: github_actions
-      
+
       - name: Push to gh-pages
         uses: EndBug/add-and-commit@v7
         with:
-          add: '.'
+          add: "."
           cwd: gh-pages
           branch: gh-pages
-          message: "Chore: bump Rocket.Chat and chart version to ${{ env.ROCKETCHAT_VERSION }}"
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
           push: true
-          default_author: github_actions
-      
-      
-      # - name: Rocket.Chat Notification
-      #   uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-      #   if: env.CANDIDATE == 'false'
-      #   with:
-      #     type: ${{ job.status }}
-      #     job_name: '*Snapcraft build*'
-      #     mention: 'here'
-      #     mention_if: 'failure'
-      #     url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
