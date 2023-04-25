@@ -6,6 +6,9 @@ on:
       tag:
         required: true
         type: string
+    secrets:
+      github-token:
+        required: true
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -87,3 +90,15 @@ jobs:
           branch: gh-pages
           message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
           push: true
+      
+      - name: Create a release with artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ format('./gh-pages/charts/rocketchat-{0}.tgz', inputs.tag) }}
+          prerelease: false
+          repository: ${{ env.HELM_REPO }}
+          token: ${{ secrets.github-token }}
+          name: ${{ inputs.tag }}
+          tag_name: ${{ inputs.tag }}
+          body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
+          draft: false
