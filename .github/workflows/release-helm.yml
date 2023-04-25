@@ -26,6 +26,7 @@ jobs:
         with:
           repository: debdutdeb/rocket.chat.tests
           path: tests
+          submodules: true
       - name: Setup k3d
         uses: nolar/setup-k3d-k3s@v1
       - name: Run tests
