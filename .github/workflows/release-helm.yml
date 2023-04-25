@@ -51,6 +51,7 @@ jobs:
         with:
           repository: ${{ env.HELM_REPO }}
           path: ./helm-charts
+          token: ${{ secrets.github-token }}
 
       - name: Clone helm repo (gh-pages)
         uses: actions/checkout@v2
@@ -58,6 +59,7 @@ jobs:
           repository: ${{ env.HELM_REPO }}
           ref: gh-pages
           path: ./gh-pages
+          token: ${{ secrets.github-token }}
 
       - name: Update chart and rocketchat versions
         shell: bash
@@ -78,20 +80,18 @@ jobs:
         run: helm repo index ./gh-pages/
 
       - name: Push to master
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           add: "rocketchat/Chart.yaml"
           cwd: helm-charts
-          branch: master
           message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
           push: true
 
       - name: Push to gh-pages
-        uses: EndBug/add-and-commit@v7
+        uses: EndBug/add-and-commit@v9
         with:
           add: "."
           cwd: gh-pages
-          branch: gh-pages
           message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
           push: true
       
