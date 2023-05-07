@@ -1,0 +1,11 @@
+apiVersion: airlock/v1alpha1
+kind: MongoDBCluster
+
+metadata: {{- include "rocketchat.metadata" . | nindent 2 }}
+
+spec:
+  connectionSecret: {{- include "rocketchat.fullname" . | quote }}
+  {{- $host := include "rocketchat.mongodb.fullname" . -}}
+  {{- $port := .Values.mongodb.service.ports.mongodb -}}
+  hostTemplate: {{ printf "%s:%s" $host $port }}
+  connectionSecretNamespace: {{ include "rocketchat.airlock.namespace" . | quote }}

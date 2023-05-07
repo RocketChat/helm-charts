@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="KubernetesSettings">
+    <option name="helmParameters">
+      <HelmParameters>
+        <option name="chartPath" value="$PROJECT_DIR$/rocketchat" />
+        <option name="values" value="mongodb.auth.usernames[0]=rocketchat&#10;mongodb.auth.databases[0]=rocketchat&#10;mongodb.auth.rootPassword=rocketchat&#10;mongodb.auth.passwords[0]=rocketchat" />
+        <option name="valuesFiles">
+          <option value="values.yaml" />
+        </option>
+      </HelmParameters>
+    </option>
+  </component>
+</project>
