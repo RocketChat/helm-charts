@@ -1,4 +1,4 @@
-name: Update helm chart
+name: Force update helm chart
 
 on:
   workflow_dispatch:
