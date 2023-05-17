@@ -49,7 +49,6 @@ jobs:
           mention_if: failure
 
   update-release:
-    if: false
     needs:
       - is-chart-working
     runs-on: ubuntu-latest
