@@ -17,7 +17,7 @@ jobs:
         id: prepare
         shell: bash
         run: |
-          version=$(yq -e .appVersion helm-charts/Chart.yaml)
+          version=$(yq -e .appVersion helm-charts/rocketchat/Chart.yaml)
           echo "version=$version" >>$GITHUB_OUTPUT
       - name: Clone tests
         uses: actions/checkout@v3
