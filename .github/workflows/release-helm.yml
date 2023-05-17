@@ -47,7 +47,7 @@ jobs:
         if: always()
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
-          job_name: 'Helm chart ${{ inputs.tag }} tests'
+          job_name: '*Helm chart ${{ inputs.tag }} tests*'
           url: ${{ secrets.rocketchat-webhook }}
           type: ${{ job.status }}
           mention: 'debdut.chakraborty'
@@ -123,7 +123,7 @@ jobs:
         if: always()
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         with:
-          job_name: ${{ format('Helm {0} release', inputs.tag) }}
+          job_name: ${{ format('*Helm {0} release*', inputs.tag) }}
           url: ${{ secrets.rocketchat-webhook }}
           type: ${{ job.status }}
           mention: 'debdut.chakraborty'
