@@ -9,6 +9,8 @@ on:
     secrets:
       github-token:
         required: true
+      rocketchat-webhook:
+        required: true
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -40,6 +42,16 @@ jobs:
           export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
           cd tests &&
             bash run_k8s.bash
+
+      - name: Notify core team
+        if: always()
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        with:
+          job_name: 'Helm chart ${{ inputs.tag }} tests'
+          url: ${{ secrets.rocketchat-webhook }}
+          type: ${{ job.status }}
+          mention: 'debdut.chakraborty'
+          mention_if: failure
 
   update-release:
     needs:
@@ -106,3 +118,13 @@ jobs:
           tag_name: ${{ inputs.tag }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
           draft: false
+
+      - name: Notify core team
+        if: always()
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        with:
+          job_name: ${{ format('Helm {0} release', inputs.tag) }}
+          url: ${{ secrets.rocketchat-webhook }}
+          type: ${{ job.status }}
+          mention: 'debdut.chakraborty'
+          mention_if: failure
