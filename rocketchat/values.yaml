@@ -80,6 +80,10 @@ affinity: {}
 #         - e2e-az1
 #         - e2e-az2
 
+nodeSelector: {}
+
+tolerations: []
+
 ## Use an existing secret file with the MongoDB Url and OplogUrl
 existingMongodbSecret: ""
 
