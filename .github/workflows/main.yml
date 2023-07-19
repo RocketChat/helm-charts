@@ -1,0 +1,30 @@
+name: Test and/or release helm chart
+
+on:
+  workflow_call:
+    secrets:
+      github-token:
+        required: true
+    inputs:
+      tag:
+        required: true
+        type: string
+
+env:
+  REPO: RocketChat/helm-charts
+
+jobs:
+  can-chart-run:
+    uses: ${{ env.REPO }}/.github/workflows/test.yml@master
+    with:
+      tag: ${{ inputs.tag }}
+
+  update-release:
+    needs:
+      - can-chart-run
+    if: ! contains(inputs.tag, 'rc')
+    uses: ${{ env.REPO }}/.github/workflows/release.yml@master
+    with:
+      tag: ${{ inputs.tag }}
+    secrets:
+      github-token: ${{ secrets.github-token }}

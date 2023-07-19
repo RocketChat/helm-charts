@@ -1,5 +1,7 @@
 name: Force update helm chart
 
+# FIXME make this use release.yml
+
 on:
   workflow_dispatch:
 

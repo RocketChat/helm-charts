@@ -1,0 +1,90 @@
+name: Release helm chart
+
+on:
+  workflow_call:
+    secrets:
+      github-token:
+        required: true
+    inputs:
+      tag:
+        type: string
+        required: true
+
+env:
+  REPO: 'RocketChat/helm-charts'
+
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm repo
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.REPO }}
+          path: ./helm-charts
+          token: ${{ secrets.github-token }}
+
+      - name: Clone helm repo (gh-pages)
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ env.REPO }}
+          ref: gh-pages
+          path: ./gh-pages
+          token: ${{ secrets.github-token }}
+
+      - name: Update chart and rocketchat versions
+        shell: bash
+        id: version
+        run: |
+          sed -i -r '/^appVersion:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
+          sed -i -r '/^version:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
+
+      - name: Pull dependencies
+        shell: bash
+        run: helm dependency update ./helm-charts/rocketchat
+
+      - name: Generate helm package
+        shell: bash
+        run: helm package ./helm-charts/rocketchat -d gh-pages/charts/
+
+      - name: Re-generate helm index
+        run: helm repo index ./gh-pages/
+
+      - name: Push to master
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "rocketchat/Chart.yaml"
+          cwd: helm-charts
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
+          push: true
+
+      - name: Push to gh-pages
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "."
+          cwd: gh-pages
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
+          push: true
+      
+      - name: Create a release with artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ format('./gh-pages/charts/rocketchat-{0}.tgz', inputs.tag) }}
+          prerelease: false
+          repository: ${{ env.REPO }}
+          token: ${{ secrets.github-token }}
+          name: ${{ inputs.tag }}
+          tag_name: ${{ inputs.tag }}
+          body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
+          draft: false
+
+      - name: Notify core team
+        if: always()
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        with:
+          job_name: ${{ format('*Helm {0} release*', inputs.tag) }}
+          url: ${{ secrets.rocketchat-webhook }}
+          type: ${{ job.status }}
+          mention: 'debdut.chakraborty'
+          mention_if: failure
