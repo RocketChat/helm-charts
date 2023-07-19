@@ -24,11 +24,13 @@ jobs:
         id: tag
         shell: bash
         run: |
-          if [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
-            if [[ -z ${{ inputs.tag }} ]]; then
+          event=${{ github.event_name }}
+          if [[ $event == 'workflow_dispatch' ]]; then
+            if [[ -z '${{ inputs.tag }}' ]]; then
               tag=$(curl -s https://releases.rocket.chat/rc/info | jq .tag -r)
-            else
-              [[ -n "$(curl -s https://releases.rocket.chat/${{ inputs.tag }}/info | jq -r '.tag // empty')" ]]
+            elif [[ -z "$(curl -s https://releases.rocket.chat/${{ inputs.tag }}/info | jq -r '.tag // empty')" ]]; then
+              echo "::error::invalid tag ${{ inputs.tag }}"
+              exit 1
             fi
           fi
           echo "tag: $tag"
