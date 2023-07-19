@@ -31,8 +31,12 @@ jobs:
           repository: ${{ env.TESTS_REPO }}
           path: tests
           submodules: true
+
       - name: Setup k3d
-        uses: nolar/setup-k3d-k3s@v1
+        uses: AbsaOSS/k3d-action@main
+        with:
+          cluster-name: helm
+
       - name: Run tests
         shell: bash
         env:
