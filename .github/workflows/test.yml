@@ -28,7 +28,7 @@ jobs:
             if [[ -z ${{ inputs.tag }} ]]; then
               tag=$(curl -s https://releases.rocket.chat/rc/info | jq .tag -r)
             else
-              [[ -n $(curl -s https://releases.rocket.chat/${{ inputs.tag }}/info | jq -r '.tag // empty') ]]
+              [[ -n "$(curl -s https://releases.rocket.chat/${{ inputs.tag }}/info | jq -r '.tag // empty')" ]]
             fi
           fi
           echo "tag: $tag"
