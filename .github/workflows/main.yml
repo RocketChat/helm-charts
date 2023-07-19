@@ -19,7 +19,7 @@ jobs:
   update-release:
     needs:
       - can-chart-run
-    if: '! contains(inputs.tag, "rc")'
+    if: '! contains(inputs.tag, ''rc'')'
     uses: RocketChat/helm-charts/.github/workflows/release.yml@master
     with:
       tag: ${{ inputs.tag }}
