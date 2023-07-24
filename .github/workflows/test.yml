@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        required: false
+        required: true
 
 env: 
   REPO: 'RocketChat/helm-charts'
@@ -20,21 +20,6 @@ jobs:
   can-i-run:
     runs-on: ubuntu-latest
     steps:
-      - name: Get tag
-        id: tag
-        shell: bash
-        run: |
-          event=${{ github.event_name }}
-          if [[ $event == 'workflow_dispatch' ]]; then
-            if [[ -z '${{ inputs.tag }}' ]]; then
-              tag=$(curl -s https://releases.rocket.chat/rc/info | jq .tag -r)
-            elif [[ -z "$(curl -s https://releases.rocket.chat/${{ inputs.tag }}/info | jq -r '.tag // empty')" ]]; then
-              echo "::error::invalid tag ${{ inputs.tag }}"
-              exit 1
-            fi
-          fi
-          echo "tag: $tag"
-          echo "tag=$tag" >>$GITHUB_OUTPUT
       - name: Clone helm chart repository
         uses: actions/checkout@v3
         with:
@@ -56,7 +41,7 @@ jobs:
         shell: bash
         env:
           ROCKETCHAT_MAX_ATTEMPTS: 250
-          ROCKETCHAT_TAG: ${{ steps.tag.outputs.tag }}
+          ROCKETCHAT_TAG: ${{inputs.tag}}
         run: |
           sudo apt-get install --no-install-recommends -y jo jq
           export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
