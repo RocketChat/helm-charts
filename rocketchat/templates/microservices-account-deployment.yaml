@@ -60,6 +60,8 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+        securityContext:
+          {{- toYaml .Values.microservices.account.securityContext | nindent 10 }}
         volumeMounts: 
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
