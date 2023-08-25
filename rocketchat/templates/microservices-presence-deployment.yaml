@@ -31,6 +31,10 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
+      {{- if .Values.podAccountAnnotations }}
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       containers:
       - name: presence-service
