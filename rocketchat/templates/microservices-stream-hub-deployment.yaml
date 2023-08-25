@@ -31,7 +31,7 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
-      {{- if .Values.podAccountAnnotations }}
+      {{- if .Values.podStreamHubAnnotations }}
       annotations:
 {{ toYaml .Values.podAnnotations | indent 8 }}
       {{- end }}
