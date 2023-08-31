@@ -4,6 +4,7 @@ name: Force update helm chart
 
 on:
   workflow_dispatch:
+    inputs:
 
 jobs:
   is-chart-working:
@@ -39,16 +40,6 @@ jobs:
           export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
           cd tests &&
             bash run_k8s.bash
-
-      - name: Notify core team
-        if: always()
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        with:
-          job_name: '*Helm chart ${{ steps.prepare.outputs.version }} tests*'
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
-          type: ${{ job.status }}
-          mention: 'debdut.chakraborty'
-          mention_if: failure
 
   update-release:
     needs:
@@ -109,13 +100,3 @@ jobs:
           tag_name: ${{ needs.is-chart-working.outputs.version }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', needs.is-chart-working.outputs.version) }}
           draft: false
-
-      - name: Notify core team
-        if: always()
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        with:
-          job_name: ${{ format('*Helm {0} release*', needs.is-chart-working.outputs.version) }}
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
-          type: ${{ job.status }}
-          mention: 'debdut.chakraborty'
-          mention_if: failure
