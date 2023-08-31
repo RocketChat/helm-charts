@@ -6,6 +6,9 @@ on:
       github-token:
         required: true
     inputs:
+      chartVersion:
+        type: string
+        required: true
       tag:
         type: string
         required: true
@@ -38,7 +41,7 @@ jobs:
         id: version
         run: |
           sed -i -r '/^appVersion:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
-          sed -i -r '/^version:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
+          sed -i -r '/^version:/ s/ .+/ ${{ inputs.chartVersion }}/' ./helm-charts/rocketchat/Chart.yaml
 
       - name: Pull dependencies
         shell: bash
@@ -56,7 +59,7 @@ jobs:
         with:
           add: "rocketchat/Chart.yaml"
           cwd: helm-charts
-          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.chartVersion }} with Rocket.Chat version ${{ inputs.tag }}"
           push: true
 
       - name: Push to gh-pages
@@ -64,18 +67,18 @@ jobs:
         with:
           add: "."
           cwd: gh-pages
-          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.tag }}"
+          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.chartVersion }} with Rocket.Chat version ${{ inputs.tag }}"
           push: true
       
       - name: Create a release with artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ format('./gh-pages/charts/rocketchat-{0}.tgz', inputs.tag) }}
+          files: ${{ format('./gh-pages/charts/rocketchat-{0}.tgz', inputs.chartVersion) }}
           prerelease: false
           repository: ${{ env.REPO }}
           token: ${{ secrets.github-token }}
-          name: ${{ inputs.tag }}
-          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.chartVersion }}
+          tag_name: ${{ inputs.chartVersion }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
           draft: false
 
