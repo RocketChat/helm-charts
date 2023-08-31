@@ -9,6 +9,9 @@ on:
       tag:
         required: true
         type: string
+      chartVersion:
+        required: false
+        type: string
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -28,6 +31,13 @@ jobs:
       - id: set-chart-version
         shell: bash
         run: |
+          chart_version="${{ inputs.chartVersion}}"
+          if [[ -n "$chart_version" ]]; then
+            echo "chart-version=$chart_version" >>$GITHUB_OUTPUT
+            echo "run=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           chart_version="$(awk '/^version:/ {print $2}' rocketchat/Chart.yaml)"
           [[ -n "$chart_version" ]]
           app_version="$(awk '/^appVersion:/ {print $2}' rocketchat/Chart.yaml)"
