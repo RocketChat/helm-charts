@@ -81,13 +81,3 @@ jobs:
           tag_name: ${{ inputs.chartVersion }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
           draft: false
-
-      - name: Notify core team
-        if: always()
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        with:
-          job_name: ${{ format('*Helm {0} release*', inputs.tag) }}
-          url: ${{ secrets.rocketchat-webhook }}
-          type: ${{ job.status }}
-          mention: 'debdut.chakraborty'
-          mention_if: failure
