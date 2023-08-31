@@ -10,6 +10,8 @@ on:
     inputs:
       tag:
         required: true
+      chartVersion:
+        required: true
 
 env: 
   REPO: 'RocketChat/helm-charts'
@@ -42,6 +44,7 @@ jobs:
         env:
           ROCKETCHAT_MAX_ATTEMPTS: 250
           ROCKETCHAT_TAG: ${{inputs.tag}}
+          HELM_TAG: ${{inputs.chartVersion}}
         run: |
           sudo apt-get install --no-install-recommends -y jo jq
           export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
