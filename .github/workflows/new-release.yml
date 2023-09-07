@@ -25,12 +25,14 @@ jobs:
           tag="${{inputs.tag}}"
           [[ -n "$tag" ]] || tag="$(awk '/^appVersion:/ {print $2}' rocketchat/Chart.yaml)"
           echo "tag=$tag" >>$GITHUB_OUTPUT
+          echo "tag=$tag"
 
           chart_version="${{ inputs.chartVersion }}"
           if [[ -z "$chart_version" ]]; then
             chart_version="$(awk '/^version:/ {print $2}' rocketchat/Chart.yaml)"
             chart_version="$(echo -n "$chart_version" | awk -F. '{print $1"."$2"."$3+1}')"
           fi
+          echo "chart-version=$chart_version"
           echo "chart-version=$chart_version" >>$GITHUB_OUTPUT
 
   run:
