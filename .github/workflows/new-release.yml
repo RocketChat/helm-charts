@@ -38,7 +38,7 @@ jobs:
   run:
     needs:
       - config
-    uses: RocketChat/helm-charts/.github/workflows/main.yml@master
+    uses: ./.github/workflows/main.yml
     with:
       tag: ${{ needs.config.outputs.tag }}
       chartVersion: ${{ needs.config.outputs.chart-version }}
