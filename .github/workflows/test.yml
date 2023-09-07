@@ -6,6 +6,9 @@ on:
       tag:
         type: string
         required: true
+      chartVersion:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       tag:
