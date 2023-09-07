@@ -14,7 +14,7 @@ jobs:
   config:
     runs-on: ubuntu-latest
     outputs:
-      chart-version: ${{ steps.set.outputs.chart_version }}
+      chart-version: ${{ steps.set.outputs.chart-version }}
       tag: ${{ steps.set.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
