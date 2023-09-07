@@ -67,6 +67,7 @@ spec:
         {{- end }}   
         securityContext:
           {{- toYaml .Values.microservices.presence.securityContext | nindent 10 }}
+        resources: {{- toYaml .Values.microservices.account.resources | nindent 10 }}
       volumes:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
@@ -77,3 +78,5 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
 {{- end }}
+
+{{/* vi: ts=8 wt sw=2 smarttab */}}

@@ -284,30 +284,35 @@ microservices:
       repository: rocketchat/presence-service
       pullPolicy: IfNotPresent
     securityContext: {}
+    resources: {}
   ddpStreamer:
     replicas: 1
     image:
       repository: rocketchat/ddp-streamer-service
       pullPolicy: IfNotPresent
     securityContext: {}
+    resources: {}
   account:
     replicas: 1
     image:
       repository: rocketchat/account-service
       pullPolicy: IfNotPresent
     securityContext: {}
+    resources: {}
   authorization:
     replicas: 1
     image:
       repository: rocketchat/authorization-service
       pullPolicy: IfNotPresent
     securityContext: {}
+    resources: {}
   streamHub:
     replicas: 1
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
     securityContext: {}
+    resources: {}
   nats:
     replicas: 1
 
