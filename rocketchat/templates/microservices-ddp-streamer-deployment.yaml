@@ -68,7 +68,7 @@ spec:
         {{- end }}   
         securityContext:
           {{- toYaml .Values.microservices.ddpStreamer.securityContext | nindent 10 }}
-        resources: {{- toYaml .Values.microservices.account.resources | nindent 10 }}
+        resources: {{- toYaml .Values.microservices.ddpStreamer.resources | nindent 10 }}
       volumes:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
