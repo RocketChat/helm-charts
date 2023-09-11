@@ -48,6 +48,12 @@ extraVolumeMounts:
   #   name: usr-certs
   #   readOnly: true
 
+# -- Containers, which are run before the app containers are started.
+extraInitContainers: []
+  # - name: init-myservice
+  #   image: busybox
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
 
