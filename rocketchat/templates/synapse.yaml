@@ -1,0 +1,130 @@
+{{ if .Values.federation.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rocketchat.fullname" . }}-synapse
+data:
+  homeserver.append.yaml: |
+    app_service_config_files:
+      - /registration.yaml
+
+    retention:
+      enabled: true
+
+    enable_registration: true
+    enable_registration_without_verification: true
+    suppress_key_server_warning: true
+
+    allow_public_rooms_without_auth: true
+    allow_public_rooms_over_federation: true
+
+  registration.yaml: |
+    id: rocketchat_{{ randAlphaNum 14 | b64enc }}
+    hs_token: {{ randAlphaNum 26 | b64enc | quote }}
+    as_token: {{ randAlphaNum 26 | b64enc | quote }}
+    url: http://{{ template "rocketchat.fullname" . }}-bridge:3300
+    sender_localpart: rocket.cat
+    namespaces:
+      users:
+        - exclusive: false
+          regex: .*
+      rooms:
+        - exclusive: false
+          regex: .*
+      aliases:
+        - exclusive: false
+          regex: .*
+    de.sorunome.msc2409.push_ephemeral: false
+    rocketchat:
+      homeserver_url: http://{{ template "rocketchat.fullname" . }}-synapse:8008 
+      homeserver_domain: {{ .Values.host }}
+---
+apiVersion: {{ template "deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: generate
+          image: matrixdotorg/synapse:v1.78.0
+          volumeMounts:
+          - name: data
+            mountPath: /data
+          command: ["/start.py", 'generate']
+          env:
+            - name: SYNAPSE_SERVER_NAME
+              value: {{ .Values.host }}
+            - name: SYNAPSE_REPORT_STATS
+              value: 'no'
+        - name: append
+          image: matrixdotorg/synapse:v1.78.0
+          volumeMounts:
+          - name: data
+            mountPath: /data
+          - name: config
+            mountPath: /homeserver.append.yaml
+            subPath: homeserver.append.yaml
+          command:
+            - sh
+            - -c
+            - 'echo >> /data/homeserver.yaml && cat /homeserver.append.yaml >> /data/homeserver.yaml'
+      containers:
+      - image: matrixdotorg/synapse:v1.78.0
+        name: synapse
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: config
+          mountPath: /registration.yaml
+          subPath: registration.yaml
+        ports:
+          - containerPort: 8008
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "rocketchat.fullname" . }}-synapse
+      - name: data
+        {{- if .Values.federation.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.federation.persistence.existingClaim }}{{ .Values.federation.persistence.existingClaim }}{{- else }}{{ template "rocketchat.fullname" . }}-synapse {{- end }} 
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8008
+    targetPort: 8008
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{ end }}

@@ -48,3 +48,25 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{ if .Values.federation.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-bridge
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-bridge
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 3300
+    targetPort: 3300
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{end}}

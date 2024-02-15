@@ -334,3 +334,6 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+
+federation:
+  enabled: false

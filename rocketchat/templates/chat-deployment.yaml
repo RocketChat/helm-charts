@@ -143,6 +143,10 @@ spec:
 {{- with .Values.extraEnv }}
 	{{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
 {{- end }}
+        {{- if .Values.federation.enabled }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
+          value: {{ .Values.host }}
+        {{end}}
         ports:
         - name: http
           containerPort: 3000
@@ -179,6 +183,10 @@ spec:
           mountPath: /app/uploads
         - name: tmp
           mountPath: /tmp
+        {{- if .Values.federation.enabled }}
+        - name: registration-config
+          mountPath: /app/matrix-federation-config
+        {{ end}}
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
         {{- end }}          
@@ -191,6 +199,11 @@ spec:
           claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "rocketchat.fullname" . }}{{- end }}
       {{- else }}
         emptyDir: {}
+      {{- if .Values.federation.enabled }}
+      - name: registration-config
+        configMap:
+          name: {{ template "rocketchat.fullname" . }}-synapse
+      {{end}}
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
