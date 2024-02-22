@@ -337,3 +337,11 @@ nats:
 
 federation:
   enabled: false
+  persistence:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+

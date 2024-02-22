@@ -127,4 +127,29 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
     app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if (and .Values.federation.persistence.enabled (not .Values.federation.persistence.existingClaim)) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+spec:
+  {{- if .Values.federation.persistence.storageClassName }}
+  storageClassName: {{ .Values.federation.persistence.storageClassName }}
+  {{ end }}
+  accessModes:
+    {{- range .Values.federation.persistence.accessModes }}
+    - {{ . }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.federation.persistence.resources.requests.storage | default "10Gi" }}
+{{- end -}}
 {{ end }}
