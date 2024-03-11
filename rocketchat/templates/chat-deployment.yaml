@@ -56,6 +56,11 @@ spec:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.extraSecret.enabled }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.extraSecret.name }}
+        {{- end }}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
