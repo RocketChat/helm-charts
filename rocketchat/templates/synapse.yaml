@@ -1,9 +1,17 @@
 {{ if .Values.federation.enabled }}
+{{- $hs_token := randAlphaNum 26 | b64enc | quote -}}
+{{- $as_token := randAlphaNum 24 | b64enc | quote -}}
+{{- $bridge_url :=  printf "http://%s-bridge:3300" (include "rocketchat.fullname" .) -}}
+{{- $id := randAlphaNum 14 | b64enc | printf "rocketchat_%s" -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "rocketchat.fullname" . }}-synapse
 data:
+  as_token: {{ $as_token }}
+  hs_token: {{ $hs_token }}
+  bridge_url: {{ $bridge_url }}
+  appservice_id: {{ $id }}
   homeserver.append.yaml: |
     app_service_config_files:
       - /registration.yaml
@@ -19,10 +27,10 @@ data:
     allow_public_rooms_over_federation: true
 
   registration.yaml: |
-    id: rocketchat_{{ randAlphaNum 14 | b64enc }}
-    hs_token: {{ randAlphaNum 26 | b64enc | quote }}
-    as_token: {{ randAlphaNum 26 | b64enc | quote }}
-    url: http://{{ template "rocketchat.fullname" . }}-bridge:3300
+    id: {{ $id }}
+    hs_token: {{ $hs_token }}
+    as_token: {{ $as_token }}
+    url: {{ $bridge_url }}
     sender_localpart: rocket.cat
     namespaces:
       users:
@@ -35,9 +43,6 @@ data:
         - exclusive: false
           regex: .*
     de.sorunome.msc2409.push_ephemeral: false
-    rocketchat:
-      homeserver_url: http://{{ template "rocketchat.fullname" . }}-synapse:8008 
-      homeserver_domain: {{ .Values.host }}
 ---
 apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
