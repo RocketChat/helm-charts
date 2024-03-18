@@ -1,4 +1,4 @@
-{{ if .Values.federation.enabled }}
+{{ if (and (and .Values.federation.enabled .Values.ingress.federation.serveWellKnown) (ne .Values.ingress.ingressClassName "nginx")) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

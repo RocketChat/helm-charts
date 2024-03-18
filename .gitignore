@@ -10,3 +10,5 @@ Values.yaml
 
 
 **/.vim/
+cert-issuer.yaml
+pvc.yaml

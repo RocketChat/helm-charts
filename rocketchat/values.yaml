@@ -194,6 +194,8 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  federation:
+    serveWellKnown: false # if false, rocket.chat will handle the response
 
 service:
   annotations: {}

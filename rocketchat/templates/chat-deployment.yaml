@@ -149,7 +149,11 @@ spec:
         - name: OVERWRITE_SETTING_Federation_Matrix_enabled
           value: "true"
         - name: OVERWRITE_SETTING_serve_well_known
-          value: "false" {{/* TODO: prefer this over lighttpd */}}
+          {{- if not .Values.ingress.federation.serveWellKnown }}
+          value: "true"
+          {{- else }}
+          value: "false"
+          {{- end }}
         - name: OVERWRITE_SETTING_id
           valueFrom:
             configMapKeyRef:
