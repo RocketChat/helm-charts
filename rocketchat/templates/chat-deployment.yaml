@@ -148,35 +148,35 @@ spec:
           value: {{ .Values.host }}
         - name: OVERWRITE_SETTING_Federation_Matrix_enabled
           value: "true"
-        - name: OVERWRITE_SETTING_serve_well_known
+        - name: OVERWRITE_SETTING_Federation_Matrix_serve_well_known
           {{- if not .Values.ingress.federation.serveWellKnown }}
           value: "true"
           {{- else }}
           value: "false"
           {{- end }}
-        - name: OVERWRITE_SETTING_id
+        - name: OVERWRITE_SETTING_Federation_Matrix_id
           valueFrom:
             configMapKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: appservice_id
-        - name: OVERWRITE_SETTING_hs_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_hs_token
           valueFrom:
             configMapKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: hs_token
-        - name: OVERWRITE_SETTING_as_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_as_token
           valueFrom:
             configMapKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: as_token
-        - name: OVERWRITE_SETTING_bridge_url
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_url
           valueFrom:
             configMapKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: bridge_url
-        - name: OVERWRITE_SETTING_homeserver_url
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
           value: {{ template "rocketchat.fullname" . }}-synapse:8008
-        - name: OVERWRITE_SETTING_bridge_localpart
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
           value: "rocket.cat"
         {{end}}
         ports:
