@@ -104,37 +104,39 @@ spec:
         - name: append
           image: matrixdotorg/synapse:v1.78.0
           env:
-            - name: HOMESERVER_APPEND_FILE
-              value: /homeserver.append.yaml
-              {{- if .Values.federation.extraConfigSecretName }}
             - name: HOMESERVER_EXTRA_CONFIG
-              value: /homeserver.extra.yaml
-              {{- end }}
+              value: /__homeserver.append.yaml
           volumeMounts:
           - name: scripts
             mountPath: /scripts
           - name: data
             mountPath: /data
           - name: config
-            mountPath: /homeserver.append.yaml
+            mountPath: /__homeserver.append.yaml
             subPath: homeserver.append.yaml
-          {{- if .Values.federation.extraConfigSecretName }}
-          - name: extraConfig
-            mountPath: /homeserver.extra.yaml
-            subPath: homeserver.extra.yaml 
-          {{- end }}
           command:
             - sh
             - /scripts/updateSynapseHomeserverConfig.sh
       containers:
       - image: matrixdotorg/synapse:v1.78.0
         name: synapse
+        env:
+          {{- if .Values.federation.extraConfigSecretName }}
+          - name: HOMESERVER_EXTRA_CONFIG
+            value: /homeserver.extra.yaml
+        command:
+          - sh
+          - /scripts/updateSynapseHomeserverConfig.sh
+          - --start
+          {{- end }}
         volumeMounts:
         - name: data
           mountPath: /data
         - name: config
           mountPath: /registration.yaml
           subPath: registration.yaml
+        - name: scripts
+          mountPath: /scripts
         ports:
           - containerPort: 8008
       volumes:
