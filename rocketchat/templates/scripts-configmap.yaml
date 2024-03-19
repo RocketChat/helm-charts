@@ -57,8 +57,8 @@ data:
       # local type="${1^^}"
       local type="$(printf "%s" "$1" | tr '[[:lower]]' '[[:upper:]]')"
       local file="$2"
-      local start="@@@ $type START @@@"
-      local end="@@@ $type END @@@"
+      local start="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) START @@@"
+      local end="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) END @@@"
 
       local l1="$(awk "/$start/ {print NR; exit}" "$file")"
       local l2="$(awk "/$end/ {print NR; exit}" "$file")"
@@ -71,7 +71,7 @@ data:
     }
 
     remove_extra_config() {
-      _remove_block "extra config" "HOMESERVER_YAML"
+      _remove_block "extra config" "$HOMESERVER"
     }
 
     add_extra_config() {

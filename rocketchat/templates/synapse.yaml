@@ -121,7 +121,7 @@ spec:
       - image: matrixdotorg/synapse:v1.78.0
         name: synapse
         env:
-          {{- if .Values.federation.extraConfigSecretName }}
+          {{- if .Values.federation.extraConfigSecret }}
           - name: HOMESERVER_EXTRA_CONFIG
             value: /homeserver.extra.yaml
         command:
@@ -137,6 +137,11 @@ spec:
           subPath: registration.yaml
         - name: scripts
           mountPath: /scripts
+        {{- with .Values.federation.extraConfigSecret }}
+        - name: extraConfig
+          mountPath: /homeserver.extra.yaml
+          subPath: {{ .key | quote }}
+        {{- end }}
         ports:
           - containerPort: 8008
       volumes:
@@ -146,10 +151,10 @@ spec:
       - name: config
         secret:
           secretName: {{ template "rocketchat.fullname" . }}-synapse
-      {{- with .Values.federation.extraConfigSecretName }}
+      {{- with .Values.federation.extraConfigSecret }}
       - name: extraConfig
         secret:
-          secretName: {{ . | quote }}
+          secretName: {{ .name | quote }}
       {{- end }}
       - name: data
         {{- if .Values.federation.persistence.enabled }}
