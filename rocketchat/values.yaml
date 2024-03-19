@@ -338,6 +338,10 @@ nats:
     image: nats:2.4-alpine
 
 federation:
+  image:
+    repository:
+    registry:
+    tag:
   enabled: false
   persistence:
     enabled: false
@@ -347,3 +351,5 @@ federation:
       requests:
         storage: 10Gi
 
+postgresql:
+  enabled: true

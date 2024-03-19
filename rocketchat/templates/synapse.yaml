@@ -4,10 +4,11 @@
 {{- $bridge_url :=  printf "http://%s-bridge:3300" (include "rocketchat.fullname" .) -}}
 {{- $id := randAlphaNum 14 | b64enc | printf "rocketchat_%s" -}}
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: {{ include "rocketchat.fullname" . }}-synapse
-data:
+
+stringData:
   as_token: {{ $as_token }}
   hs_token: {{ $hs_token }}
   bridge_url: {{ $bridge_url }}
@@ -25,6 +26,28 @@ data:
 
     allow_public_rooms_without_auth: true
     allow_public_rooms_over_federation: true
+
+  {{- if .Values.postgresql.enabled }}
+
+  {{- if (not (and (include "postgresql.v1.createSecret" .Subcharts.postgresql) .Values.federation.extraConfigSecretName) }}
+  {{- fail "postgres password must be in values.yaml or passed through federation.extraConfigSecretName" }}
+  {{- end }}
+
+    {{- if not (include "postgresql.v1.createSecret" .Subcharts.postgresql) }}
+    database:
+      name: psycopg2
+      args:
+        {{- if .Values.postgresql.auth.enabled }}
+        user: {{ include "postgresql.v1.username" .Subcharts.postgresql }}
+        password: {{ .Values.postgresql.auth.password }} {{/* FIXME(debdut): this needs to be better, https://github.com/bitnami/charts/blob/8edf559ce9db3515aad61f5c8cb261b1c19bc93a/bitnami/postgresql/templates/secrets.yaml#L23 */}}
+        {{- end }}
+        database: {{ include "postgresql.v1.database" .Subcharts.postgresql }}
+        host: {{ include "postgresql.v1.primary.svc.headless" .Subcharts.postgresql }} 
+        cp_min: 5
+        cp_max: 10
+    {{- end }}
+
+  {{- end }}
 
   registration.yaml: |
     id: {{ $id }}
@@ -80,16 +103,29 @@ spec:
               value: 'no'
         - name: append
           image: matrixdotorg/synapse:v1.78.0
+          env:
+            - name: HOMESERVER_APPEND_FILE
+              value: /homeserver.append.yaml
+              {{- if .Values.federation.extraConfigSecretName }}
+            - name: HOMESERVER_EXTRA_CONFIG
+              value: /homeserver.extra.yaml
+              {{- end }}
           volumeMounts:
+          - name: scripts
+            mountPath: /scripts
           - name: data
             mountPath: /data
           - name: config
             mountPath: /homeserver.append.yaml
             subPath: homeserver.append.yaml
+          {{- if .Values.federation.extraConfigSecretName }}
+          - name: extraConfig
+            mountPath: /homeserver.extra.yaml
+            subPath: homeserver.extra.yaml 
+          {{- end }}
           command:
             - sh
-            - -c
-            - 'echo >> /data/homeserver.yaml && cat /homeserver.append.yaml >> /data/homeserver.yaml'
+            - /scripts/updateSynapseHomeserverConfig.sh
       containers:
       - image: matrixdotorg/synapse:v1.78.0
         name: synapse
@@ -102,9 +138,17 @@ spec:
         ports:
           - containerPort: 8008
       volumes:
-      - name: config
+      - name: scripts
         configMap:
-          name: {{ template "rocketchat.fullname" . }}-synapse
+          name: {{ template "rocketchat.fullname" . }}-scripts
+      - name: config
+        secret:
+          secretName: {{ template "rocketchat.fullname" . }}-synapse
+      {{- with .Values.federation.extraConfigSecretName }}
+      - name: extraConfig
+        secret:
+          secretName: {{ . | quote }}
+      {{- end }}
       - name: data
         {{- if .Values.federation.persistence.enabled }}
         persistentVolumeClaim:

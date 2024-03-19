@@ -39,4 +39,6 @@ data:
       quit(1);
     }
     quit(0);
+  updateSynapseHomeserverConfig.sh: |
+    # TODO
 {{- end }}

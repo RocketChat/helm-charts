@@ -156,22 +156,22 @@ spec:
           {{- end }}
         - name: OVERWRITE_SETTING_Federation_Matrix_id
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: appservice_id
         - name: OVERWRITE_SETTING_Federation_Matrix_hs_token
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: hs_token
         - name: OVERWRITE_SETTING_Federation_Matrix_as_token
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: as_token
         - name: OVERWRITE_SETTING_Federation_Matrix_bridge_url
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: bridge_url
         - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
