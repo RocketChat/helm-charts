@@ -40,6 +40,12 @@ data:
     }
     quit(0);
   updateSynapseHomeserverConfig.sh: |
+    [[ $(basename $SHELL) != "bash" ]] && {
+      echo "must be run in bash"
+      exit 1
+    } || :
+
+    set -x
     _data_dir="${SYNAPSE_DATA_DIR:-/data}"
     _data_dir="${_data_dir%/}"
     _config_dir="${SYNAPSE_CONFIG_DIR:-/data}"
@@ -54,8 +60,8 @@ data:
     }
 
     _remove_block() {
-      # local type="${1^^}"
-      local type="$(printf "%s" "$1" | tr '[[:lower]]' '[[:upper:]]')"
+      local type="${1^^}"
+      #local type="$(printf "%s" "$1" | tr '[[:lower:]]' '[[:upper:]]')"
       local file="$2"
       local start="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) START @@@"
       local end="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) END @@@"
@@ -79,13 +85,13 @@ data:
         printf "\n" >> "$HOMESERVER" 
       fi
 
-      echo "@@@ EXTRA CONFIG START ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@"
+      echo "# @@@ EXTRA CONFIG START ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
       cat "$HOMESERVER_EXTRA_CONFIG" >> "$HOMESERVER"
-      echo "@@@ EXTRA CONFIG END ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@"
+      echo "# @@@ EXTRA CONFIG END ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
     }
 
     hash() {
-      sha256sum "$1" | awk '{ print $2 }'
+      sha256sum "$1" | awk '{ print $1 }'
     }
 
     hash_file() {
@@ -101,6 +107,7 @@ data:
     }
 
     extra_config_current_hash() {
+      [[ -f "$(hash_file "$HOMESERVER_EXTRA_CONFIG")" ]] || return ""
       cat "$(hash_file "$HOMESERVER_EXTRA_CONFIG")"
     }
 

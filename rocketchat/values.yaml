@@ -195,7 +195,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
   federation:
-    serveWellKnown: false # if false, rocket.chat will handle the response
+    serveWellKnown: true # if false, rocket.chat will handle the response
 
 service:
   annotations: {}
@@ -353,3 +353,7 @@ federation:
 
 postgresql:
   enabled: true
+  primary:
+    extraEnvVars:
+      - name: POSTGRES_INITDB_ARGS
+        value: "--lc-collate=C --lc-ctype=C"
