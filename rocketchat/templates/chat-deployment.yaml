@@ -175,7 +175,7 @@ spec:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: bridge_url
         - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
-          value: {{ template "rocketchat.fullname" . }}-synapse:8008
+          value: http://{{ template "rocketchat.fullname" . }}-synapse:8008
         - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
           value: "rocket.cat"
         {{end}}
