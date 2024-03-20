@@ -338,10 +338,11 @@ nats:
     image: nats:2.4-alpine
 
 federation:
+  # host:
   image:
-    repository:
-    registry:
-    tag:
+    repository: matrixdotorg
+    registry: docker.io
+    tag: latest
   enabled: false
   persistence:
     enabled: false
