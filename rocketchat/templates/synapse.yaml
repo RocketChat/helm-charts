@@ -1,4 +1,9 @@
-{{ if .Values.federation.enabled }}
+{{- if .Values.federation.enabled }}
+{{- if not .Values.federation.ignoreRocketChatVersion }} {{/* this can be removed at any point, used just for testing */}}
+{{- if (eq (semver "6.6.4" | (semver .Chart.AppVersion).Compare) -1) }}
+{{- fail "federation must be used with rocket.chat version >= 6.6.4" }}
+{{- end }}
+{{- end }}
 {{- $hs_token := randAlphaNum 26 | b64enc | quote -}}
 {{- $as_token := randAlphaNum 24 | b64enc | quote -}}
 {{- $bridge_url :=  printf "http://%s-bridge:3300" (include "rocketchat.fullname" .) -}}
