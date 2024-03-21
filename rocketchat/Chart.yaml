@@ -7,6 +7,10 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 13.x.x
     condition: mongodb.enabled
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: x.x.x
+    condition: postgresql.enabled
   - name: nats
     repository: https://nats-io.github.io/k8s/helm/charts
     version: 0.15.x

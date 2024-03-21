@@ -198,6 +198,8 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  federation:
+    serveWellKnown: true # if false, rocket.chat will handle the response
 
 service:
   annotations: {}
@@ -338,3 +340,25 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+
+federation:
+  # host:
+  image:
+    repository: matrixdotorg
+    registry: docker.io
+    tag: latest
+  enabled: false
+  persistence:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+postgresql:
+  enabled: true
+  primary:
+    extraEnvVars:
+      - name: POSTGRES_INITDB_ARGS
+        value: "--lc-collate=C --lc-ctype=C"
