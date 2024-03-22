@@ -1,4 +1,4 @@
-{{ if and .Values.federation.enabled .Values.ingress.federation.serveWellKnown) }}
+{{ if and .Values.federation.enabled .Values.ingress.federation.serveWellKnown }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
