@@ -59,7 +59,7 @@ spec:
             port:
               name: http
       {{- end }}
-      {{ if and .Values.federation.enabled .Values.ingress.federation.serveWellKnown) }}
+      {{ if and .Values.federation.enabled .Values.ingress.federation.serveWellKnown }}
       - path: /.well-known/matrix/server
         pathType: Prefix
         backend:
