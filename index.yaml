@@ -3,7 +3,46 @@ entries:
   rocketchat:
   - apiVersion: v2
     appVersion: 6.6.5
-    created: "2024-03-22T17:57:33.964737239Z"
+    created: "2024-03-25T05:28:08.009695165Z"
+    dependencies:
+    - condition: mongodb.enabled
+      name: mongodb
+      repository: https://charts.bitnami.com/bitnami
+      version: 13.x.x
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 15.x.x
+    - condition: microservices.enabled
+      name: nats
+      repository: https://nats-io.github.io/k8s/helm/charts
+      version: 0.15.x
+    description: Prepare to take off with the ultimate chat platform, experience the
+      next level of team communications
+    digest: 9794cbd71f04a2986f1490dbd37b5b85a87da33769a4df6ce591e58ad8245a83
+    home: https://rocket.chat/
+    icon: https://raw.githubusercontent.com/RocketChat/Rocket.Chat.Artwork/master/Logos/icon.svg
+    keywords:
+    - chat
+    - communication
+    - http
+    - web
+    - application
+    - nodejs
+    - javascript
+    - meteor
+    maintainers:
+    - email: cloud@rocket.chat
+      name: RocketChat
+    name: rocketchat
+    sources:
+    - https://github.com/RocketChat/Docker.Official.Image/
+    urls:
+    - charts/rocketchat-6.8.1.tgz
+    version: 6.8.1
+  - apiVersion: v2
+    appVersion: 6.6.5
+    created: "2024-03-25T05:28:07.998392275Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -42,7 +81,7 @@ entries:
     version: 6.8.0
   - apiVersion: v2
     appVersion: 6.6.5
-    created: "2024-03-22T17:57:33.948900974Z"
+    created: "2024-03-25T05:28:07.987508735Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -77,7 +116,7 @@ entries:
     version: 6.7.8
   - apiVersion: v2
     appVersion: 6.6.4
-    created: "2024-03-22T17:57:33.941343897Z"
+    created: "2024-03-25T05:28:07.980527023Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -112,7 +151,7 @@ entries:
     version: 6.7.7
   - apiVersion: v2
     appVersion: 6.6.3
-    created: "2024-03-22T17:57:33.929248358Z"
+    created: "2024-03-25T05:28:07.974332237Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -147,7 +186,7 @@ entries:
     version: 6.7.6
   - apiVersion: v2
     appVersion: 6.6.2
-    created: "2024-03-22T17:57:33.919778595Z"
+    created: "2024-03-25T05:28:07.96695829Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -182,7 +221,7 @@ entries:
     version: 6.7.5
   - apiVersion: v2
     appVersion: 6.5.4
-    created: "2024-03-22T17:57:33.912919578Z"
+    created: "2024-03-25T05:28:07.960091122Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -217,7 +256,7 @@ entries:
     version: 6.6.5
   - apiVersion: v2
     appVersion: 6.6.1
-    created: "2024-03-22T17:57:33.905380719Z"
+    created: "2024-03-25T05:28:07.95313148Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -252,7 +291,7 @@ entries:
     version: 6.6.4
   - apiVersion: v2
     appVersion: 6.6.0
-    created: "2024-03-22T17:57:33.896318527Z"
+    created: "2024-03-25T05:28:07.946931124Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -287,7 +326,7 @@ entries:
     version: 6.6.3
   - apiVersion: v2
     appVersion: 6.5.3
-    created: "2024-03-22T17:57:33.889494535Z"
+    created: "2024-03-25T05:28:07.9398801Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -322,7 +361,7 @@ entries:
     version: 6.5.3
   - apiVersion: v2
     appVersion: 6.4.4
-    created: "2024-03-22T17:57:33.883015611Z"
+    created: "2024-03-25T05:28:07.932907941Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -357,7 +396,7 @@ entries:
     version: 6.4.4
   - apiVersion: v2
     appVersion: 6.3.4
-    created: "2024-03-22T17:57:33.87624022Z"
+    created: "2024-03-25T05:28:07.926062129Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -392,7 +431,7 @@ entries:
     version: 6.4.1
   - apiVersion: v2
     appVersion: 6.3.3
-    created: "2024-03-22T17:57:33.869456985Z"
+    created: "2024-03-25T05:28:07.919086731Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -427,7 +466,7 @@ entries:
     version: 6.4.0
   - apiVersion: v2
     appVersion: 6.3.4
-    created: "2024-03-22T17:57:33.862583731Z"
+    created: "2024-03-25T05:28:07.912946487Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -462,7 +501,7 @@ entries:
     version: 6.3.4
   - apiVersion: v2
     appVersion: 6.3.3
-    created: "2024-03-22T17:57:33.856220372Z"
+    created: "2024-03-25T05:28:07.905310217Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -497,7 +536,7 @@ entries:
     version: 6.3.3
   - apiVersion: v2
     appVersion: 6.3.2
-    created: "2024-03-22T17:57:33.849233053Z"
+    created: "2024-03-25T05:28:07.897988352Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -532,7 +571,7 @@ entries:
     version: 6.3.2
   - apiVersion: v2
     appVersion: 6.3.1
-    created: "2024-03-22T17:57:33.842493033Z"
+    created: "2024-03-25T05:28:07.891329427Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -567,7 +606,7 @@ entries:
     version: 6.3.1
   - apiVersion: v2
     appVersion: 6.3.0
-    created: "2024-03-22T17:57:33.835479964Z"
+    created: "2024-03-25T05:28:07.885371564Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -602,7 +641,7 @@ entries:
     version: 6.3.0
   - apiVersion: v2
     appVersion: 6.2.12
-    created: "2024-03-22T17:57:33.813667594Z"
+    created: "2024-03-25T05:28:07.864881708Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -637,7 +676,7 @@ entries:
     version: 6.2.12
   - apiVersion: v2
     appVersion: 6.2.11
-    created: "2024-03-22T17:57:33.805843411Z"
+    created: "2024-03-25T05:28:07.858967407Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -672,7 +711,7 @@ entries:
     version: 6.2.11
   - apiVersion: v2
     appVersion: 6.2.10
-    created: "2024-03-22T17:57:33.799750287Z"
+    created: "2024-03-25T05:28:07.852287039Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -707,7 +746,7 @@ entries:
     version: 6.2.10
   - apiVersion: v2
     appVersion: 6.2.9
-    created: "2024-03-22T17:57:33.829359459Z"
+    created: "2024-03-25T05:28:07.878593713Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -742,7 +781,7 @@ entries:
     version: 6.2.9
   - apiVersion: v2
     appVersion: 6.2.4
-    created: "2024-03-22T17:57:33.821048445Z"
+    created: "2024-03-25T05:28:07.87199142Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -777,7 +816,7 @@ entries:
     version: 6.2.4
   - apiVersion: v2
     appVersion: 6.2.1
-    created: "2024-03-22T17:57:33.791834963Z"
+    created: "2024-03-25T05:28:07.845716024Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -812,7 +851,7 @@ entries:
     version: 6.2.1
   - apiVersion: v2
     appVersion: 6.1.5
-    created: "2024-03-22T17:57:33.784299406Z"
+    created: "2024-03-25T05:28:07.839299748Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -847,7 +886,7 @@ entries:
     version: 6.1.5
   - apiVersion: v2
     appVersion: 6.1.2
-    created: "2024-03-22T17:57:33.776652207Z"
+    created: "2024-03-25T05:28:07.832830328Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -882,7 +921,7 @@ entries:
     version: 6.1.2
   - apiVersion: v2
     appVersion: 5.4.3
-    created: "2024-03-22T17:57:33.770634113Z"
+    created: "2024-03-25T05:28:07.826725801Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -917,7 +956,7 @@ entries:
     version: 5.4.3
   - apiVersion: v2
     appVersion: 5.3.2
-    created: "2024-03-22T17:57:33.753738717Z"
+    created: "2024-03-25T05:28:07.815905761Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -952,7 +991,7 @@ entries:
     version: 5.3.2
   - apiVersion: v2
     appVersion: 5.3.1
-    created: "2024-03-22T17:57:33.744993019Z"
+    created: "2024-03-25T05:28:07.810808457Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -987,7 +1026,7 @@ entries:
     version: 5.3.1
   - apiVersion: v2
     appVersion: 5.2.0
-    created: "2024-03-22T17:57:33.738530125Z"
+    created: "2024-03-25T05:28:07.805097335Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1022,7 +1061,7 @@ entries:
     version: 5.2.0
   - apiVersion: v2
     appVersion: 5.1.0
-    created: "2024-03-22T17:57:33.73273402Z"
+    created: "2024-03-25T05:28:07.799344417Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1057,7 +1096,7 @@ entries:
     version: 5.1.0
   - apiVersion: v2
     appVersion: 4.8.2
-    created: "2024-03-22T17:57:33.72708853Z"
+    created: "2024-03-25T05:28:07.794211487Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1092,7 +1131,7 @@ entries:
     version: 4.8.2
   - apiVersion: v2
     appVersion: 4.7.4
-    created: "2024-03-22T17:57:33.721291942Z"
+    created: "2024-03-25T05:28:07.788402782Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1127,7 +1166,7 @@ entries:
     version: 4.7.4
   - apiVersion: v2
     appVersion: 4.7.2
-    created: "2024-03-22T17:57:33.7155091Z"
+    created: "2024-03-25T05:28:07.782646841Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1162,7 +1201,7 @@ entries:
     version: 4.7.2
   - apiVersion: v2
     appVersion: 4.7.0
-    created: "2024-03-22T17:57:33.709679118Z"
+    created: "2024-03-25T05:28:07.777562933Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1197,7 +1236,7 @@ entries:
     version: 4.7.0
   - apiVersion: v2
     appVersion: 4.6.1
-    created: "2024-03-22T17:57:33.704578411Z"
+    created: "2024-03-25T05:28:07.77184222Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1232,7 +1271,7 @@ entries:
     version: 4.6.1
   - apiVersion: v2
     appVersion: 4.6.0
-    created: "2024-03-22T17:57:33.697814205Z"
+    created: "2024-03-25T05:28:07.766293601Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1267,7 +1306,7 @@ entries:
     version: 4.6.0
   - apiVersion: v2
     appVersion: 4.5.4
-    created: "2024-03-22T17:57:33.689015232Z"
+    created: "2024-03-25T05:28:07.76126679Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1298,7 +1337,7 @@ entries:
     version: 4.5.4
   - apiVersion: v2
     appVersion: 4.5.2
-    created: "2024-03-22T17:57:33.684690328Z"
+    created: "2024-03-25T05:28:07.7568051Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1329,7 +1368,7 @@ entries:
     version: 4.5.2
   - apiVersion: v2
     appVersion: 4.5.1
-    created: "2024-03-22T17:57:33.679944225Z"
+    created: "2024-03-25T05:28:07.752849202Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1360,7 +1399,7 @@ entries:
     version: 4.5.1
   - apiVersion: v2
     appVersion: 4.5.0
-    created: "2024-03-22T17:57:33.675909894Z"
+    created: "2024-03-25T05:28:07.748120733Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1391,7 +1430,7 @@ entries:
     version: 4.5.0
   - apiVersion: v2
     appVersion: 4.4.2
-    created: "2024-03-22T17:57:33.671225118Z"
+    created: "2024-03-25T05:28:07.743245772Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1422,7 +1461,7 @@ entries:
     version: 4.4.2
   - apiVersion: v2
     appVersion: 4.4.1
-    created: "2024-03-22T17:57:33.666634796Z"
+    created: "2024-03-25T05:28:07.738805107Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1453,7 +1492,7 @@ entries:
     version: 4.4.1
   - apiVersion: v2
     appVersion: 4.3.2
-    created: "2024-03-22T17:57:33.662650108Z"
+    created: "2024-03-25T05:28:07.734016554Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1484,7 +1523,7 @@ entries:
     version: 4.3.2
   - apiVersion: v2
     appVersion: 4.3.1
-    created: "2024-03-22T17:57:33.658161568Z"
+    created: "2024-03-25T05:28:07.730234361Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1515,7 +1554,7 @@ entries:
     version: 4.3.1
   - apiVersion: v2
     appVersion: 3.18.3
-    created: "2024-03-22T17:57:33.654263492Z"
+    created: "2024-03-25T05:28:07.725358759Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1546,7 +1585,7 @@ entries:
     version: 3.3.0
   - apiVersion: v2
     appVersion: 4.2.1
-    created: "2024-03-22T17:57:33.649595707Z"
+    created: "2024-03-25T05:28:07.721070759Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1577,7 +1616,7 @@ entries:
     version: 3.2.0
   - apiVersion: v2
     appVersion: 3.14.5
-    created: "2024-03-22T17:57:33.64580862Z"
+    created: "2024-03-25T05:28:07.71734982Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1608,7 +1647,7 @@ entries:
     version: 3.1.0
   - apiVersion: v2
     appVersion: 3.11.0
-    created: "2024-03-22T17:57:33.641848536Z"
+    created: "2024-03-25T05:28:07.712840811Z"
     dependencies:
     - name: mongodb
       repository: https://charts.bitnami.com/bitnami
@@ -1638,7 +1677,7 @@ entries:
     version: 3.0.1
   - apiVersion: v1
     appVersion: 3.7.2
-    created: "2024-03-22T17:57:33.640083152Z"
+    created: "2024-03-25T05:28:07.71116097Z"
     dependencies:
     - condition: mongodb.enabled
       name: mongodb
@@ -1667,4 +1706,4 @@ entries:
     urls:
     - charts/rocketchat-3.0.0.tgz
     version: 3.0.0
-generated: "2024-03-22T17:57:33.638098818Z"
+generated: "2024-03-25T05:28:07.70919892Z"
