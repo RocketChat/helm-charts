@@ -80,4 +80,5 @@ jobs:
           name: ${{ inputs.chartVersion }}
           tag_name: ${{ inputs.chartVersion }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
+          generate_release_notes: true
           draft: false
