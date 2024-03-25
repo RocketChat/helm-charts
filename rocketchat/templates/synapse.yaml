@@ -93,8 +93,7 @@ spec:
     spec:
       initContainers:
         - name: generate
-          #image: matrixdotorg/synapse:v1.78.0
-          image: {{ default "docker.io" .Values.federation.image.registry }}/{{ default "matrixdotorg/synapse" .Values.federation.image.repository }}:{{ default "latest" .Values.federation.image.tag }}
+          image: matrixdotorg/synapse:v1.78.0
           volumeMounts:
           - name: data
             mountPath: /data
