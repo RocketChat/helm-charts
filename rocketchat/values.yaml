@@ -358,6 +358,10 @@ federation:
 
 postgresql:
   enabled: true
+  auth:
+    username: rocketchat
+    password: rocketchat
+    database: rocketchat
   primary:
     extraEnvVars:
       - name: POSTGRES_INITDB_ARGS
