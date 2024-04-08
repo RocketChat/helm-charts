@@ -357,7 +357,7 @@ federation:
         storage: 10Gi
 
 postgresql:
-  enabled: true
+  enabled: false
   auth:
     username: rocketchat
     password: rocketchat

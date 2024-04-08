@@ -138,7 +138,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `federation.image.registry`            | Image registry to use for federation image, defaults to `docker.io`
 | `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
 | `federation.persistence.enabled`       | Enabling persistence for matrix pod
-| `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to true, if false, uses sqlite
+| `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
@@ -235,6 +235,14 @@ ingress:
         - <rocket.chat domain>
         - <matrix domain>
 ```
+
+For production, postgres is recommended. Enabled postgres
+```yaml
+postgresql:
+  enabled: true
+```
+
+For more details on configs, check [postgresql chart](https://artifacthub.io/packages/helm/bitnami/postgresql).
 
 Since TLS is required, also make sure you have something like cert-manager is running on your cluster, and you add the annotations to the ingress with `ingress.annotations` (or whatever is the recommended way for your certificate issuer).
 
