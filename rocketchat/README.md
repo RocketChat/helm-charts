@@ -71,6 +71,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `smtp.host`                            | Hostname of the SMTP server                                                                                                                                                                                                                                                                                                                                                                                                                                    | `""`                               |
 | `smtp.port`                            | Port of the SMTP server                                                                                                                                                                                                                                                                                                                                                                                                                                        | `587`                              |
 | `extraEnv`                             | Extra environment variables for Rocket.Chat. Used with `tpl` function, so this needs to be a string                                                                                                                                                                                                                                                                                                                                                            | `""`                               |
+| `extraSecret`                             | An already existing secret to be used by chat deployment. It needs to be a string                                                                                                                                                                                                                                                                                                                                                            | `""`                               |
 | `extraVolumes`                         | Extra volumes allowing inclusion of certificates or any sort of file that might be required (see bellow)                                                                                                                                                                                                                                                                                                                                                       | `[]`                               |
 | `extraVolumeMounts`                    | Where the aforementioned extra volumes should be mounted inside the container                                                                                                                                                                                                                                                                                                                                                                                  | `[]`                               |
 | `podAntiAffinity`                      | Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node. The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided. The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node. The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured. | `""`                               |
@@ -131,6 +132,13 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `podDisruptionBudget.enabled`          | Enable or disable PDB for RC deployment                                                                                                                                                                                                                                                                                                                                                                                                                        | `true`                             |
 | `podLabels`                            | Additional pod labels for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                                 | `{}`                               |
 | `podAnnotations`                       | Additional pod annotations for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                            | `{}`                               |
+| `federation.enabled`                   | Enable Rocket.Chat federation (through matrix) 
+| `federation.host`                      | FQDN for your matrix instance
+| `federation.image.repository`          | Image repository to use for federation image, defaults to `matrixdotorg`
+| `federation.image.registry`            | Image registry to use for federation image, defaults to `docker.io`
+| `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
+| `federation.persistence.enabled`       | Enabling persistence for matrix pod
+| `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
@@ -205,6 +213,38 @@ data:
   mongo-oplog-uri: mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 ```
 
+## Federation
+
+You can enable federation by setting `federation.enabled` to true.
+
+You need to make sure you have two domains, one for rocket.chat another for matrix.
+
+```yaml
+host: <rocket.chat domain>
+federation:
+    host: <matrix domain>
+```
+
+Add the domains to ingress tls config
+
+```yaml
+ingress:
+  tls:
+    - secretName: <some secret>
+      hosts:
+        - <rocket.chat domain>
+        - <matrix domain>
+```
+
+For production, postgres is recommended. Enabled postgres
+```yaml
+postgresql:
+  enabled: true
+```
+
+For more details on configs, check [postgresql chart](https://artifacthub.io/packages/helm/bitnami/postgresql).
+
+Since TLS is required, also make sure you have something like cert-manager is running on your cluster, and you add the annotations to the ingress with `ingress.annotations` (or whatever is the recommended way for your certificate issuer).
 
 ## Upgrading
 

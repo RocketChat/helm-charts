@@ -8,3 +8,7 @@ Values.yaml
 .idea/
 **/.DS_Store
 
+
+**/.vim/
+cert-issuer.yaml
+pvc.yaml

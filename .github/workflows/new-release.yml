@@ -1,0 +1,46 @@
+name: New chart release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Rocket.Chat tag to use for the release (default current app version)"
+        required: false
+      chartVersion:
+        description: "Chart version to use for the release (default patch increment)"
+        required: false
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      chart-version: ${{ steps.set.outputs.chart-version }}
+      tag: ${{ steps.set.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - shell: bash
+        id: set
+        run: |
+          tag="${{inputs.tag}}"
+          [[ -n "$tag" ]] || tag="$(awk '/^appVersion:/ {print $2}' rocketchat/Chart.yaml)"
+          echo "tag=$tag" >>$GITHUB_OUTPUT
+          echo "tag=$tag"
+
+          chart_version="${{ inputs.chartVersion }}"
+          if [[ -z "$chart_version" ]]; then
+            chart_version="$(awk '/^version:/ {print $2}' rocketchat/Chart.yaml)"
+            chart_version="$(echo -n "$chart_version" | awk -F. '{print $1"."$2"."$3+1}')"
+          fi
+          echo "chart-version=$chart_version"
+          echo "chart-version=$chart_version" >>$GITHUB_OUTPUT
+
+  run:
+    needs:
+      - config
+    uses: ./.github/workflows/main.yml
+    with:
+      tag: ${{ needs.config.outputs.tag }}
+      chartVersion: ${{ needs.config.outputs.chart-version }}
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}

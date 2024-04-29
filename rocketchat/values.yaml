@@ -28,6 +28,10 @@ extraEnv:
   # - name: MONGO_OPLOG_URL
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
+# Extra secret for Rocket.Chat, uncomment to use
+# Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
+# extraSecret: "some-secret"
+  
 # Extra volumes for Rocket.Chat...
 extraVolumes:
   # - name: etc-certs
@@ -47,6 +51,12 @@ extraVolumeMounts:
   # - mountPath: /usr/share/ca-certificates
   #   name: usr-certs
   #   readOnly: true
+
+# -- Containers, which are run before the app containers are started.
+extraInitContainers: []
+  # - name: init-myservice
+  #   image: busybox
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
@@ -179,15 +189,17 @@ serviceAccount:
 ingress:
   enabled: false
   pathType: Prefix
-  # ingressClassName: "nxinx"
+  # ingressClassName: "nginx"
   annotations:
     {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
-  tls: {}
+  tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  federation:
+    serveWellKnown: true # if false, rocket.chat will handle the response
 
 service:
   annotations: {}
@@ -243,6 +255,7 @@ serviceMonitor:
 ##
 livenessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 60
   periodSeconds: 15
   timeoutSeconds: 5
@@ -251,6 +264,7 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 10
   periodSeconds: 15
   timeoutSeconds: 5
@@ -281,26 +295,36 @@ microservices:
     image:
       repository: rocketchat/presence-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
   ddpStreamer:
     replicas: 1
     image:
       repository: rocketchat/ddp-streamer-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
   account:
     replicas: 1
     image:
       repository: rocketchat/account-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
   authorization:
     replicas: 1
     image:
       repository: rocketchat/authorization-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
   streamHub:
     replicas: 1
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
   nats:
     replicas: 1
 
@@ -316,6 +340,32 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+
+federation:
+  # host:
+  image:
+    repository: matrixdotorg
+    registry: docker.io
+    tag: latest
+  enabled: false
+  persistence:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+postgresql:
+  enabled: false
+  auth:
+    username: rocketchat
+    password: rocketchat
+    database: rocketchat
+  primary:
+    extraEnvVars:
+      - name: POSTGRES_INITDB_ARGS
+        value: "--lc-collate=C --lc-ctype=C"
 
 # Tolerations for pod assignment
 # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/

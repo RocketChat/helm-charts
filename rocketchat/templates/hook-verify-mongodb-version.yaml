@@ -1,40 +1,56 @@
 {{- if .Values.mongodb.enabled }}
 # https://kubernetes.io/docs/concepts/workloads/pods/
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
   annotations:
     "helm.sh/hook": pre-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
 spec:
-  {{- if $.Values.tolerations }}
-  tolerations:
-{{ toYaml $.Values.tolerations | indent 2 }}
-  {{- end }}
-  containers:
-  - name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
-    {{- $registry := .Values.mongodb.image.registry }}
-    {{- $name := .Values.mongodb.image.repository }}
-    {{- $tag := .Values.mongodb.image.tag }}
-    image: {{ printf "%s/%s:%s" $registry $name $tag | quote }}
-    imagePullPolicy: IfNotPresent
-    env:
-      - name: MONGODB_HOST
-        value: {{ include "rocketchat.mongodb.url" . | quote }}
-    volumeMounts:
-      - mountPath: /tmp
-        name: mongodb-script
-    command:
-      - sh
-      - -c
-      - 'mongosh "$MONGODB_HOST" /tmp/verifyMongodb.js {{ .Values.mongodb.image.tag }}'
-  restartPolicy: Never
-  volumes:
-    - name: mongodb-script
-      configMap:
-        name: "{{ include "rocketchat.fullname" . }}-scripts"
-        items:
-          - key: verifyMongodb.js
-            path: verifyMongodb.js
+  backoffLimit: 5
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: OnFailure
+        {{- if $.Values.tolerations }}
+      tolerations:
+{{ toYaml $.Values.tolerations | indent 8 }}
+      {{- end }}
+
+      containers:
+        - name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
+          {{- $registry := .Values.mongodb.image.registry }}
+          {{- $name := .Values.mongodb.image.repository }}
+          {{- $tag := toString .Values.mongodb.image.tag }}
+          image: {{ printf "%s/%s:%s" $registry $name $tag | quote }}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MONGODB_HOST
+              value: {{ include "rocketchat.mongodb.url" . | quote }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: mongodb-script
+          command:
+            - sh
+            - -c
+            - 'mongosh "$MONGODB_HOST" /tmp/verifyMongodb.js {{ .Values.mongodb.image.tag }}'
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      volumes:
+        - name: mongodb-script
+          configMap:
+            name: "{{ include "rocketchat.fullname" . }}-scripts"
+            items:
+              - key: verifyMongodb.js
+                path: verifyMongodb.js
 {{- end }}

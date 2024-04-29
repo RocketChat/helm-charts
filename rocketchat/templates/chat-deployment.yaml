@@ -48,10 +48,19 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
       {{- end }}
       serviceAccountName: {{ template "rocketchat.serviceAccountName" . }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml .Values.extraInitContainers | nindent 8 }}
+      {{- end }}
       containers:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.extraSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.extraSecret }}
+        {{- end }}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
@@ -139,6 +148,42 @@ spec:
 {{- with .Values.extraEnv }}
 	{{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
 {{- end }}
+        {{- if .Values.federation.enabled }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
+          value: {{ .Values.host }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_enabled
+          value: "true"
+        - name: OVERWRITE_SETTING_Federation_Matrix_serve_well_known
+          {{- if not .Values.ingress.federation.serveWellKnown }}
+          value: "true"
+          {{- else }}
+          value: "false"
+          {{- end }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_id
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: appservice_id
+        - name: OVERWRITE_SETTING_Federation_Matrix_hs_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: hs_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_as_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: as_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_url
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: bridge_url
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
+          value: http://{{ template "rocketchat.fullname" . }}-synapse:8008
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
+          value: "rocket.cat"
+        {{end}}
         ports:
         - name: http
           containerPort: 3000
@@ -149,7 +194,7 @@ spec:
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /api/info
+            path: {{ .Values.livenessProbe.path }}
             port: http
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
@@ -160,7 +205,7 @@ spec:
         {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: /api/info
+            path: {{ .Values.readinessProbe.path }}
             port: http
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
