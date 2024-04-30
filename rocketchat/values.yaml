@@ -167,7 +167,10 @@ persistence:
 #     cpu: 300m
 
 securityContext:
-  enabled: true
+  runAsUser: 999
+  fsGroup: 999
+
+containerSecurityContext:
   runAsUser: 999
   fsGroup: 999
 
