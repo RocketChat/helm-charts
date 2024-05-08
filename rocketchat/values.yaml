@@ -1,3 +1,9 @@
+## common configuration across all deployments
+global:
+  # Tolerations for pod assignment
+  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
@@ -297,6 +303,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   ddpStreamer:
     replicas: 1
     image:
@@ -304,6 +314,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   account:
     replicas: 1
     image:
@@ -311,6 +325,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   authorization:
     replicas: 1
     image:
@@ -318,6 +336,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   streamHub:
     replicas: 1
     image:
@@ -325,6 +347,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   nats:
     replicas: 1
 
@@ -366,3 +392,7 @@ postgresql:
     extraEnvVars:
       - name: POSTGRES_INITDB_ARGS
         value: "--lc-collate=C --lc-ctype=C"
+
+# Tolerations for pod assignment
+# Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []

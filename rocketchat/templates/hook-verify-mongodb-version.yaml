@@ -20,6 +20,11 @@ spec:
         helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     spec:
       restartPolicy: OnFailure
+        {{- if $.Values.tolerations }}
+      tolerations:
+{{ toYaml $.Values.tolerations | indent 8 }}
+      {{- end }}
+
       containers:
         - name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
           {{- $registry := .Values.mongodb.image.registry }}

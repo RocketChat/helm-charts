@@ -32,6 +32,8 @@ spec:
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
     spec:
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "authorization" "context" $) | indent 8 }}
       containers:
       - name: authorization-service
         image: "{{ .Values.microservices.authorization.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

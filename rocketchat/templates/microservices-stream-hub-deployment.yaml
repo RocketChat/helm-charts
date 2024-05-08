@@ -32,6 +32,8 @@ spec:
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
     spec:
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "streamHub" "context" $) | indent 8 }}
       containers:
       - name: stream-hub
         image: "{{ .Values.microservices.streamHub.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
