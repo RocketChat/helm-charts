@@ -95,3 +95,21 @@ Usage:
         {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
     {{- end }}
 {{- end }}
+
+{{/* Get correct tolerations */}}
+{{- define "rocketchat.tolerations" -}}
+{{- $name := .name -}}
+{{- $tolerations := list -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $tolerations := .Values.tolerations }}
+{{- else }}
+{{ $tolerations := get (get .Values.microservices $name) "tolerations" }}
+{{- end }}
+{{- if (and (kindIs "slice" $tolerations) (gt (len $tolerations) 0)) }}
+{{- toYaml $tolerations }}
+{{- else }}
+{{- toYaml .Values.global.tolerations }}
+{{- end }}
+{{- end }}
+{{- end -}}
