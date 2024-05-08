@@ -56,10 +56,10 @@ jobs:
 
           if [[ "${new_version[0]}" -gt "${old_version[0]}" ]]; then
             # major bump
-            chart_version_string="$((chart_version[0] + 1)).${chart_version[1]}.${chart_version[2]}"
+            chart_version_string="$((chart_version[0] + 1)).0.0"
           elif [[ "${new_version[1]}" -gt "${old_version[1]}" ]]; then
             # minor bump
-            chart_version_string="${chart_version[0]}.$((chart_version[1] + 1)).${chart_version[2]}"
+            chart_version_string="${chart_version[0]}.$((chart_version[1] + 1)).0"
           elif [[ "${new_version[2]}" -gt "${old_version[2]}" ]]; then
             # patch bump
             chart_version_string="${chart_version[0]}.${chart_version[1]}.$((chart_version[2] + 1))"
