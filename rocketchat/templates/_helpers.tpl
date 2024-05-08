@@ -102,9 +102,9 @@ Usage:
 {{- $tolerations := list -}}
 {{- with .context }}
 {{- if eq $name "meteor" }}
-{{ $tolerations := .Values.tolerations }}
+{{ $tolerations = .Values.tolerations }}
 {{- else }}
-{{ $tolerations := get (get .Values.microservices $name) "tolerations" }}
+{{ $tolerations = get (get .Values.microservices $name) "tolerations" }}
 {{- end }}
 {{- if (and (kindIs "slice" $tolerations) (gt (len $tolerations) 0)) }}
 {{- toYaml $tolerations }}

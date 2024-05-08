@@ -327,8 +327,7 @@ microservices:
     resources: {}
     # Tolerations for pod assignment
     # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    tolerations:
-      - name
+    tolerations: []
 
   authorization:
     replicas: 1
