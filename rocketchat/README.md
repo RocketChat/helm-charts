@@ -110,12 +110,19 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `livenessProbe.timeoutSeconds`         | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
 | `livenessProbe.failureThreshold`       | Minimum consecutive failures for the probe                                                                                                                                                                                                                                                                                                                                                                                                                     | `3`                                |
 | `livenessProbe.successThreshold`       | Minimum consecutive successes for the probe                                                                                                                                                                                                                                                                                                                                                                                                                    | `1`                                |
+| `global.tolerations`                   | common tolerations for all pods (rocket.chat and all microservices) | []  |
+| `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
 | `microservices.presence.replicas`      | Number of replicas to run for the given service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
 | `microservices.ddpStreamer.replicas`   | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.streamHub.replicas`     | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.accounts.replicas`      | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.authorization.replicas` | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.presence.tolerations`      | Pod tolerations | [] |
+| `microservices.ddpStreamer.tolerations`      | Pod tolerations | [] |
+| `microservices.streamHub.tolerations`      | Pod tolerations | [] |
+| `microservices.accounts.tolerations`      | Pod tolerations | [] |
+| `microservices.authorization.tolerations`      | Pod tolerations | [] |
 | `microservices.nats.replicas`          | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `readinessProbe.enabled`               | Turn on and off readiness probe                                                                                                                                                                                                                                                                                                                                                                                                                                | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
@@ -196,6 +203,29 @@ $ kubectl scale --replicas=3 deployment/rocketchat
 By default, this chart creates one MongoDB instance as a Primary in a replicaset.  This is the minimum requirement to run Rocket.Chat 1.x+.    You can also scale up the capacity and availability of the MongoDB cluster independently.  Please see the [MongoDB chart](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) for configuration information.
 
 For information on running Rocket.Chat in scaled configurations, see the [documentation](https://rocket.chat/docs/installation/docker-containers/high-availability-install/#guide-to-install-rocketchat-as-ha-with-mongodb-replicaset-as-backend) for more details.
+
+### Adding tolerations
+
+To add common tolerations to all deployments
+```yaml
+global:
+  tolerations:
+    - # here
+```
+
+Override tolerations for each microservice by adding to respective block's configuration. For example to override the global tolerations for ddp-streamer pods,
+```yaml
+microservices:
+  ddpStreamer:
+    tolerations:
+      - # add here
+```
+
+To override tolerations for `meteor` service, or the main rocket.chat deployment, add to the root tolerations key.
+```yaml
+tolerations:
+  - # ...
+```
 
 ### Manage MongoDB secrets
 
