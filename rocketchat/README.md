@@ -309,3 +309,11 @@ Refernces:
 - [Run a shell inside a container (to check mongodb version)](https://kubernetes.io/docs/tasks/debug/debug-application/get-shell-running-container/)
 - [MongoDB upgrade official documentation](https://www.mongodb.com/docs/manual/tutorial/upgrade-revision/)
 - [MongoDB helm chart options](https://artifacthub.io/packages/helm/bitnami/mongodb)
+
+### To 6.13.0
+
+**This is only applicable if you both, enabled federation in chart version >=6.8, and want to keep using lighttpd.**
+
+IFF you manually enabled ingress.federation.serveWellKnown (which was a hidden setting) before, during upgrade, disable it once before enabling it again.
+
+Chart contained a bug that would cause `wellknown` deployment to fail to update (illegal live modification of `matchLables`).
