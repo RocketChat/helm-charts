@@ -314,6 +314,6 @@ Refernces:
 
 **This is only applicable if you both, enabled federation in chart version >=6.8, and want to keep using lighttpd.**
 
-During upgrade, disable `ingress.federation.serveWellKnown` once before enabling it again.
+IFF you manually enabled ingress.federation.serveWellKnown (which was a hidden setting) before, during upgrade, disable it once before enabling it again.
 
 Chart contained a bug that would cause `wellknown` deployment to fail to update (illegal live modification of `matchLables`).
