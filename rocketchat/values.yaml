@@ -205,7 +205,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
   federation:
-    serveWellKnown: false
+    serveWellKnown: true # if false, rocket.chat will handle the response
 
 service:
   annotations: {}
