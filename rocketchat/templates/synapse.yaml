@@ -4,14 +4,29 @@
 {{- fail "federation must be used with rocket.chat version >= 6.6.4" }}
 {{- end }}
 {{- end }}
-{{- $hs_token := randAlphaNum 26 | b64enc | quote -}}
-{{- $as_token := randAlphaNum 24 | b64enc | quote -}}
+{{- $secret := include "rocketchat.fullname" . | printf "%s-synapse" | lookup "v1" "Secret" .Release.Namespace }}
+{{- $hs_token := "" }}
+{{- $as_token := "" }}
 {{- $bridge_url :=  printf "http://%s-bridge:3300" (include "rocketchat.fullname" .) -}}
-{{- $id := randAlphaNum 14 | b64enc | printf "rocketchat_%s" -}}
+{{- $id := "" }}
+{{- if $secret }}
+{{- $hs_token = $secret.data.hs_token | b64dec -}}
+{{- $as_token = $secret.data.as_token | b64dec -}}
+{{- $id = $secret.data.appservice_id | b64dec -}}
+{{- else }}
+{{- $hs_token = randAlphaNum 26 | b64enc | quote -}}
+{{- $as_token = randAlphaNum 24 | b64enc | quote -}}
+{{- $id = randAlphaNum 14 | b64enc | printf "rocketchat_%s" -}}
+{{- end }}
 apiVersion: v1
 kind: Secret
 metadata:
   name: {{ include "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
 
 stringData:
   as_token: {{ $as_token }}

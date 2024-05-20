@@ -180,7 +180,11 @@ spec:
               name: {{ include "rocketchat.fullname" . }}-synapse
               key: bridge_url
         - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
+         {{- if .Values.ingress.federation.serveWellKnown }}
           value: http://{{ template "rocketchat.fullname" . }}-synapse:8008
+          {{- else }}
+          value: https://{{ .Values.federation.host }}
+          {{- end }} 
         - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
           value: "rocket.cat"
         {{end}}
