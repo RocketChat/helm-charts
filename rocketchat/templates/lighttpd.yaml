@@ -35,17 +35,13 @@ metadata:
   name: {{ include "rocketchat.fullname" . }}-wellknown
   labels:
     app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-wellknown
-    helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-wellknown
-      helm.sh/chart: {{ include "rocketchat.chart" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/managed-by: {{ .Release.Service }}
   template:
     metadata:
       labels:
