@@ -1,6 +1,6 @@
 apiVersion: v2
 name: rocketchat
-version: 6.13.0
+version: 6.14.0
 appVersion: 6.8.0
 dependencies:
   - name: mongodb
