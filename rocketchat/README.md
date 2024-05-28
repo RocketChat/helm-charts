@@ -276,6 +276,17 @@ For more details on configs, check [postgresql chart](https://artifacthub.io/pac
 
 Since TLS is required, also make sure you have something like cert-manager is running on your cluster, and you add the annotations to the ingress with `ingress.annotations` (or whatever is the recommended way for your certificate issuer).
 
+## hooks
+
+To add custom annotations and labels to pods spawned by pre-upgrade hook
+
+```yaml
+hooks:
+  preUpgrade:
+    podAnnotatios: {} # here
+    podLabels: {} # here
+```
+
 ## Upgrading
 
 ### To 5.4.3
