@@ -405,3 +405,8 @@ postgresql:
 # Tolerations for pod assignment
 # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
+
+hooks:
+  preUpgrade:
+    podAnnotations: []
+    podLabels: []

@@ -14,10 +14,17 @@ spec:
   template:
     metadata:
       name: '{{ include "rocketchat.fullname" . }}-pre-upgrade'
+      {{- with .Values.hooks.preUpgrade.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
       labels:
         app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
         app.kubernetes.io/instance: {{ .Release.Name | quote }}
         helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        {{- with .Values.hooks.preUpgrade.podLabels }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
     spec:
       restartPolicy: OnFailure
         {{- if $.Values.tolerations }}
