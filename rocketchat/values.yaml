@@ -408,5 +408,5 @@ tolerations: []
 
 hooks:
   preUpgrade:
-    podAnnotations: []
-    podLabels: []
+    podAnnotations: {}
+    podLabels: {}
