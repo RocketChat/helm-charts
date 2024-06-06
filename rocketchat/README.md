@@ -23,7 +23,7 @@ To install the chart with the release name `rocketchat`:
 $ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
 ```
 
-If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
+If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it:
 ```console
 $ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
 ```
@@ -125,7 +125,8 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.streamHub.tolerations`      | Pod tolerations | [] |
 | `microservices.accounts.tolerations`      | Pod tolerations | [] |
 | `microservices.authorization.tolerations`      | Pod tolerations | [] |
-| `microservices.nats.replicas`          | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.nats.enabled`           | Turn on and off nats |
+| `microservices.nats.existingSecret` | use connection string for external nats deployment |
 | `readinessProbe.enabled`               | Turn on and off readiness probe                                                                                                                                                                                                                                                                                                                                                                                                                                | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
 | `readinessProbe.periodSeconds`         | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
@@ -141,7 +142,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `podDisruptionBudget.enabled`          | Enable or disable PDB for RC deployment                                                                                                                                                                                                                                                                                                                                                                                                                        | `true`                             |
 | `podLabels`                            | Additional pod labels for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                                 | `{}`                               |
 | `podAnnotations`                       | Additional pod annotations for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                            | `{}`                               |
-| `federation.enabled`                   | Enable Rocket.Chat federation (through matrix) 
+| `federation.enabled`                   | Enable Rocket.Chat federation (through matrix)
 | `federation.host`                      | FQDN for your matrix instance
 | `federation.image.repository`          | Image repository to use for federation image, defaults to `matrixdotorg`
 | `federation.image.registry`            | Image registry to use for federation image, defaults to `docker.io`
@@ -160,14 +161,18 @@ $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ### Database Setup
 
 Rocket.Chat uses a MongoDB instance to presist its data.
-By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
+By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.
 Please refer to this (MongoDB) chart for additional MongoDB configuration options.
-If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword` and `mongodb.auth.passwords` values. 
+If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword` and `mongodb.auth.passwords` values.
 > **WARNING**: The root credentials are used to connect to the MongoDB OpLog
 
 #### Using an External Database
 
 This chart supports using an existing MongoDB instance. Use the `` configuration options and disable MongoDB with `--set mongodb.enabled=false`
+
+### External Nats
+
+To use an external nats set `microservices.nats.enabled` to false.  Then provide a secret with the connectionstring via `microservices.nats.existingSecret` expects the property in the secret to be `connectionString`
 
 ### Configuring Additional Environment Variables
 
@@ -176,21 +181,22 @@ extraEnv: |
   - name: MONGO_OPTIONS
     value: '{"ssl": "true"}'
 ```
+
 ### Specifying aditional volumes
 
-Sometimes, it's needed to include extra sets of files by means of exposing 
-them to the container as a mountpoint. The most common use case is the 
-inclusion of SSL CA certificates. 
+Sometimes, it's needed to include extra sets of files by means of exposing
+them to the container as a mountpoint. The most common use case is the
+inclusion of SSL CA certificates.
 
 ```yaml
-extraVolumes: 
+extraVolumes:
   - name: etc-certs
     hostPath:
     - path: /etc/ssl/certs
       type: Directory
-extraVolumeMounts: 
+extraVolumeMounts:
   - mountPath: /etc/ssl/certs
-    name: etc-certs   
+    name: etc-certs
     readOnly: true
 ```
 
