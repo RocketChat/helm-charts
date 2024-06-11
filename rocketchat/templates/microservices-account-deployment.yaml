@@ -30,6 +30,10 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
+      {{- if .Values.podAnnotations }}
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- end }}
     spec:
       tolerations:
         {{ include "rocketchat.tolerations" (dict "name" "account" "context" $) | indent 8 }}
@@ -62,10 +66,10 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
-        volumeMounts: 
+        volumeMounts:
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
-        {{- end }}   
+        {{- end }}
         securityContext:
           {{- toYaml .Values.microservices.account.securityContext | nindent 10 }}
         resources: {{- toYaml .Values.microservices.account.resources | nindent 10 }}
