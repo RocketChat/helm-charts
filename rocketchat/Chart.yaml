@@ -14,7 +14,7 @@ dependencies:
   - name: nats
     repository: https://nats-io.github.io/k8s/helm/charts
     version: 0.15.x
-    condition: microservices.enabled
+    condition: microservices.nats.enabled
 description: Prepare to take off with the ultimate chat platform, experience the next level of team communications
 keywords:
   - chat

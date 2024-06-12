@@ -37,7 +37,7 @@ extraEnv:
 # Extra secret for Rocket.Chat, uncomment to use
 # Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
 # extraSecret: "some-secret"
-  
+
 # Extra volumes for Rocket.Chat...
 extraVolumes:
   # - name: etc-certs
@@ -299,6 +299,10 @@ podDisruptionBudget:
 microservices:
   enabled: false
 
+  nats:
+    enabled: true
+    existingSecret: ''
+
   logLevel: warn
 
   heartbeatInterval: 10
@@ -360,9 +364,6 @@ microservices:
     # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
     tolerations: []
 
-  nats:
-    replicas: 1
-
   ## Parameters for each Kubernetes service
   # NOTE: reserved for future usage still
   presenceService:
@@ -375,6 +376,7 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+    replicas: 1
 
 federation:
   # host:

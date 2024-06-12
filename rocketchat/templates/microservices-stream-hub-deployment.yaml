@@ -61,8 +61,16 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-oplog-uri
         {{- end }}
+        {{- if .Values.microservices.nats.existingSecret }}
+        - name: TRANSPORTER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.microservices.nats.existingSecret }}
+              key: connectionString
+        {{- else}}
         - name: TRANSPORTER
           value: nats://{{ .Release.Name }}-nats:4222
+        {{- end}}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
@@ -73,10 +81,10 @@ spec:
           value: 'yes'
         - name: MS_METRICS
           value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
-        volumeMounts: 
+        volumeMounts:
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
-        {{- end }}   
+        {{- end }}
         securityContext:
           {{- toYaml .Values.microservices.streamHub.securityContext | nindent 10 }}
         resources: {{- toYaml .Values.microservices.streamHub.resources | nindent 10 }}
