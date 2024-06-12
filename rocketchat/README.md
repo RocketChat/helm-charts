@@ -240,7 +240,7 @@ tolerations:
 ```
 To override annotations for `meteor` service, or the main rocket.chat deployment, add to the root podAnnotations key.
 ```yaml
-podAnnotation:
+podAnnotations:
     # add here
 ```
 
