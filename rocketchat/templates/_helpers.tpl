@@ -113,3 +113,21 @@ Usage:
 {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/* Get correct annotations */}}
+{{- define "rocketchat.annotations" -}}
+{{- $name := .name -}}
+{{- $annotations := dict -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $annotations = .Values.podAnnotations}}
+{{- else }}
+{{ $annotations = get (get .Values.microservices $name) "annotations" }}
+{{- end }}
+{{- if (and (kindIs "map" $annotations) (gt (len $annotations) 0)) }}
+{{- toYaml $annotations}}
+{{- else }}
+{{- toYaml .Values.global.annotations}}
+{{- end }}
+{{- end }}
+{{- end -}}

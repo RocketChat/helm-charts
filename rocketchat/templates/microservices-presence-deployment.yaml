@@ -31,6 +31,8 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
+      annotations:
+    {{ include "rocketchat.annotations" (dict "name" "presence" "context" $) | indent 8 }}
     spec:
       tolerations:
         {{ include "rocketchat.tolerations" (dict "name" "presence" "context" $) | indent 8 }}
