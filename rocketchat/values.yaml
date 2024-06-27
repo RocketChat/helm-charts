@@ -3,6 +3,7 @@ global:
   # Tolerations for pod assignment
   # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
+  annotations: {}
 
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
