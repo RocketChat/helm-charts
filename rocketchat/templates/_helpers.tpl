@@ -96,6 +96,8 @@ Usage:
     {{- end }}
 {{- end }}
 
+{{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}
+
 {{/* Get correct tolerations */}}
 {{- define "rocketchat.tolerations" -}}
 {{- $name := .name -}}
@@ -108,7 +110,7 @@ Usage:
 {{- end }}
 {{- if (and (kindIs "slice" $tolerations) (gt (len $tolerations) 0)) }}
 {{- toYaml $tolerations }}
-{{- else }}
+{{- else if (and (kindIs "slice" .Values.global.tolerations) (gt (len .Values.global.tolerations) 0)) }}
 {{- toYaml .Values.global.tolerations }}
 {{- end }}
 {{- end }}
@@ -126,7 +128,7 @@ Usage:
 {{- end }}
 {{- if (and (kindIs "map" $annotations) (gt (len $annotations) 0)) }}
 {{- toYaml $annotations}}
-{{- else }}
+{{- else if (and (kindIs "map" .Values.global.annotations) (gt (keys .Values.global.annotations | len) 0)) }}
 {{- toYaml .Values.global.annotations}}
 {{- end }}
 {{- end }}
