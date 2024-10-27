@@ -47,6 +47,8 @@ stringData:
     allow_public_rooms_without_auth: true
     allow_public_rooms_over_federation: true
 
+    use_appservice_legacy_authorization: true
+
   {{- if .Values.postgresql.enabled }}
 
   {{- if (not (or (include "postgresql.v1.createSecret" .Subcharts.postgresql) .Values.federation.extraConfigSecret)) }}
