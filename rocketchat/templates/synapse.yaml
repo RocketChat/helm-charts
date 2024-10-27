@@ -108,7 +108,7 @@ spec:
     spec:
       initContainers:
         - name: generate
-          image: matrixdotorg/synapse:v1.78.0
+          image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }}
           volumeMounts:
           - name: data
             mountPath: /data

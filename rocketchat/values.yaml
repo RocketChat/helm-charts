@@ -380,9 +380,9 @@ nats:
 federation:
   # host:
   image:
-    repository: matrixdotorg
+    repository: matrixdotorg/synapse
     registry: docker.io
-    tag: latest
+    tag: v1.84.1
   enabled: false
   persistence:
     enabled: false
