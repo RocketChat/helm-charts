@@ -121,7 +121,7 @@ spec:
             - name: SYNAPSE_REPORT_STATS
               value: 'no'
         - name: append
-          image: matrixdotorg/synapse:v1.78.0
+          image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }} 
           env:
             - name: HOMESERVER_EXTRA_CONFIG
               value: /__homeserver.append.yaml
@@ -137,7 +137,7 @@ spec:
             - bash
             - /scripts/updateSynapseHomeserverConfig.sh
       containers:
-      - image: matrixdotorg/synapse:v1.78.0
+      - image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }} 
         name: synapse
         env:
           {{- if .Values.federation.extraConfigSecret }}
