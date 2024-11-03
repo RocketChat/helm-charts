@@ -114,6 +114,8 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `livenessProbe.successThreshold`       | Minimum consecutive successes for the probe                                                                                                                                                                                                                                                                                                                                                                                                                    | `1`                                |
 | `global.tolerations`                   | common tolerations for all pods (rocket.chat and all microservices) | []  |
 | `global.annotations`                   | common annotations for all pods (rocket.chat and all microservices) | {}  |
+| `global.nodeSelector`                  | common nodeSelector for all pods (rocket.chat and all microservices) | {}  |
+| `global.affinity`                      | common affinity for all pods (rocket.chat and all microservices) | {}  |
 | `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
 | `microservices.presence.replicas`      | Number of replicas to run for the given service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
@@ -132,7 +134,17 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.streamHub.annotations`     | Pod annotations | {} |
 | `microservices.accounts.annotations`      | Pod annotations | {} |
 | `microservices.authorization.annotations` | Pod annotations | {} |
-| `readinessProbe.enabled`               | Turn on and off readiness probe                                                                                                                                                                                                                                                                                                                                                                                                                                | `true`                             |
+| `microservices.presence.nodeSelector`     | nodeSelector for the Pod | {} |
+| `microservices.ddpStreamer.nodeSelector`  | nodeSelector for the Pod | {} |
+| `microservices.streamHub.nodeSelector`    | nodeSelector for the Pod | {} |
+| `microservices.accounts.nodeSelector`     | nodeSelector for the Pod | {} |
+| `microservices.authorization.nodeSelector`| nodeSelector for the Pod | {} |
+| `microservices.presence.affinity`      | Pod affinity | [] |
+| `microservices.ddpStreamer.affinity`   | Pod affinity | [] |
+| `microservices.streamHub.affinity`     | Pod affinity | [] |
+| `microservices.accounts.affinity`      | Pod affinity | [] |
+| `microservices.authorization.affinity` | Pod affinity | [] |
+| `readinessProbe.enabled`               | affinity for the Pod | [] |                                                                                                                                                                                                                                                                                                                                                                                                                             | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
 | `readinessProbe.periodSeconds`         | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
 | `readinessProbe.timeoutSeconds`        | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
@@ -212,15 +224,27 @@ By default, this chart creates one MongoDB instance as a Primary in a replicaset
 
 For information on running Rocket.Chat in scaled configurations, see the [documentation](https://rocket.chat/docs/installation/docker-containers/high-availability-install/#guide-to-install-rocketchat-as-ha-with-mongodb-replicaset-as-backend) for more details.
 
-### Adding tolerations and annotations
+### Adding tolerations, annotations, nodeSelector and affinity
 
-To add common tolerations and annotations to all deployments
+To add common tolerations, annotations, nodeSelector and affinity to all deployments
 ```yaml
 global:
   tolerations:
     - # here
   annotations:
       # here
+  nodeSelector:
+      # here
+      # kubernetes.io/arch: amd64
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
 ```
 
 Override tolerations or annotations for each microservice by adding to respective block's configuration. For example to override the global tolerations and annotations for ddp-streamer pods,
@@ -231,6 +255,18 @@ microservices:
       - # add here
     annotations:
         # add here
+  nodeSelector:
+      # here
+      # kubernetes.io/arch: amd64
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
 ```
 
 To override tolerations for `meteor` service, or the main rocket.chat deployment, add to the root tolerations key.
@@ -243,8 +279,53 @@ To override annotations for `meteor` service, or the main rocket.chat deployment
 podAnnotations:
     # add here
 ```
+To override the nodeSelector for `meteor` service, or the main rocket.chat deployment, add to the root nodeSelector key.
+```yaml
+nodeSelector:
+    # add here
+```
+To override the affinity for `meteor` service, or the main rocket.chat deployment, add to the root affinity key.
+```yaml
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
+```
+### Manage MongoDB and NATS nodeSelector and Affinity
+If MongoDB and NATS own charts are used in the deployment, add the nodeSelector and Affinity to each service. Example:
 
-
+```yaml
+mongodb:
+  enabled: true  
+  nodeSelector:
+   kubernetes.io/arch: amd64
+  affinity:
+   nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+nats:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    affinity:
+     nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+       nodeSelectorTerms:
+       - matchExpressions:
+         - key: kubernetes.io/arch
+           operator: In
+           values:
+           - amd64
+```
 ### Manage MongoDB secrets
 
 This chart provides several ways to manage the Connection for MongoDB
