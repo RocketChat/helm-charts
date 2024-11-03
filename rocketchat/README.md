@@ -139,11 +139,11 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.streamHub.nodeSelector`    | nodeSelector for the Pod | {} |
 | `microservices.accounts.nodeSelector`     | nodeSelector for the Pod | {} |
 | `microservices.authorization.nodeSelector`| nodeSelector for the Pod | {} |
-| `microservices.presence.affinity`      | Pod affinity | [] |
-| `microservices.ddpStreamer.affinity`   | Pod affinity | [] |
-| `microservices.streamHub.affinity`     | Pod affinity | [] |
-| `microservices.accounts.affinity`      | Pod affinity | [] |
-| `microservices.authorization.affinity` | Pod affinity | [] |
+| `microservices.presence.affinity`      | Pod affinity | {} |
+| `microservices.ddpStreamer.affinity`   | Pod affinity | {} |
+| `microservices.streamHub.affinity`     | Pod affinity | {} |
+| `microservices.accounts.affinity`      | Pod affinity | {} |
+| `microservices.authorization.affinity` | Pod affinity | {} |
 | `readinessProbe.enabled`               | affinity for the Pod | [] |                                                                                                                                                                                                                                                                                                                                                                                                                             | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
 | `readinessProbe.periodSeconds`         | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
