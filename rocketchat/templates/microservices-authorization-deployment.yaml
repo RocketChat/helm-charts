@@ -33,10 +33,14 @@ spec:
         {{- end }}
       annotations:
         {{ include "rocketchat.annotations" (dict "name" "authorization" "context" $) | indent 8 }}
-
+   
     spec:
       tolerations:
         {{ include "rocketchat.tolerations" (dict "name" "authorization" "context" $) | indent 8 }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "authorization" "context" $) | indent 8 }}
+      affinity:
+        {{ include "rocketchat.nodeAffinity" (dict "name" "authorization" "context" $) | indent 8 }}      
       containers:
       - name: authorization-service
         image: "{{ .Values.microservices.authorization.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
