@@ -40,8 +40,16 @@ spec:
           image: {{ printf "%s/%s:%s" $registry $name $tag | quote }}
           imagePullPolicy: IfNotPresent
           env:
+            {{- if .Values.existingMongodbSecret }}
+            - name: MONGODB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingMongodbSecret }}
+                  key: mongo-uri
+            {{- else }}
             - name: MONGODB_HOST
               value: {{ include "rocketchat.mongodb.url" . | quote }}
+            {{- end }}
           volumeMounts:
             - mountPath: /tmp
               name: mongodb-script
