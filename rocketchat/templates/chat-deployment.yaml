@@ -236,12 +236,14 @@ spec:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
       {{- end }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "meteor" "context" $) | indent 8 }} 
       tolerations:
         {{ include "rocketchat.tolerations" (dict "name" "meteor" "context" $) | indent 8 }}
 {{- if or .Values.podAntiAffinity .Values.affinity }}
       affinity:
 {{- if .Values.affinity }}
-{{ toYaml .Values.affinity | indent 8 }}
+        {{ include "rocketchat.nodeAffinity" (dict "name" "meteor"  "context" $) | indent 10 }}
 {{- end }}
 {{- if eq .Values.podAntiAffinity "hard" }}
         podAntiAffinity:
