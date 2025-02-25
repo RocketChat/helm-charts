@@ -10,8 +10,26 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   endpoints:
-    - port: {{ .Values.serviceMonitor.port }}
-      interval: {{ .Values.serviceMonitor.interval }}
+    {{- $ports := .Values.serviceMonitor.ports -}}
+    {{- $intervals := .Values.serviceMonitor.intervals -}}
+    {{- with .Values.serviceMonitor.port -}}
+    {{- if not (has . $ports) -}}
+    {{- $ports = append $ports . -}}
+    {{- end -}}
+    {{- end -}}
+    {{- with .Values.serviceMonitor.interval -}}
+    {{- if not (has . $intervals) -}}
+    {{- $intervals = append $intervals . -}}
+    {{- end -}}
+    {{- end -}}
+    {{- if not (eq (len $ports) (len $intervals)) -}}
+    {{- fail "servicemonitor ports and intervals lengths must be equal" -}}
+    {{- end -}}
+
+    {{- range $index := len $ports | until }}
+    - port: {{ index $ports $index }}
+      interval: {{ index $intervals $index }}
+    {{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "rocketchat.name" . }}

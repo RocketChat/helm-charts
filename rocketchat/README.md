@@ -71,6 +71,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `smtp.host`                            | Hostname of the SMTP server                                                                                                                                                                                                                                                                                                                                                                                                                                    | `""`                               |
 | `smtp.port`                            | Port of the SMTP server                                                                                                                                                                                                                                                                                                                                                                                                                                        | `587`                              |
 | `extraEnv`                             | Extra environment variables for Rocket.Chat. Used with `tpl` function, so this needs to be a string                                                                                                                                                                                                                                                                                                                                                            | `""`                               |
+| `extraSecret`                             | An already existing secret to be used by chat deployment. It needs to be a string                                                                                                                                                                                                                                                                                                                                                            | `""`                               |
 | `extraVolumes`                         | Extra volumes allowing inclusion of certificates or any sort of file that might be required (see bellow)                                                                                                                                                                                                                                                                                                                                                       | `[]`                               |
 | `extraVolumeMounts`                    | Where the aforementioned extra volumes should be mounted inside the container                                                                                                                                                                                                                                                                                                                                                                                  | `[]`                               |
 | `podAntiAffinity`                      | Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node. The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided. The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node. The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured. | `""`                               |
@@ -101,14 +102,21 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `prometheusScraping.enabled`           | Turn on and off /metrics endpoint for Prometheus scraping                                                                                                                                                                                                                                                                                                                                                                                                      | `false`                            |
 | `prometheusScraping.port`              | Port to use for the metrics for Prometheus to scrap on                                                                                                                                                                                                                                                                                                                                                                                                         | `9458`                             |
 | `serviceMonitor.enabled`               | Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator (prometheusScraping should be enabled)                                                                                                                                                                                                                                                                                                                                         | `false`                            |
-| `serviceMonitor.interval`              | The interval at which metrics should be scraped                                                                                                                                                                                                                                                                                                                                                                                                                | `30s`                              |
-| `serviceMonitor.port`                  | The port name at which container exposes Prometheus metrics                                                                                                                                                                                                                                                                                                                                                                                                    | `metrics`                          |
+| `serviceMonitor.intervals`              | The intervals at which metrics should be scraped                                                                                                                                                                                                                                                                                                                                                                                                                | `[30s]`                              |
+| `serviceMonitor.ports`                  | The port names at which container exposes Prometheus metrics                                                                                                                                                                                                                                                                                                                                                                                                    | `[metrics]`                          |
+| `serviceMonitor.interval`              | deprecated, use `serviceMonitor.intervals` instead | `30s`                              |
+| `serviceMonitor.port`                  | deprecated, use `serviceMonitor.ports` instead | `metrics`                          |
 | `livenessProbe.enabled`                | Turn on and off liveness probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `true`                             |
 | `livenessProbe.initialDelaySeconds`    | Delay before liveness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                       | `60`                               |
 | `livenessProbe.periodSeconds`          | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
 | `livenessProbe.timeoutSeconds`         | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
 | `livenessProbe.failureThreshold`       | Minimum consecutive failures for the probe                                                                                                                                                                                                                                                                                                                                                                                                                     | `3`                                |
 | `livenessProbe.successThreshold`       | Minimum consecutive successes for the probe                                                                                                                                                                                                                                                                                                                                                                                                                    | `1`                                |
+| `global.tolerations`                   | common tolerations for all pods (rocket.chat and all microservices) | []  |
+| `global.annotations`                   | common annotations for all pods (rocket.chat and all microservices) | {}  |
+| `global.nodeSelector`                  | common nodeSelector for all pods (rocket.chat and all microservices) | {}  |
+| `global.affinity`                      | common affinity for all pods (rocket.chat and all microservices) | {}  |
+| `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
 | `microservices.presence.replicas`      | Number of replicas to run for the given service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
 | `microservices.ddpStreamer.replicas`   | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
@@ -116,7 +124,27 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.accounts.replicas`      | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.authorization.replicas` | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.nats.replicas`          | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `readinessProbe.enabled`               | Turn on and off readiness probe                                                                                                                                                                                                                                                                                                                                                                                                                                | `true`                             |
+| `microservices.presence.tolerations`      | Pod tolerations | [] |
+| `microservices.ddpStreamer.tolerations`   | Pod tolerations | [] |
+| `microservices.streamHub.tolerations`     | Pod tolerations | [] |
+| `microservices.accounts.tolerations`      | Pod tolerations | [] |
+| `microservices.authorization.tolerations` | Pod tolerations | [] |
+| `microservices.presence.annotations`      | Pod annotations | {} |
+| `microservices.ddpStreamer.annotations`   | Pod annotations | {} |
+| `microservices.streamHub.annotations`     | Pod annotations | {} |
+| `microservices.accounts.annotations`      | Pod annotations | {} |
+| `microservices.authorization.annotations` | Pod annotations | {} |
+| `microservices.presence.nodeSelector`     | nodeSelector for the Pod | {} |
+| `microservices.ddpStreamer.nodeSelector`  | nodeSelector for the Pod | {} |
+| `microservices.streamHub.nodeSelector`    | nodeSelector for the Pod | {} |
+| `microservices.accounts.nodeSelector`     | nodeSelector for the Pod | {} |
+| `microservices.authorization.nodeSelector`| nodeSelector for the Pod | {} |
+| `microservices.presence.affinity`      | Pod affinity | {} |
+| `microservices.ddpStreamer.affinity`   | Pod affinity | {} |
+| `microservices.streamHub.affinity`     | Pod affinity | {} |
+| `microservices.accounts.affinity`      | Pod affinity | {} |
+| `microservices.authorization.affinity` | Pod affinity | {} |
+| `readinessProbe.enabled`               | affinity for the Pod | [] |                                                                                                                                                                                                                                                                                                                                                                                                                             | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
 | `readinessProbe.periodSeconds`         | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
 | `readinessProbe.timeoutSeconds`        | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
@@ -131,6 +159,13 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `podDisruptionBudget.enabled`          | Enable or disable PDB for RC deployment                                                                                                                                                                                                                                                                                                                                                                                                                        | `true`                             |
 | `podLabels`                            | Additional pod labels for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                                 | `{}`                               |
 | `podAnnotations`                       | Additional pod annotations for the Rocket.Chat pods                                                                                                                                                                                                                                                                                                                                                                                                            | `{}`                               |
+| `federation.enabled`                   | Enable Rocket.Chat federation (through matrix) 
+| `federation.host`                      | FQDN for your matrix instance
+| `federation.image.repository`          | Image repository to use for federation image, defaults to `matrixdotorg`
+| `federation.image.registry`            | Image registry to use for federation image, defaults to `docker.io`
+| `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
+| `federation.persistence.enabled`       | Enabling persistence for matrix pod
+| `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
@@ -189,6 +224,108 @@ By default, this chart creates one MongoDB instance as a Primary in a replicaset
 
 For information on running Rocket.Chat in scaled configurations, see the [documentation](https://rocket.chat/docs/installation/docker-containers/high-availability-install/#guide-to-install-rocketchat-as-ha-with-mongodb-replicaset-as-backend) for more details.
 
+### Adding tolerations, annotations, nodeSelector and affinity
+
+To add common tolerations, annotations, nodeSelector and affinity to all deployments
+```yaml
+global:
+  tolerations:
+    - # here
+  annotations:
+      # here
+  nodeSelector:
+      # here
+      # kubernetes.io/arch: amd64
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
+```
+
+Override tolerations or annotations for each microservice by adding to respective block's configuration. For example to override the global tolerations and annotations for ddp-streamer pods,
+```yaml
+microservices:
+  ddpStreamer:
+    tolerations:
+      - # add here
+    annotations:
+        # add here
+  nodeSelector:
+      # here
+      # kubernetes.io/arch: amd64
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
+```
+
+To override tolerations for `meteor` service, or the main rocket.chat deployment, add to the root tolerations key.
+```yaml
+tolerations:
+  - # ...
+```
+To override annotations for `meteor` service, or the main rocket.chat deployment, add to the root podAnnotations key.
+```yaml
+podAnnotations:
+    # add here
+```
+To override the nodeSelector for `meteor` service, or the main rocket.chat deployment, add to the root nodeSelector key.
+```yaml
+nodeSelector:
+    # add here
+```
+To override the affinity for `meteor` service, or the main rocket.chat deployment, add to the root affinity key.
+```yaml
+  affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#       - matchExpressions:
+#         - key: kubernetes.io/arch
+#           operator: In
+#           values:
+#           - amd64
+```
+### Manage MongoDB and NATS nodeSelector and Affinity
+If MongoDB and NATS own charts are used in the deployment, add the nodeSelector and Affinity to each service. Example:
+
+```yaml
+mongodb:
+  enabled: true  
+  nodeSelector:
+   kubernetes.io/arch: amd64
+  affinity:
+   nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+nats:
+    nodeSelector:
+      kubernetes.io/arch: amd64
+    affinity:
+     nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+       nodeSelectorTerms:
+       - matchExpressions:
+         - key: kubernetes.io/arch
+           operator: In
+           values:
+           - amd64
+```
 ### Manage MongoDB secrets
 
 This chart provides several ways to manage the Connection for MongoDB
@@ -205,6 +342,49 @@ data:
   mongo-oplog-uri: mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 ```
 
+## Federation
+
+You can enable federation by setting `federation.enabled` to true.
+
+You need to make sure you have two domains, one for rocket.chat another for matrix.
+
+```yaml
+host: <rocket.chat domain>
+federation:
+    host: <matrix domain>
+```
+
+Add the domains to ingress tls config
+
+```yaml
+ingress:
+  tls:
+    - secretName: <some secret>
+      hosts:
+        - <rocket.chat domain>
+        - <matrix domain>
+```
+
+For production, postgres is recommended. Enabled postgres
+```yaml
+postgresql:
+  enabled: true
+```
+
+For more details on configs, check [postgresql chart](https://artifacthub.io/packages/helm/bitnami/postgresql).
+
+Since TLS is required, also make sure you have something like cert-manager is running on your cluster, and you add the annotations to the ingress with `ingress.annotations` (or whatever is the recommended way for your certificate issuer).
+
+## hooks
+
+To add custom annotations and labels to pods spawned by pre-upgrade hook
+
+```yaml
+hooks:
+  preUpgrade:
+    podAnnotatios: {} # here
+    podLabels: {} # here
+```
 
 ## Upgrading
 
@@ -235,7 +415,15 @@ mongodb:
     tag: # find from https://hub.docker.com/r/bitnami/mongodb/tags
 ```
 
-Refernces:
+References:
 - [Run a shell inside a container (to check mongodb version)](https://kubernetes.io/docs/tasks/debug/debug-application/get-shell-running-container/)
 - [MongoDB upgrade official documentation](https://www.mongodb.com/docs/manual/tutorial/upgrade-revision/)
 - [MongoDB helm chart options](https://artifacthub.io/packages/helm/bitnami/mongodb)
+
+### To 6.13.0
+
+**This is only applicable if you both, enabled federation in chart version >=6.8, and want to keep using lighttpd.**
+
+IFF you manually enabled ingress.federation.serveWellKnown (which was a hidden setting) before, during upgrade, disable it once before enabling it again.
+
+Chart contained a bug that would cause `wellknown` deployment to fail to update (illegal live modification of `matchLabels`).

@@ -1,0 +1,89 @@
+{{ if and .Values.federation.enabled .Values.ingress.federation.serveWellKnown }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rocketchat.fullname" . }}-wellknown
+data:
+  lighttpd.conf: |
+    server.port = 8080
+    server.document-root = "/var/www/lighttpd"
+    server.modules = (
+      "mod_rewrite",
+      "mod_setenv"
+    )
+    url.rewrite-once     = (
+      "^/\.well-known/matrix/server" => "/server.json",
+      "^/\.well-known/matrix/client" => "/client.json"
+    )
+    setenv.add-response-header = (
+      "access-control-allow-methods" => "GET",
+      "access-control-allow-origin" => "*"
+    )
+    setenv.set-response-header = (
+      "content-type" => "application/json"
+    )
+
+  server.json: |
+    {{ dict "m.server" (printf "%s:443" .Values.federation.host) | toJson }}
+  client.json: |
+    {{ dict "m.homeserver" (dict "base_url" (printf "https://%s" .Values.federation.host)) | toJson }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rocketchat.fullname" . }}-wellknown
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-wellknown
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-wellknown
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-wellknown
+        helm.sh/chart: {{ include "rocketchat.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+    spec:
+      containers:
+        - name: lighttpd
+          image: jitesoft/lighttpd
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/lighttpd/lighttpd.conf
+              name: files
+              subPath: lighttpd.conf
+            - mountPath: /var/www/lighttpd/server.json
+              name: files
+              subPath: server.json
+            - mountPath: /var/www/lighttpd/client.json
+              name: files
+              subPath: client.json
+      volumes:
+        - name: files
+          configMap:
+            name: {{ include "rocketchat.fullname" . }}-wellknown
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-wellknown
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: {{ template "rocketchat.fullname" . }}-wellknown
+{{ end}}

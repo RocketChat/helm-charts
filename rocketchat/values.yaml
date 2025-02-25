@@ -1,3 +1,12 @@
+## common configuration across all deployments
+global:
+  # Tolerations for pod assignment
+  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  annotations: {}
+  nodeSelector: {}
+  affinity: {}
+
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
@@ -28,6 +37,10 @@ extraEnv:
   # - name: MONGO_OPLOG_URL
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
+# Extra secret for Rocket.Chat, uncomment to use
+# Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
+# extraSecret: "some-secret"
+  
 # Extra volumes for Rocket.Chat...
 extraVolumes:
   # - name: etc-certs
@@ -185,7 +198,7 @@ serviceAccount:
 ingress:
   enabled: false
   pathType: Prefix
-  # ingressClassName: "nxinx"
+  # ingressClassName: "nginx"
   annotations:
     {}
     # kubernetes.io/ingress.class: "nginx"
@@ -194,6 +207,8 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  federation:
+    serveWellKnown: false
 
 service:
   annotations: {}
@@ -237,12 +252,21 @@ serviceMonitor:
   ## prometheusScraping.enabled should be also enabled
   ##
   enabled: false
-  ## metrics.serviceMonitor.interval The interval at which metrics should be scraped
+
+  # deprecated
+  #interval: 30s
+
+  # deprecated
+  #port: metrics
+
+  ## metrics.serviceMonitor.port The port names at which container exposes Prometheus metrics
   ##
-  interval: 30s
-  ## metrics.serviceMonitor.port The port name at which container exposes Prometheus metrics
+  ports:
+    - metrics
+  ## metrics.serviceMonitor.intervals The intervals at which metrics should be scraped
   ##
-  port: metrics
+  intervals:
+    - 30s
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
@@ -291,6 +315,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   ddpStreamer:
     replicas: 1
     image:
@@ -298,6 +326,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   account:
     replicas: 1
     image:
@@ -305,6 +337,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   authorization:
     replicas: 1
     image:
@@ -312,6 +348,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   streamHub:
     replicas: 1
     image:
@@ -319,6 +359,10 @@ microservices:
       pullPolicy: IfNotPresent
     securityContext: {}
     resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   nats:
     replicas: 1
 
@@ -334,3 +378,38 @@ microservices:
 nats:
   nats:
     image: nats:2.4-alpine
+
+federation:
+  # host:
+  image:
+    repository: matrixdotorg/synapse
+    registry: docker.io
+    tag: v1.84.1
+  enabled: false
+  persistence:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+postgresql:
+  enabled: false
+  auth:
+    username: rocketchat
+    password: rocketchat
+    database: rocketchat
+  primary:
+    extraEnvVars:
+      - name: POSTGRES_INITDB_ARGS
+        value: "--lc-collate=C --lc-ctype=C"
+
+# Tolerations for pod assignment
+# Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+hooks:
+  preUpgrade:
+    podAnnotations: {}
+    podLabels: {}

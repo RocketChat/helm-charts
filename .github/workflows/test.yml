@@ -18,7 +18,7 @@ on:
 
 env: 
   REPO: 'RocketChat/helm-charts'
-  TESTS_REPO: 'debdutdeb/rocket.chat.tests'
+  TESTS_REPO: 'RocketChat/public-releases'
 
 
 jobs:
@@ -41,6 +41,9 @@ jobs:
         uses: AbsaOSS/k3d-action@main
         with:
           cluster-name: helm
+          
+      - name: Show helm version
+        run: helm version
 
       - name: Run tests
         shell: bash

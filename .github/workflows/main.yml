@@ -28,6 +28,8 @@ jobs:
         with:
           repository: ${{ env.HELM_REPO }}
 
+      - uses: debdutdeb/semis@main
+
       - id: set-chart-version
         shell: bash
         run: |
@@ -46,25 +48,29 @@ jobs:
 
           new_version="${{ inputs.tag }}"
           new_version="${new_version%-rc*}"
+
+          if ! semis gt "$new_version" "$app_version"; then
+            echo "run=false" >>$GITHUB_OUTPUT
+            exit 0
+          fi
+
           new_version=(${new_version//./ })
 
           old_version=(${app_version//./ })
+
+          chart_version=(${chart_version//./ })
 
           chart_version_string=
 
           if [[ "${new_version[0]}" -gt "${old_version[0]}" ]]; then
             # major bump
-            chart_version_string="$((chart_version[0] + 1)).${chart_version[1]}.${chart_version[2]}"
+            chart_version_string="$((chart_version[0] + 1)).0.0"
           elif [[ "${new_version[1]}" -gt "${old_version[1]}" ]]; then
             # minor bump
-            chart_version_string="${chart_version[0]}.$((chart_version[1] + 1)).${chart_version[2]}"
+            chart_version_string="${chart_version[0]}.$((chart_version[1] + 1)).0"
           elif [[ "${new_version[2]}" -gt "${old_version[2]}" ]]; then
             # patch bump
             chart_version_string="${chart_version[0]}.${chart_version[1]}.$((chart_version[2] + 1))"
-          else
-            # new is < old, don't run
-            echo 'run=false' >>$GITHUB_OUTPUT
-            exit 0 # because we don't want to fail
           fi
 
           echo "chart-version=$chart_version_string"

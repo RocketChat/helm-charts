@@ -39,4 +39,110 @@ data:
       quit(1);
     }
     quit(0);
+  updateSynapseHomeserverConfig.sh: |
+    [[ $(basename $SHELL) != "bash" ]] && {
+      echo "must be run in bash"
+      exit 1
+    } || :
+
+    set -x
+    _data_dir="${SYNAPSE_DATA_DIR:-/data}"
+    _data_dir="${_data_dir%/}"
+    _config_dir="${SYNAPSE_CONFIG_DIR:-/data}"
+    _config_dir="${_config_dir%/}"
+
+    start_or_exit() {
+      if [ "$1" = "--start" ]; then
+        exec /start.py
+      fi
+
+      exit 0
+    }
+
+    _remove_block() {
+      local type="${1^^}"
+      #local type="$(printf "%s" "$1" | tr '[[:lower:]]' '[[:upper:]]')"
+      local file="$2"
+      local start="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) START @@@"
+      local end="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) END @@@"
+
+      local l1="$(awk "/$start/ {print NR; exit}" "$file")"
+      local l2="$(awk "/$end/ {print NR; exit}" "$file")"
+
+      if [ -z "$l1" -o -z "$l2" ]; then
+        return
+      fi
+
+      sed -i "${l1},${l2}d" $file
+    }
+
+    remove_extra_config() {
+      _remove_block "extra config" "$HOMESERVER"
+    }
+
+    add_extra_config() {
+      if [ "$(tail -n 1 "$HOMESERVER" | base64)" != "Cg==" ]; then # `echo | base64`
+        printf "\n" >> "$HOMESERVER" 
+      fi
+
+      echo "# @@@ EXTRA CONFIG START ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
+      cat "$HOMESERVER_EXTRA_CONFIG" >> "$HOMESERVER"
+      echo "# @@@ EXTRA CONFIG END ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
+    }
+
+    hash() {
+      sha256sum "$1" | awk '{ print $1 }'
+    }
+
+    hash_file() {
+      local basename \
+            name \
+      basename="$(basename "$1")"
+      name=".${basename%.*}_hash"
+      echo -n "${_config_dir}/${name}"
+    }
+
+    extra_config_hash() {
+      hash "$HOMESERVER_EXTRA_CONFIG"
+    }
+
+    extra_config_current_hash() {
+      [[ -f "$(hash_file "$HOMESERVER_EXTRA_CONFIG")" ]] || return ""
+      cat "$(hash_file "$HOMESERVER_EXTRA_CONFIG")"
+    }
+
+    _save_hash() {
+      hash "$1" > "$(hash_file "$1")"
+    }
+
+    save_extra_config_hash() {
+      _save_hash "$HOMESERVER_EXTRA_CONFIG"
+    }
+
+    HOMESERVER="${SYNAPSE_CONFIG_PATH:-$(ls "$_config_dir"/homeserver.y{a,}ml 2>/dev/null)}"
+
+    if [ -z "$HOMESERVER" -o ! -f "$HOMESERVER" ]; then
+      echo "homeserver config not found: \"$HOMESERVER\"" >&2
+      exit 1
+    fi
+
+    if [ -z "$HOMESERVER_EXTRA_CONFIG" ]; then
+      start_or_exit
+    fi
+
+    current_hash="$(extra_config_hash)"
+    expected_hash="$(extra_config_current_hash)"
+
+    if [ "$expected_hash" = "$current_hash" ]; then
+      echo "extra config hashes matched, ignoring append op."
+      exit 0
+    fi
+
+    echo "extra config hashes mismatch, re-setting extra config" >&2
+    remove_extra_config
+    add_extra_config
+    save_extra_config_hash
+
+    start_or_exit
+
 {{- end }}

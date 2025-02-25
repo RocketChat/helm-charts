@@ -95,3 +95,77 @@ Usage:
         {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
     {{- end }}
 {{- end }}
+
+{{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}
+
+{{/* Get correct tolerations */}}
+{{- define "rocketchat.tolerations" -}}
+{{- $name := .name -}}
+{{- $tolerations := list -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $tolerations = .Values.tolerations }}
+{{- else }}
+{{ $tolerations = get (get .Values.microservices $name) "tolerations" }}
+{{- end }}
+{{- if (and (kindIs "slice" $tolerations) (gt (len $tolerations) 0)) }}
+{{- toYaml $tolerations }}
+{{- else if (and (kindIs "slice" .Values.global.tolerations) (gt (len .Values.global.tolerations) 0)) }}
+{{- toYaml .Values.global.tolerations }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/* Get correct annotations */}}
+{{- define "rocketchat.annotations" -}}
+{{- $name := .name -}}
+{{- $annotations := dict -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $annotations = .Values.podAnnotations}}
+{{- else }}
+{{ $annotations = get (get .Values.microservices $name) "annotations" }}
+{{- end }}
+{{- if (and (kindIs "map" $annotations) (gt (len $annotations) 0)) }}
+{{- toYaml $annotations}}
+{{- else if (and (kindIs "map" .Values.global.annotations) (gt (keys .Values.global.annotations | len) 0)) }}
+{{- toYaml .Values.global.annotations}}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/* Get correct nodeSelector */}}
+{{- define "rocketchat.nodeSelector" -}}
+{{- $name := .name -}}
+{{- $nodeSelector := dict -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $nodeSelector = .Values.nodeSelector }}
+{{- else }}
+{{ $nodeSelector = get (get .Values.microservices $name) "nodeSelector" }}
+{{- end }}
+{{- if (and (kindIs "map" $nodeSelector) (gt (len $nodeSelector) 0)) }}
+{{- toYaml $nodeSelector | indent 2 }}
+{{- else if (and (kindIs "map" .Values.global.nodeSelector) (gt (keys .Values.global.nodeSelector | len) 0)) }}
+{{- toYaml .Values.global.nodeSelector | indent 2 }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/* Get correct nodeAffinity */}}
+{{- define "rocketchat.nodeAffinity" -}}
+{{- $name := .name -}}
+{{- $nodeAffinity := dict -}}
+{{- with .context }}
+{{- if eq $name "meteor" }}
+{{ $nodeAffinity = .Values.affinity }}
+{{- else }}
+{{ $nodeAffinity = get (get .Values.microservices $name) "affinity" }}
+{{- end }}
+{{- if (and (kindIs "map" $nodeAffinity) (gt (len $nodeAffinity) 0)) }}
+{{- toYaml $nodeAffinity | indent 8 }}
+{{- else if (and (kindIs "map" .Values.global.affinity) (gt (keys .Values.global.affinity | len) 0)) }}
+{{- toYaml .Values.global.affinity | indent 8 }}
+{{- end }}
+{{- end }}
+{{- end -}}

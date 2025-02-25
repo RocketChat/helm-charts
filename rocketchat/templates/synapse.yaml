@@ -1,0 +1,230 @@
+{{- if .Values.federation.enabled }}
+{{- if not .Values.federation.ignoreRocketChatVersion }} {{/* this can be removed at any point, used just for testing */}}
+{{- if (eq (semver "6.6.4" | (semver .Chart.AppVersion).Compare) -1) }}
+{{- fail "federation must be used with rocket.chat version >= 6.6.4" }}
+{{- end }}
+{{- end }}
+{{- $secret := include "rocketchat.fullname" . | printf "%s-synapse" | lookup "v1" "Secret" .Release.Namespace }}
+{{- $hs_token := "" }}
+{{- $as_token := "" }}
+{{- $bridge_url :=  printf "http://%s-bridge:3300" (include "rocketchat.fullname" .) -}}
+{{- $id := "" }}
+{{- if $secret }}
+{{- $hs_token = $secret.data.hs_token | b64dec -}}
+{{- $as_token = $secret.data.as_token | b64dec -}}
+{{- $id = $secret.data.appservice_id | b64dec -}}
+{{- else }}
+{{- $hs_token = randAlphaNum 26 | b64enc | quote -}}
+{{- $as_token = randAlphaNum 24 | b64enc | quote -}}
+{{- $id = randAlphaNum 14 | b64enc | printf "rocketchat_%s" -}}
+{{- end }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+stringData:
+  as_token: {{ $as_token }}
+  hs_token: {{ $hs_token }}
+  bridge_url: {{ $bridge_url }}
+  appservice_id: {{ $id }}
+  homeserver.append.yaml: |
+    app_service_config_files:
+      - /registration.yaml
+
+    retention:
+      enabled: true
+
+    enable_registration: true
+    enable_registration_without_verification: true
+    suppress_key_server_warning: true
+
+    allow_public_rooms_without_auth: true
+    allow_public_rooms_over_federation: true
+
+    use_appservice_legacy_authorization: true
+
+  {{- if .Values.postgresql.enabled }}
+
+  {{- if (not (or (include "postgresql.v1.createSecret" .Subcharts.postgresql) .Values.federation.extraConfigSecret)) }}
+  {{- fail "postgres password must be in values.yaml or passed through federation.extraConfigSecretName" }}
+  {{- end }}
+
+    database:
+      name: psycopg2
+      args:
+        user: {{ include "postgresql.v1.username" .Subcharts.postgresql }}
+        password: {{ .Values.postgresql.auth.password }} {{/* FIXME(debdut): this needs to be better, https://github.com/bitnami/charts/blob/8edf559ce9db3515aad61f5c8cb261b1c19bc93a/bitnami/postgresql/templates/secrets.yaml#L23 */}}
+        database: {{ include "postgresql.v1.database" .Subcharts.postgresql }}
+        host: {{ include "postgresql.v1.primary.svc.headless" .Subcharts.postgresql }} 
+        cp_min: 5
+        cp_max: 10
+      allow_unsafe_locale: true
+
+  {{- end }}
+
+  registration.yaml: |
+    id: {{ $id }}
+    hs_token: {{ $hs_token }}
+    as_token: {{ $as_token }}
+    url: {{ $bridge_url }}
+    sender_localpart: rocket.cat
+    namespaces:
+      users:
+        - exclusive: false
+          regex: .*
+      rooms:
+        - exclusive: false
+          regex: .*
+      aliases:
+        - exclusive: false
+          regex: .*
+    de.sorunome.msc2409.push_ephemeral: false
+---
+apiVersion: {{ template "deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: generate
+          image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }}
+          volumeMounts:
+          - name: data
+            mountPath: /data
+          command: ["/start.py", 'generate']
+          env:
+            - name: SYNAPSE_SERVER_NAME
+              value: {{ .Values.host }}
+            - name: SYNAPSE_REPORT_STATS
+              value: 'no'
+        - name: append
+          image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }} 
+          env:
+            - name: HOMESERVER_EXTRA_CONFIG
+              value: /__homeserver.append.yaml
+          volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+          - name: data
+            mountPath: /data
+          - name: config
+            mountPath: /__homeserver.append.yaml
+            subPath: homeserver.append.yaml
+          command:
+            - bash
+            - /scripts/updateSynapseHomeserverConfig.sh
+      containers:
+      - image: {{ .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }} 
+        name: synapse
+        env:
+          {{- if .Values.federation.extraConfigSecret }}
+          - name: HOMESERVER_EXTRA_CONFIG
+            value: /homeserver.extra.yaml
+        command:
+          - bash
+          - /scripts/updateSynapseHomeserverConfig.sh
+          - --start
+          {{- end }}
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: config
+          mountPath: /registration.yaml
+          subPath: registration.yaml
+        - name: scripts
+          mountPath: /scripts
+        {{- with .Values.federation.extraConfigSecret }}
+        - name: extraConfig
+          mountPath: /homeserver.extra.yaml
+          subPath: {{ .key | quote }}
+        {{- end }}
+        ports:
+          - containerPort: 8008
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ template "rocketchat.fullname" . }}-scripts
+      - name: config
+        secret:
+          secretName: {{ template "rocketchat.fullname" . }}-synapse
+      {{- with .Values.federation.extraConfigSecret }}
+      - name: extraConfig
+        secret:
+          secretName: {{ .name | quote }}
+      {{- end }}
+      - name: data
+        {{- if .Values.federation.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ if .Values.federation.persistence.existingClaim }}{{ .Values.federation.persistence.existingClaim }}{{- else }}{{ template "rocketchat.fullname" . }}-synapse {{- end }} 
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8008
+    targetPort: 8008
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if (and .Values.federation.persistence.enabled (not .Values.federation.persistence.existingClaim)) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+spec:
+  {{- if .Values.federation.persistence.storageClassName }}
+  storageClassName: {{ .Values.federation.persistence.storageClassName }}
+  {{ end }}
+  accessModes:
+    {{- range .Values.federation.persistence.accessModes }}
+    - {{ . }}
+    {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.federation.persistence.resources.requests.storage | default "10Gi" }}
+{{- end -}}
+{{ end }}

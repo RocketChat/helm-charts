@@ -28,14 +28,10 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
-        {{- end }}
-
-      annotations:
+        {{- end }}   
+      annotations:  
+          {{ include "rocketchat.annotations" (dict "name" "meteor" "context" $) | indent 8 }}
         checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
-        {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
-        {{- end }}
-
 
     spec:
     {{- with .Values.imagePullSecrets }}
@@ -56,6 +52,11 @@ spec:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.extraSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.extraSecret }}
+        {{- end }}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
@@ -143,6 +144,46 @@ spec:
 {{- with .Values.extraEnv }}
 	{{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
 {{- end }}
+        {{- if .Values.federation.enabled }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
+          value: {{ .Values.host }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_enabled
+          value: "true"
+        - name: OVERWRITE_SETTING_Federation_Matrix_serve_well_known
+          {{- if not .Values.ingress.federation.serveWellKnown }}
+          value: "true"
+          {{- else }}
+          value: "false"
+          {{- end }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_id
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: appservice_id
+        - name: OVERWRITE_SETTING_Federation_Matrix_hs_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: hs_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_as_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: as_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_url
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: bridge_url
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
+         {{- if .Values.ingress.federation.serveWellKnown }}
+          value: http://{{ template "rocketchat.fullname" . }}-synapse:8008
+          {{- else }}
+          value: https://{{ .Values.federation.host }}
+          {{- end }} 
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
+          value: "rocket.cat"
+        {{end}}
         ports:
         - name: http
           containerPort: 3000
@@ -195,10 +236,14 @@ spec:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
       {{- end }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "meteor" "context" $) | indent 8 }} 
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "meteor" "context" $) | indent 8 }}
 {{- if or .Values.podAntiAffinity .Values.affinity }}
       affinity:
 {{- if .Values.affinity }}
-{{ toYaml .Values.affinity | indent 8 }}
+        {{ include "rocketchat.nodeAffinity" (dict "name" "meteor"  "context" $) | indent 10 }}
 {{- end }}
 {{- if eq .Values.podAntiAffinity "hard" }}
         podAntiAffinity:

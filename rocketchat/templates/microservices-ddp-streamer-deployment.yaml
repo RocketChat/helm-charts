@@ -30,7 +30,15 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
+      annotations:
+        {{ include "rocketchat.annotations" (dict "name" "ddpStreamer" "context" $) | indent 8 }}
     spec:
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "ddpStreamer" "context" $) | indent 8 }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "ddpStreamer" "context" $) | indent 8 }}      
+      affinity:
+        {{ include "rocketchat.nodeAffinity" (dict "name" "ddpStreamer" "context" $) | indent 8 }}         
       containers:
       - name: ddp-streamer
         image: "{{ .Values.microservices.ddpStreamer.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
