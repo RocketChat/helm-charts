@@ -12,7 +12,7 @@ metadata:
       {{- toYaml .Values.deploymentLabels | nindent 4 }}
     {{- end }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.microservices.streamHub.replicas }}
   revisionHistoryLimit: 0
   selector:
     matchLabels:
