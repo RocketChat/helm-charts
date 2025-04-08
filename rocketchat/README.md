@@ -120,28 +120,28 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
 | `microservices.presence.replicas`      | Number of replicas to run for the given service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
 | `microservices.ddpStreamer.replicas`   | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.accounts.replicas`      | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.account.replicas`      | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.authorization.replicas` | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.nats.replicas`          | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.presence.tolerations`      | Pod tolerations | [] |
 | `microservices.ddpStreamer.tolerations`   | Pod tolerations | [] |
 | `microservices.streamHub.tolerations`     | Pod tolerations | [] |
-| `microservices.accounts.tolerations`      | Pod tolerations | [] |
+| `microservices.account.tolerations`      | Pod tolerations | [] |
 | `microservices.authorization.tolerations` | Pod tolerations | [] |
 | `microservices.presence.annotations`      | Pod annotations | {} |
 | `microservices.ddpStreamer.annotations`   | Pod annotations | {} |
 | `microservices.streamHub.annotations`     | Pod annotations | {} |
-| `microservices.accounts.annotations`      | Pod annotations | {} |
+| `microservices.account.annotations`      | Pod annotations | {} |
 | `microservices.authorization.annotations` | Pod annotations | {} |
 | `microservices.presence.nodeSelector`     | nodeSelector for the Pod | {} |
 | `microservices.ddpStreamer.nodeSelector`  | nodeSelector for the Pod | {} |
 | `microservices.streamHub.nodeSelector`    | nodeSelector for the Pod | {} |
-| `microservices.accounts.nodeSelector`     | nodeSelector for the Pod | {} |
+| `microservices.account.nodeSelector`     | nodeSelector for the Pod | {} |
 | `microservices.authorization.nodeSelector`| nodeSelector for the Pod | {} |
 | `microservices.presence.affinity`      | Pod affinity | {} |
 | `microservices.ddpStreamer.affinity`   | Pod affinity | {} |
 | `microservices.streamHub.affinity`     | Pod affinity | {} |
-| `microservices.accounts.affinity`      | Pod affinity | {} |
+| `microservices.account.affinity`      | Pod affinity | {} |
 | `microservices.authorization.affinity` | Pod affinity | {} |
 | `readinessProbe.enabled`               | affinity for the Pod | [] |                                                                                                                                                                                                                                                                                                                                                                                                                             | `true`                             |
 | `readinessProbe.initialDelaySeconds`   | Delay before readiness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                      | `10`                               |
