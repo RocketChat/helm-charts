@@ -35,6 +35,10 @@ spec:
         {{ include "rocketchat.annotations" (dict "name" "authorization" "context" $) | indent 8 }}
    
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
       tolerations:
         {{ include "rocketchat.tolerations" (dict "name" "authorization" "context" $) | indent 8 }}
       nodeSelector:
