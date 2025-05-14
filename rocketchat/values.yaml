@@ -353,7 +353,6 @@ microservices:
     tolerations: []
 
   streamHub:
-    replicas: 1
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
