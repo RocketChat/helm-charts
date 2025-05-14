@@ -101,11 +101,9 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `license`                              | Contents of the Enterprise License file, if applicable                                                                                                                                                                                                                                                                                                                                                                                                         | `""`                               |
 | `prometheusScraping.enabled`           | Turn on and off /metrics endpoint for Prometheus scraping                                                                                                                                                                                                                                                                                                                                                                                                      | `false`                            |
 | `prometheusScraping.port`              | Port to use for the metrics for Prometheus to scrap on                                                                                                                                                                                                                                                                                                                                                                                                         | `9458`                             |
-| `serviceMonitor.enabled`               | Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator (prometheusScraping should be enabled)                                                                                                                                                                                                                                                                                                                                         | `false`                            |
-| `serviceMonitor.intervals`              | The intervals at which metrics should be scraped                                                                                                                                                                                                                                                                                                                                                                                                                | `[30s]`                              |
-| `serviceMonitor.ports`                  | The port names at which container exposes Prometheus metrics                                                                                                                                                                                                                                                                                                                                                                                                    | `[metrics]`                          |
-| `serviceMonitor.interval`              | deprecated, use `serviceMonitor.intervals` instead | `30s`                              |
-| `serviceMonitor.port`                  | deprecated, use `serviceMonitor.ports` instead | `metrics`                          |
+| `prometheusScraping.ms_port`           | Port to use for microservices metrics                                                                                                                                                                                                                                                                                                                                                                                                                          | `9458`                             |
+| `podMonitor.enabled`                   | Create podMonitor resource(s) for scraping metrics using PrometheusOperator (prometheusScraping should be enabled)                                                                                                                                                                                                                                                                                                                                             | `false`                            |
+| `podMonitor.interval`                  | The interval at which metrics should be scraped                                                                                                                                                                                                                                                                                                                                                                                                                | `30s`                              |
 | `livenessProbe.enabled`                | Turn on and off liveness probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `true`                             |
 | `livenessProbe.initialDelaySeconds`    | Delay before liveness probe is initiated                                                                                                                                                                                                                                                                                                                                                                                                                       | `60`                               |
 | `livenessProbe.periodSeconds`          | How often to perform the probe                                                                                                                                                                                                                                                                                                                                                                                                                                 | `15`                               |
@@ -426,3 +424,35 @@ References:
 IFF you manually enabled ingress.federation.serveWellKnown (which was a hidden setting) before, during upgrade, disable it once before enabling it again.
 
 Chart contained a bug that would cause `wellknown` deployment to fail to update (illegal live modification of `matchLabels`).
+
+### To 6.25.0
+
+**This is only applicable if you are using Prometheus monitoring with ServiceMonitor.**
+
+The chart has been updated to use PodMonitor instead of ServiceMonitor for Prometheus metrics collection. If you were using ServiceMonitor before, you'll need to update your values.yaml file. Here's how to migrate:
+
+1. Remove the old ServiceMonitor configuration:
+```yaml
+serviceMonitor:
+  enabled: true
+  intervals:
+    - 30s
+  ports:
+    - metrics
+prometheusScraping:
+  enabled: true
+  port: 9100
+```
+
+2. Replace it with the new PodMonitor configuration:
+```yaml
+podMonitor:
+  enabled: true
+  interval: 30s
+prometheusScraping:
+  enabled: true
+  port: "9100"
+  ms_port: "9458"
+```
+
+The functionality remains the same, but the implementation has been updated to use the more granular PodMonitor resource type. This change provides better visibility when using multiple replicas for each service.
