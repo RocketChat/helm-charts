@@ -255,18 +255,6 @@ podMonitor:
   # podmonitor interval
   interval: 30s
 
-  # deprecated
-  #port: metrics
-
-  ## podMonitor.port The port names at which container exposes Prometheus metrics
-  # deprecated
-  # ports:
-  #   - metrics
-  ## podMonitor.intervals The intervals at which metrics should be scraped
-  # deprecated
-  # intervals:
-  #   - 30s
-
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
