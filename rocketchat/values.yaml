@@ -248,6 +248,28 @@ prometheusScraping:
   port: 9100 # Avoid using 9458: conflicts with Moleculer Exporter
   ms_port: 9458
 
+# ServiceMonitor: Deprecated in favor of podMonitor
+serviceMonitor:
+  ## serviceMonitor.enabled Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator
+  ## prometheusScraping.enabled should be also enabled
+  ##
+  enabled: false
+
+  # deprecated
+  #interval: 30s
+
+  # deprecated
+  #port: metrics
+
+  ## metrics.serviceMonitor.port The port names at which container exposes Prometheus metrics
+  ##
+  ports:
+    - metrics
+  ## metrics.serviceMonitor.intervals The intervals at which metrics should be scraped
+  ##
+  intervals:
+    - 30s
+
 podMonitor:
   ## podMonitor.enabled Create podMonitor resource(s) for scraping metrics using PrometheusOperator
   ## prometheusScraping.enabled should be also enabled
