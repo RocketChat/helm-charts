@@ -256,10 +256,10 @@ serviceMonitor:
   enabled: false
 
   # deprecated
-  interval: 30s
+  # interval: 30s
 
   # deprecated
-  port: metrics
+  # port: metrics
 
   ## metrics.serviceMonitor.port The port names at which container exposes Prometheus metrics
   ##
