@@ -1,38 +1,38 @@
-{{- if and .Values.serviceMonitor.enabled .Values.prometheusScraping.enabled}}	
-apiVersion: monitoring.coreos.com/v1	
-kind: ServiceMonitor	
-metadata:	
-  name: {{ template "rocketchat.fullname" . }}	
-  labels:	
-    app.kubernetes.io/name: {{ include "rocketchat.name" . }}	
-    helm.sh/chart: {{ include "rocketchat.chart" . }}	
-    app.kubernetes.io/instance: {{ .Release.Name }}	
-    app.kubernetes.io/managed-by: {{ .Release.Service }}	
-spec:	
-  endpoints:	
-    {{- $ports := .Values.serviceMonitor.ports -}}	
-    {{- $intervals := .Values.serviceMonitor.intervals -}}	
-    {{- with .Values.serviceMonitor.port -}}	
-    {{- if not (has . $ports) -}}	
-    {{- $ports = append $ports . -}}	
-    {{- end -}}	
-    {{- end -}}	
-    {{- with .Values.serviceMonitor.interval -}}	
-    {{- if not (has . $intervals) -}}	
-    {{- $intervals = append $intervals . -}}	
-    {{- end -}}	
-    {{- end -}}	
-    {{- if not (eq (len $ports) (len $intervals)) -}}	
-    {{- fail "servicemonitor ports and intervals lengths must be equal" -}}	
-    {{- end -}}	
+{{- if and .Values.serviceMonitor.enabled .Values.prometheusScraping.enabled}}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ template "rocketchat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  endpoints:
+    {{- $ports := .Values.serviceMonitor.ports -}}
+    {{- $intervals := .Values.serviceMonitor.intervals -}}
+    {{- with .Values.serviceMonitor.port -}}
+    {{- if not (has . $ports) -}}
+    {{- $ports = append $ports . -}}
+    {{- end -}}
+    {{- end -}}
+    {{- with .Values.serviceMonitor.interval -}}
+    {{- if not (has . $intervals) -}}
+    {{- $intervals = append $intervals . -}}
+    {{- end -}}
+    {{- end -}}
+    {{- if not (eq (len $ports) (len $intervals)) -}}
+    {{- fail "servicemonitor ports and intervals lengths must be equal" -}}
+    {{- end -}}
 
-    {{- range $index := len $ports | until }}	
-    - port: {{ index $ports $index }}	
-      interval: {{ index $intervals $index }}	
-    {{- end }}	
-  selector:	
-    matchLabels:	
-      app.kubernetes.io/name: {{ include "rocketchat.name" . }}	
-      helm.sh/chart: {{ include "rocketchat.chart" . }}	
-      app.kubernetes.io/instance: {{ .Release.Name }}	
+    {{- range $index := len $ports | until }}
+    - port: {{ index $ports $index }}
+      interval: {{ index $intervals $index }}
+    {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+      helm.sh/chart: {{ include "rocketchat.chart" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
