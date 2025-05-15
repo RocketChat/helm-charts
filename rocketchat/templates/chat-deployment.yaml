@@ -129,7 +129,7 @@ spec:
         - name: MS_METRICS
           value: "true"
         - name: MS_METRICS_PORT
-          value: {{ .Values.prometheusScraping.ms_port | default "9458" | quote }}
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
         {{- end }}
         {{- end }}
         # Environment variables for microservices option
@@ -196,7 +196,7 @@ spec:
           containerPort: {{ .Values.prometheusScraping.port }}
         {{- if .Values.microservices.enabled }}
         - name: ms-metrics
-          containerPort: {{ .Values.prometheusScraping.ms_port }}
+          containerPort: {{ .Values.prometheusScraping.msPort }}
         {{- end }}
         {{- end }}
         {{- if .Values.livenessProbe.enabled }}

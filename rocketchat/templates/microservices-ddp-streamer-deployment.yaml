@@ -76,12 +76,12 @@ spec:
         - name: MS_METRICS
           value: "true"
         - name: MS_METRICS_PORT
-          value: {{ .Values.prometheusScraping.ms_port | default "9458" | quote }}
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
         {{- end }}
         ports:
         {{- if .Values.prometheusScraping.enabled }}
         - name: ms-metrics
-          containerPort: {{ .Values.prometheusScraping.ms_port }}
+          containerPort: {{ .Values.prometheusScraping.msPort }}
         {{- end }}
         volumeMounts: 
         {{- if .Values.extraVolumeMounts }}

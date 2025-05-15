@@ -246,7 +246,7 @@ podAnnotations:
 prometheusScraping:
   enabled: false
   port: 9100 # Avoid using 9458: conflicts with Moleculer Exporter
-  ms_port: 9458
+  msPort: 9458
 
 # ServiceMonitor: Deprecated in favor of podMonitor
 serviceMonitor:
