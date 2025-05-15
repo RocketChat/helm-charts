@@ -125,7 +125,7 @@ spec:
           value: "true"
         - name: OVERWRITE_SETTING_Prometheus_Port
           value: "{{ .Values.prometheusScraping.port }}"
-        {{- if .Values.microservices.enabled }}
+        {{- if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
         - name: MS_METRICS
           value: "true"
         - name: MS_METRICS_PORT
