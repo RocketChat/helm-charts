@@ -434,7 +434,7 @@ Chart contained a bug that would cause `wellknown` deployment to fail to update 
 
 **This is only applicable if you are using Prometheus monitoring with ServiceMonitor.**
 
-The chart has been updated to use PodMonitor instead of ServiceMonitor for Prometheus metrics collection. If you were using ServiceMonitor before, you'll need to update your values.yaml file. Here's how to migrate:
+The chart has been updated to use PodMonitor instead of ServiceMonitor for Prometheus metrics collection. If you were using ServiceMonitor before, it is recommended to update your values.yaml file and use podMonitor instead. Here's how to migrate:
 
 1. Remove the old ServiceMonitor configuration:
 ```yaml
