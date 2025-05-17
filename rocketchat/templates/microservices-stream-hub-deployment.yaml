@@ -81,8 +81,17 @@ spec:
           value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
+        {{- if .Values.prometheusScraping.enabled }}
         - name: MS_METRICS
-          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
+          value: "true"
+        - name: MS_METRICS_PORT
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
+        {{- end }}
+        ports:
+        {{- if .Values.prometheusScraping.enabled }}
+        - name: ms-metrics
+          containerPort: {{ .Values.prometheusScraping.msPort }}
+        {{- end }}
         volumeMounts: 
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}

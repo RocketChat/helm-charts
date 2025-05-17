@@ -246,7 +246,9 @@ podAnnotations:
 prometheusScraping:
   enabled: false
   port: 9100 # Avoid using 9458: conflicts with Moleculer Exporter
+  msPort: 9458
 
+# ServiceMonitor: Deprecated in favor of podMonitor
 serviceMonitor:
   ## serviceMonitor.enabled Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator
   ## prometheusScraping.enabled should be also enabled
@@ -267,6 +269,13 @@ serviceMonitor:
   ##
   intervals:
     - 30s
+
+podMonitor:
+  ## podMonitor.enabled Create podMonitor resource(s) for scraping metrics using PrometheusOperator
+  ## prometheusScraping.enabled should be also enabled
+  enabled: false
+  # podmonitor interval
+  interval: 30s
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes

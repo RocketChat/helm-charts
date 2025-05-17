@@ -125,6 +125,12 @@ spec:
           value: "true"
         - name: OVERWRITE_SETTING_Prometheus_Port
           value: "{{ .Values.prometheusScraping.port }}"
+        {{- if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
+        - name: MS_METRICS
+          value: "true"
+        - name: MS_METRICS_PORT
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
+        {{- end }}
         {{- end }}
         # Environment variables for microservices option
         {{- if .Values.microservices.enabled }}
@@ -138,12 +144,10 @@ spec:
           value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
-        - name: MS_METRICS
-          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
-        {{- end}} # end of microservices envvar. options
-{{- with .Values.extraEnv }}
-	{{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
-{{- end }}
+        {{- end }} # end of microservices envvar. options
+        {{- with .Values.extraEnv }}
+          {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+        {{- end }}
         {{- if .Values.federation.enabled }}
         - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
           value: {{ .Values.host }}
@@ -190,7 +194,11 @@ spec:
         {{- if .Values.prometheusScraping.enabled }}
         - name: metrics
           containerPort: {{ .Values.prometheusScraping.port }}
-        {{- end}}
+        {{- if .Values.microservices.enabled }}
+        - name: ms-metrics
+          containerPort: {{ .Values.prometheusScraping.msPort }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
