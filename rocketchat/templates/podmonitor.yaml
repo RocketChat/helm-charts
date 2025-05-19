@@ -34,26 +34,11 @@ spec:
   podMetricsEndpoints:
     - port: metrics
       interval: {{ .Values.podMonitor.interval | quote }}
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: {{ include "rocketchat.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.microservices.enabled }}
----
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
-metadata:
-  name: {{ template "rocketchat.fullname" . }}-ms
-labels:
-    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
-    helm.sh/chart: {{ include "rocketchat.chart" . }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-spec:
-  podMetricsEndpoints:
     - port: ms-metrics
       interval: {{ .Values.podMonitor.interval | quote }}
+{{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "rocketchat.name" . }}
-{{- end }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
