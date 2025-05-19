@@ -1,0 +1,44 @@
+{{/*
+# PodMonitor Configuration
+#
+# We're using PodMonitor instead of ServiceMonitor for metric collection because:
+#
+# 1. Critical requirement: We need to collect metrics from ALL pods, including those 
+#    that might be removed from Endpoints due to:
+#     - Failed readiness probes
+#     - Liveness probe failures
+#     - Transitional states during deployments
+#
+# 2. ServiceMonitors rely on the Kubernetes Endpoints API which automatically filters out
+#    unhealthy or not-ready pods, but we need metrics from these pods specifically for:
+#     - Troubleshooting failing instances
+#     - Collecting metrics during pod termination
+#     - Monitoring degraded but not completely failed services
+#
+# 3. Direct pod targeting ensures continuous metric collection regardless of pod health
+#    status, which is essential for our observability requirements.
+#
+# Note: This approach trades off the automatic filtering provided by ServiceMonitors in
+# favor of comprehensive monitoring coverage across all pod states.
+*/}}
+{{- if and .Values.podMonitor.enabled .Values.prometheusScraping.enabled}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ template "rocketchat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  podMetricsEndpoints:
+    - port: metrics
+      interval: {{ .Values.podMonitor.interval | quote }}
+{{- if .Values.microservices.enabled }}
+    - port: ms-metrics
+      interval: {{ .Values.podMonitor.interval | quote }}
+{{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
