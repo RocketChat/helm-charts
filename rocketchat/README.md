@@ -388,6 +388,26 @@ hooks:
     podLabels: {} # here
 ```
 
+## Monitoring
+
+This chart supports two Prometheus monitoring approaches: PodMonitor and ServiceMonitor. Each has distinct advantages depending on your monitoring needs:
+
+#### PodMonitor (Recommended)
+- Scrapes metrics directly from pods matching the selector
+- Captures metrics from pods in all states (including not ready)
+- Provides more comprehensive data for troubleshooting
+- Better visibility into pod lifecycle events
+
+#### ServiceMonitor
+- Uses Kubernetes service selectors to discover pods
+- Only scrapes metrics from pods that are ready and part of the service
+- May miss metrics from pods in transitional states
+- Simpler configuration but less detailed monitoring
+
+#### TLDR
+
+Choose PodMonitor if you need detailed pod-level metrics and troubleshooting data. Use ServiceMonitor if you only need metrics from healthy, service-ready pods.
+
 ## Upgrading
 
 ### To 5.4.3
@@ -434,7 +454,7 @@ Chart contained a bug that would cause `wellknown` deployment to fail to update 
 
 **This is only applicable if you are using Prometheus monitoring with ServiceMonitor.**
 
-The chart has been updated to use PodMonitor instead of ServiceMonitor for Prometheus metrics collection. If you were using ServiceMonitor before, it is recommended to update your values.yaml file and use podMonitor instead. Here's how to migrate:
+The chart has been updated to allow the use PodMonitor instead of ServiceMonitor for Prometheus metrics collection. If you were using ServiceMonitor before and you wan't to migrate from ServiceMonitor to PodMonitor instead. Here's how to migrate:
 
 1. Remove the old ServiceMonitor configuration:
 ```yaml
