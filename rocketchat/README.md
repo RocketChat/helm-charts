@@ -121,11 +121,12 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `global.affinity`                      | common affinity for all pods (rocket.chat and all microservices) | {}  |
 | `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
-| `microservices.presence.replicas`      | Number of replicas to run for the given service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
-| `microservices.ddpStreamer.replicas`   | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.account.replicas`      | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.authorization.replicas` | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.nats.replicas`          | Idem                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.presence.replicas`      | Number of replicas to run for the presence service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
+| `microservices.ddpStreamer.replicas`   | Number of replicas to run for the ddpStreamer service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.account.replicas`      | Number of replicas to run for the account service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.authorization.replicas` | Number of replicas to run for the authorization service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.nats.replicaCount`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
+| `microservices.nats.promExporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `false`                                |
 | `microservices.presence.tolerations`      | Pod tolerations | [] |
 | `microservices.ddpStreamer.tolerations`   | Pod tolerations | [] |
 | `microservices.streamHub.tolerations`     | Pod tolerations | [] |
@@ -303,7 +304,7 @@ If MongoDB and NATS own charts are used in the deployment, add the nodeSelector 
 
 ```yaml
 mongodb:
-  enabled: true  
+enabled: true  
   nodeSelector:
    kubernetes.io/arch: amd64
   affinity:
@@ -316,17 +317,17 @@ mongodb:
           values:
           - amd64
 nats:
-    nodeSelector:
-      kubernetes.io/arch: amd64
-    affinity:
-     nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-       nodeSelectorTerms:
-       - matchExpressions:
-         - key: kubernetes.io/arch
-           operator: In
-           values:
-           - amd64
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  affinity:
+    nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
 ```
 ### Manage MongoDB secrets
 
@@ -403,6 +404,26 @@ This chart supports two Prometheus monitoring approaches: PodMonitor and Service
 - Only scrapes metrics from pods that are ready and part of the service
 - May miss metrics from pods in transitional states
 - Simpler configuration but less detailed monitoring
+
+#### Monitoring NATS
+
+The Rocket.Chat chart includes NATS as a dependency for microservices communication. To enable metrics collection for NATS:
+
+1. Enable Prometheus scraping globally:
+```yaml
+prometheusScraping:
+  enabled: true
+```
+
+2. Enable NATS Prometheus exporter:
+```yaml
+microservices:
+  nats:
+    promExporter:
+      enabled: true
+```
+
+For additional NATS configuration options, refer to the [official NATS Helm chart documentation](https://github.com/nats-io/k8s/tree/nats-1.3.1/helm/charts/nats).
 
 #### TLDR
 
