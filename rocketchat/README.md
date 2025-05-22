@@ -317,17 +317,23 @@ enabled: true
           values:
           - amd64
 nats:
-  nodeSelector:
-    kubernetes.io/arch: amd64
-  affinity:
-    nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/arch
-          operator: In
-          values:
-          - amd64
+  statefulSet:
+    patch:
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/arch: amd64
+      - op: add
+        path: /spec/template/spec/affinity
+        value:
+          nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
 ```
 ### Manage MongoDB secrets
 
