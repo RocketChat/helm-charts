@@ -20,12 +20,12 @@ By default, the MongoDB chart requires PV support on underlying infrastructure (
 To install the chart with the release name `rocketchat`:
 
 ```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
+$ helm install rocketchat --version "6.26.0" rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
 ```
 
 If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
 ```console
-$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
+$ helm install rocketchat --version "6.26.0" rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
 ```
 
 Usage of `Values.yaml` file is recommended over using command line arguments `--set`. You must set at least the database password and root password in the values file.
@@ -40,7 +40,7 @@ mongodb:
 
 Now use the following command to deploy
 ```shell
-helm install rocketchat -f Values.yaml rocketchat/rocketchat
+helm install rocketchat --version "6.26.0" -f Values.yaml rocketchat/rocketchat
 ```
 
 > Starting chart version 5.4.3, due to mongodb dependency, username, password and database entries must be arrays of the same length. Rocket.Chat will use the first entries of those arrays for its own use. `mongodb.auth.usernames` array defaults to `{rocketchat}` and `mongodb.auth.databases` array defaults to `{rocketchat}`
@@ -175,7 +175,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-$ helm install rocketchat -f values.yaml rocketchat/rocketchat
+$ helm install rocketchat --version "6.26.0" -f values.yaml rocketchat/rocketchat
 ```
 
 ### Database Setup
@@ -436,6 +436,115 @@ For additional NATS configuration options, refer to the [official NATS Helm char
 Choose PodMonitor if you need detailed pod-level metrics and troubleshooting data. Use ServiceMonitor if you only need metrics from healthy, service-ready pods.
 
 ## Upgrading
+
+### To 6.26.0
+
+**Important**: Version 6.26.0 introduces breaking changes for NATS due to upgrading the helm chart from 0.13 to 1.3. If you prefer to avoid these changes, you can continue using version 5.26.0 by explicitly specifying it in your helm commands:
+
+```bash
+helm install rocketchat --version "6.25.0" rocketchat/rocketchat
+```
+
+If you choose to upgrade to 6.26.0, you'll need to update your NATS configuration as follows:
+
+#### NATS Image version
+
+from:
+
+```yaml
+nats:
+  nats:
+    image: nats:2.4-alpine
+```
+
+to:
+
+```yaml
+nats:
+  container:
+    image:
+      repository: nats
+      tag: 2.4-alpine
+```
+
+#### NATS Replicas
+
+from:
+
+```yaml
+nats:
+  cluster:
+    replicas: 3
+```
+
+to:
+
+```yaml
+nats:
+  replicaCount: 3
+```
+
+#### Node Selector and Affinity
+
+from:
+
+```yaml
+nats:
+  nodeSelector:
+    kubernetes.io/arch: amd64
+  affinity:
+    nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+```
+
+to:
+
+```yaml
+nats:
+  statefulSet:
+    patch:
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          kubernetes.io/arch: amd64
+      - op: add
+        path: /spec/template/spec/affinity
+        value:
+          nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+```
+
+#### Metrics
+
+from:
+
+```yaml
+nats:
+  exporter:
+    serviceMonitor:
+      enabled: false
+```
+
+to:
+
+```yaml
+nats:
+  promExporter:
+    podMonitor:
+      enabled: true
+```
 
 ### To 5.4.3
 
