@@ -386,9 +386,9 @@ microservices:
 nats:
   replicaCount: 1
   promExporter:
-    enabled: false
+    enabled: true
     podMonitor:
-      enabled: true
+      enabled: false
   container:
     image:
       repository: nats
