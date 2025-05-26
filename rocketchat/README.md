@@ -304,7 +304,7 @@ If MongoDB and NATS own charts are used in the deployment, add the nodeSelector 
 
 ```yaml
 mongodb:
-enabled: true  
+  enabled: true  
   nodeSelector:
    kubernetes.io/arch: amd64
   affinity:
