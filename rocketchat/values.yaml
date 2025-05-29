@@ -384,8 +384,15 @@ microservices:
   authorizationService:
 
 nats:
-  nats:
-    image: nats:2.4-alpine
+  replicaCount: 1
+  promExporter:
+    enabled: true
+    podMonitor:
+      enabled: false
+  container:
+    image:
+      repository: nats
+      tag: 2.4-alpine
 
 federation:
   # host:
