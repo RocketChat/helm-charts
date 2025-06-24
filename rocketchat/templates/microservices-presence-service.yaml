@@ -1,5 +1,5 @@
 {{- if .Values.microservices.enabled }}
-  {{- if .Values.prometheusScraping.enabled }}
+  {{- if and .Values.prometheusScraping.enabled (not .Values.podMonitor.enabled) }}
     {{- $service := .Values.service -}}
 apiVersion: v1
 kind: Service
