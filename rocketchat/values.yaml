@@ -133,6 +133,9 @@ mongodb:
   pdb:
     minAvailable: 0
 
+  metrics:
+    enabled: true
+
     # key:
 
   persistence:
@@ -273,7 +276,7 @@ serviceMonitor:
 podMonitor:
   ## podMonitor.enabled Create podMonitor resource(s) for scraping metrics using PrometheusOperator
   ## prometheusScraping.enabled should be also enabled
-  enabled: true
+  enabled: false
   # podmonitor interval
   interval: 30s
 
@@ -388,7 +391,7 @@ nats:
   promExporter:
     enabled: true
     podMonitor:
-      enabled: true
+      enabled: false
   container:
     image:
       repository: nats
