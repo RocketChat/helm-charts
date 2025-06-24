@@ -5,7 +5,7 @@ metadata:
   name: {{ template "rocketchat.fullname" . }}
   annotations:
     {{/* this would created duplicated metrics, collecting from both service and podmonitor */}}
-    {{- if and .Values.prometheusScraping.enabled (not .Values.podMonitor.enabled) }}
+    {{- if .Values.prometheusScraping.enabled }}
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
