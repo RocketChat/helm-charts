@@ -5,7 +5,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-ddp-streamer
   annotations:
-    {{- if .Values.prometheusScraping.enabled }}
+    {{- if and .Values.prometheusScraping.enabled (not .Values.podMonitor.enabled) }}
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.port }}"
