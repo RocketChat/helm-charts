@@ -1,0 +1,50 @@
+{{ if and .Values.nats.promExporter.enabled (not .Values.nats.promExporter.podMonitor.enabled) }}
+{{ if (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+{{/* if there is the monitoring.coreos.com/v1 API, use it */}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    app.kubernetes.io/component: nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  name: rocketchat-nats
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+  - port: prom-metrics
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: nats
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: nats
+{{ else }}
+{{/* if there is no monitoring.coreos.com/v1 API, use the annotations to scrape the metrics */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nats-metrics
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8222"
+spec:
+  ClusterIP: None
+  selector:
+    app.kubernetes.io/component: nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nats
+  publishNotReadyAddresses: true
+  ports:
+  - appProtocol: http
+    name: monitor
+    port: 8222
+    protocol: TCP
+    targetPort: monitor
+  sessionAffinity: None
+  selector:
+    app.kubernetes.io/component: nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nats
+{{ end }} {{/* endif */}}
+{{ end }}

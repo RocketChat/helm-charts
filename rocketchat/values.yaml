@@ -135,6 +135,8 @@ mongodb:
 
   metrics:
     enabled: true
+    serviceMonitor:
+      enabled: false # default to false and use ours that checks for the crd
 
     # key:
 
@@ -391,7 +393,7 @@ nats:
   promExporter:
     enabled: true
     podMonitor:
-      enabled: false
+      enabled: false # default to false and use ours that checks for the crd
   container:
     image:
       repository: nats
