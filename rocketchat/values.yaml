@@ -278,7 +278,7 @@ serviceMonitor:
 podMonitor:
   ## podMonitor.enabled Create podMonitor resource(s) for scraping metrics using PrometheusOperator
   ## prometheusScraping.enabled should be also enabled
-  enabled: false
+  enabled: true
   # podmonitor interval
   interval: 30s
 
