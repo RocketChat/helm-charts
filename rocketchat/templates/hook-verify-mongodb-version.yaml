@@ -33,11 +33,11 @@ spec:
       {{- end }}
       {{- if $.Values.hooks.preUpgrade.nodeSelector }}
       nodeSelector:
-      {{ toYaml $.Values.hooks.preUpgrade.nodeSelector | indent 8 }}
+{{ toYaml $.Values.hooks.preUpgrade.nodeSelector | indent 8 }}
       {{- end }}
       {{- if $.Values.hooks.preUpgrade.affinity }}
       affinity:
-      {{ toYaml $.Values.hooks.preUpgrade.affinity | indent 8 }}
+{{ toYaml $.Values.hooks.preUpgrade.affinity | indent 8 }}
       {{- end }}
 
       containers:
