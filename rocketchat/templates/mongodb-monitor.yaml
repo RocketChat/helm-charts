@@ -2,7 +2,7 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: rocketchat-mongodb
+  name: {{ .Release.Name }}-mongodb
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
   namespace: {{ .Release.Namespace }}
