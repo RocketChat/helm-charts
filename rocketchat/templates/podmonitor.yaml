@@ -21,7 +21,7 @@
 # Note: This approach trades off the automatic filtering provided by ServiceMonitors in
 # favor of comprehensive monitoring coverage across all pod states.
 */}}
-{{- if and .Values.podMonitor.enabled .Values.prometheusScraping.enabled}}
+{{- if and .Values.podMonitor.enabled .Values.prometheusScraping.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
