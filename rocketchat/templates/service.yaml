@@ -49,11 +49,9 @@ kind: Service
 metadata:
   name: {{ template "rocketchat.fullname" . }}-monolith-ms-metrics
   annotations:
-    {{- if .Values.prometheusScraping.enabled }}
     prometheus.io/path: "/metrics"
     prometheus.io/scrape: "true"
     prometheus.io/port: "{{ .Values.prometheusScraping.msPort }}"
-    {{- end }}
 {{- with $service.annotations }}
 {{ toYaml . | indent 4 }}
 {{- end }}
