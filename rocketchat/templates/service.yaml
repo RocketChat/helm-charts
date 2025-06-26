@@ -33,13 +33,6 @@ spec:
     nodePort: {{ $service.nodePort }}
     {{- end }}
     protocol: TCP
-{{- if .Values.prometheusScraping.enabled }}
-  {{- if .Values.microservices.enabled }}
-  - name: moleculer-metrics
-    port: 9458
-    targetPort: 9458
-    protocol: TCP
-  {{- end }}
   - name: metrics
     port: {{ .Values.prometheusScraping.port }}
     targetPort: {{ .Values.prometheusScraping.port }}
@@ -48,6 +41,39 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+---
+{{- if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
+{{- $service := .Values.service -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-monolith-ms-metrics
+  annotations:
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.prometheusScraping.msPort }}"
+{{- with $service.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- with $service.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  type: ClusterIP
+  ports:
+  - name: moleculer-metrics
+    port: 9458
+    targetPort: 9458
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{end}}
 ---
 {{ if .Values.federation.enabled }}
 apiVersion: v1
