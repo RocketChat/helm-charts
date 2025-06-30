@@ -3,6 +3,8 @@ host: rocketchat.example.com
 ingress:
   enabled: true
 
+replicaCount: 2
+
 mongodb:
   auth.rootPassword: DdVMffX7Mj8ZrrmS5rHiWignyFqWp263bCexRktzCk
   auth.password: QBbUuRiPFEJf6oh2T7FXXxsUlzBxJRosnrVKEdrUyew
