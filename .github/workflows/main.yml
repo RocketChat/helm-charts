@@ -85,7 +85,7 @@ jobs:
     needs:
       - set-versions
     if: ${{ needs.set-versions.outputs.run }} == 'true'
-    uses: RocketChat/helm-charts/.github/workflows/test.yml@master
+    uses: RocketChat/helm-charts/.github/workflows/test.yml
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version }}
