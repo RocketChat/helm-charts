@@ -26,7 +26,7 @@ jobs:
   run:
     needs:
       - config
-    uses: ./.github/workflows/main.yml
+    uses: ./.github/workflows/main.yml@${{ github.ref_name }}
     with:
       tag: ${{ needs.config.outputs.tag }}
       chartVersion: ${{ needs.config.outputs.chart-version }}
