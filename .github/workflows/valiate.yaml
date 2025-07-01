@@ -1,7 +1,6 @@
 name: New chart release
 
 on:
-  - pull_request
   - push
 
 jobs:
