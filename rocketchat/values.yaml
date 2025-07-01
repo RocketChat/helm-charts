@@ -376,9 +376,6 @@ microservices:
     # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
     tolerations: []
 
-  nats:
-    replicas: 1
-
   ## Parameters for each Kubernetes service
   # NOTE: reserved for future usage still
   presenceService:
@@ -389,16 +386,15 @@ microservices:
   authorizationService:
 
 nats:
-  replicaCount: 1
-  promExporter:
+  nats:
+    image: nats:2.4-alpine
+  cluster:
     enabled: true
-    podMonitor:
-      enabled: false # default to false and use ours that checks for the crd
-  container:
-    image:
-      repository: nats
-      tag: 2.11-alpine
-
+    replicas: 2
+  exporter:
+    enabled: true
+    serviceMonitor:
+      enabled: false
 federation:
   # host:
   image:
