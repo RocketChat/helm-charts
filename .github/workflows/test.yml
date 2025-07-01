@@ -35,7 +35,11 @@ jobs:
       # incase the template is invalid, the workflow would fail fast
       - name: Helm template validation
         run: |
-          helm template -f values.yaml ./helm-charts/rocketchat > /dev/null
+          helm template \
+            -f ./helm-charts/rocketchat/values.yaml \
+            --set mongodb.auth.passwords={rocketchat},mongodb.auth.rootPassword=rocketchat \
+            ./helm-charts/rocketchat \
+            > /dev/null
 
 
       - name: Clone tests
