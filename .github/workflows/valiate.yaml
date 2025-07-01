@@ -3,6 +3,10 @@ name: New chart release
 on:
   - push
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   config:
     runs-on: ubuntu-latest
