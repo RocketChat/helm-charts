@@ -1,4 +1,4 @@
-{{ if and .Values.nats.promExporter.enabled (not .Values.nats.promExporter.podMonitor.enabled) }}
+{{ if and .Values.nats.exporter.enabled (not .Values.nats.exporter.serviceMonitor.enabled) }}
 {{ if (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 {{/* if there is the monitoring.coreos.com/v1 API, use it */}}
 apiVersion: monitoring.coreos.com/v1
@@ -14,7 +14,6 @@ spec:
   - port: prom-metrics
   selector:
     matchLabels:
-      app.kubernetes.io/component: nats
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/name: nats
 {{ else }}

@@ -20,12 +20,12 @@ By default, the MongoDB chart requires PV support on underlying infrastructure (
 To install the chart with the release name `rocketchat`:
 
 ```console
-$ helm install rocketchat --version "7.0.0" rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword
 ```
 
 If you got a registration token for [Rocket.Chat Cloud](https://cloud.rocket.chat), you can also include it: 
 ```console
-$ helm install rocketchat --version "7.0.0" rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
+$ helm install rocketchat rocketchat/rocketchat --set mongodb.auth.passwords={rocketchatPassword},mongodb.auth.rootPassword=rocketchatRootPassword,registrationToken=<paste the token here>
 ```
 
 Usage of `Values.yaml` file is recommended over using command line arguments `--set`. You must set at least the database password and root password in the values file.
@@ -40,7 +40,7 @@ mongodb:
 
 Now use the following command to deploy
 ```shell
-helm install rocketchat --version "7.0.0" -f Values.yaml rocketchat/rocketchat
+helm install rocketchat -f Values.yaml rocketchat/rocketchat
 ```
 
 > Starting chart version 5.4.3, due to mongodb dependency, username, password and database entries must be arrays of the same length. Rocket.Chat will use the first entries of those arrays for its own use. `mongodb.auth.usernames` array defaults to `{rocketchat}` and `mongodb.auth.databases` array defaults to `{rocketchat}`
@@ -125,8 +125,6 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `microservices.ddpStreamer.replicas`   | Number of replicas to run for the ddpStreamer service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.account.replicas`      | Number of replicas to run for the account service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.authorization.replicas` | Number of replicas to run for the authorization service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.nats.replicaCount`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
-| `microservices.nats.promExporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `false`                                |
 | `microservices.presence.tolerations`      | Pod tolerations | [] |
 | `microservices.ddpStreamer.tolerations`   | Pod tolerations | [] |
 | `microservices.streamHub.tolerations`     | Pod tolerations | [] |
@@ -169,13 +167,15 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
 | `federation.persistence.enabled`       | Enabling persistence for matrix pod
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
+| `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
+| `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
-$ helm install rocketchat --version "7.0.0" -f values.yaml rocketchat/rocketchat
+$ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ```
 
 ### Database Setup
@@ -411,23 +411,25 @@ This chart supports two Prometheus monitoring approaches: PodMonitor and Service
 - May miss metrics from pods in transitional states
 - Simpler configuration but less detailed monitoring
 
-#### Monitoring NATS
+#### External components
 
-The Rocket.Chat chart includes NATS as a dependency for microservices communication. To enable metrics collection for NATS:
+External components such as NATS and MongoDB by default have metrics enabled and collected by `podmonitors`, if the target cluster does not have Prometheus Operator CRDs, then a service will be created and annotated for Prometheus discovery.
 
-1. Enable Prometheus scraping globally:
-```yaml
-prometheusScraping:
-  enabled: true
+
+- Nats:
+```
+nats:
+  exporter:
+    enabled: false
 ```
 
-2. Enable NATS Prometheus exporter:
-```yaml
-microservices:
-  nats:
-    promExporter:
-      enabled: true
+- MongoDB:
 ```
+mongodb:
+  metrics:
+    enabled: false
+```
+
 
 For additional NATS configuration options, refer to the [official NATS Helm chart documentation](https://github.com/nats-io/k8s/tree/nats-1.3.1/helm/charts/nats).
 
@@ -436,95 +438,6 @@ For additional NATS configuration options, refer to the [official NATS Helm char
 Choose PodMonitor if you need detailed pod-level metrics and troubleshooting data. Use ServiceMonitor if you only need metrics from healthy, service-ready pods.
 
 ## Upgrading
-
-### To 7.0.0
-
-**Important**: Version 7.0.0 introduces breaking changes for NATS due to upgrading the helm chart from 0.13 to 1.3. If you prefer to avoid these changes, you can continue using version 5.26.0 by explicitly specifying it in your helm commands:
-
-```bash
-helm install rocketchat --version "6.25.0" rocketchat/rocketchat
-```
-
-If you choose to upgrade to 7.0.0, you'll need to update your NATS configuration as follows:
-
-#### NATS Image version
-
-from:
-
-```yaml
-nats:
-  nats:
-    image: nats:2.4-alpine
-```
-
-to:
-
-```yaml
-nats:
-  container:
-    image:
-      repository: nats
-      tag: 2.4-alpine
-```
-
-#### NATS Replicas
-
-from:
-
-```yaml
-nats:
-  cluster:
-    replicas: 3
-```
-
-to:
-
-```yaml
-nats:
-  replicaCount: 3
-```
-
-#### Node Selector and Affinity
-
-from:
-
-```yaml
-nats:
-  nodeSelector:
-    kubernetes.io/arch: amd64
-  affinity:
-    nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/arch
-          operator: In
-          values:
-          - amd64
-```
-
-to:
-
-```yaml
-nats:
-  statefulSet:
-    patch:
-      - op: add
-        path: /spec/template/spec/nodeSelector
-        value:
-          kubernetes.io/arch: amd64
-      - op: add
-        path: /spec/template/spec/affinity
-        value:
-          nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/arch
-                operator: In
-                values:
-                - amd64
-```
 
 #### Metrics
 
