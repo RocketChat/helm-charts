@@ -37,6 +37,12 @@ jobs:
           path: tests
           submodules: true
 
+      # This would avoid the need spin a k3s cluster for testing
+      # incase the template is invalid, the workflow would fail fast
+      - name: Helm template validation
+        run: |
+          helm template -f values.yaml ./rocketchat > /dev/null
+
       - name: Setup k3d
         uses: AbsaOSS/k3d-action@main
         with:
