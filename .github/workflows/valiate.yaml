@@ -31,5 +31,6 @@ jobs:
       tag: ${{ needs.config.outputs.tag }}
       chartVersion: ${{ needs.config.outputs.chart-version }}
       testOnly: true
+      actionsBranch: ${{ github.ref_name }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}

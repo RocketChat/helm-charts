@@ -16,6 +16,10 @@ on:
         required: false
         type: boolean
         default: false
+      actionsBranch:
+        required: false
+        type: string
+        default: master
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -85,7 +89,7 @@ jobs:
     needs:
       - set-versions
     if: ${{ needs.set-versions.outputs.run }} == 'true'
-    uses: RocketChat/helm-charts/.github/workflows/test.yml
+    uses: RocketChat/helm-charts/.github/workflows/test.yml@${{ inputs.actionsBranch }}
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version }}
@@ -96,7 +100,7 @@ jobs:
       - set-versions
     # prettier-ignore
     if: '! contains(inputs.tag, ''rc'') && ! inputs.testOnly'
-    uses: RocketChat/helm-charts/.github/workflows/release.yml@master
+    uses: RocketChat/helm-charts/.github/workflows/release.yml@${{ inputs.actionsBranch }}
     with:
       tag: ${{ inputs.tag }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version}}
