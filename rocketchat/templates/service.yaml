@@ -37,7 +37,6 @@ spec:
     port: {{ .Values.prometheusScraping.port }}
     targetPort: {{ .Values.prometheusScraping.port }}
     protocol: TCP
-{{- end }}
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
