@@ -5,8 +5,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   labels:
-    app.kubernetes.io/component: nats
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nats
   name: {{ .Release.Name }}-nats
   namespace: {{ .Release.Namespace }}
 spec:
@@ -30,9 +30,8 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app.kubernetes.io/component: nats
-    app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/name: nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
   publishNotReadyAddresses: true
   ports:
   - appProtocol: http
