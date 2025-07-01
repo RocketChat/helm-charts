@@ -26,11 +26,10 @@ jobs:
   run:
     needs:
       - config
-    uses: ./.github/workflows/main.yml@${{ github.ref_name }}
+    uses: ./.github/workflows/main.yml
     with:
       tag: ${{ needs.config.outputs.tag }}
       chartVersion: ${{ needs.config.outputs.chart-version }}
       testOnly: true
-      actionsBranch: ${{ github.ref_name }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
