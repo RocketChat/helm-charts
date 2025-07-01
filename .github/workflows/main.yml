@@ -12,6 +12,10 @@ on:
       chartVersion:
         required: false
         type: string
+      testOnly:
+        required: false
+        type: boolean
+        default: false
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -91,7 +95,7 @@ jobs:
       - can-chart-run
       - set-versions
     # prettier-ignore
-    if: '! contains(inputs.tag, ''rc'')'
+    if: '! contains(inputs.tag, ''rc'') && ! inputs.testOnly'
     uses: RocketChat/helm-charts/.github/workflows/release.yml@master
     with:
       tag: ${{ inputs.tag }}

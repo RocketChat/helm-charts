@@ -1,0 +1,32 @@
+name: New chart release
+
+on:
+  - pull_request
+  - push
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - shell: bash
+        id: set
+        run: |
+          tag="${{ github.ref_name }}"
+          chart_version="${{ github.ref_name }}"
+
+          echo "tag=$tag" >>$GITHUB_OUTPUT
+          echo "chart-version=$chart_version" >>$GITHUB_OUTPUT
+
+          echo "tag=$tag"
+          echo "chart-version=$chart_version"
+  run:
+    needs:
+      - config
+    uses: ./.github/workflows/main.yml
+    with:
+      tag: ${{ needs.config.outputs.tag }}
+      chartVersion: ${{ needs.config.outputs.chart-version }}
+      testOnly: true
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
