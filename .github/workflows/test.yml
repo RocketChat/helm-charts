@@ -30,18 +30,20 @@ jobs:
         with:
           repository: ${{ env.REPO }}
           path: ./helm-charts
+
+      # This would avoid the need spin a k3s cluster for testing
+      # incase the template is invalid, the workflow would fail fast
+      - name: Helm template validation
+        run: |
+          helm template -f values.yaml ./helm-charts/rocketchat > /dev/null
+
+
       - name: Clone tests
         uses: actions/checkout@v3
         with:
           repository: ${{ env.TESTS_REPO }}
           path: tests
           submodules: true
-
-      # This would avoid the need spin a k3s cluster for testing
-      # incase the template is invalid, the workflow would fail fast
-      - name: Helm template validation
-        run: |
-          helm template -f values.yaml ./rocketchat > /dev/null
 
       - name: Setup k3d
         uses: AbsaOSS/k3d-action@main
