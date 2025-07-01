@@ -72,7 +72,7 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{end}}
+{{- end }}
 ---
 {{ if .Values.federation.enabled }}
 apiVersion: v1
@@ -94,4 +94,4 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-{{end}}
+{{- end }}
