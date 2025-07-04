@@ -81,7 +81,7 @@ jobs:
     needs:
       - set-versions
     if: ${{ needs.set-versions.outputs.run }} == 'true'
-    uses: RocketChat/helm-charts/.github/workflows/test.yml@master
+    uses: ./.github/workflows/test.yml
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version }}
@@ -92,7 +92,7 @@ jobs:
       - set-versions
     # prettier-ignore
     if: '! contains(inputs.tag, ''rc'')'
-    uses: RocketChat/helm-charts/.github/workflows/release.yml@master
+    uses: ./.github/workflows/release.yml
     with:
       tag: ${{ inputs.tag }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version}}

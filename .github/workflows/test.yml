@@ -13,47 +13,87 @@ on:
     inputs:
       tag:
         required: true
+        description: 'RocketChat tag to test'
       chartVersion:
+        description: 'Chart version to test'
         required: true
+  push:
+    paths:
+      - 'rocketchat/**'
+      - 'bats/**'
+      - 'mock/**'
 
 env: 
   REPO: 'RocketChat/helm-charts'
   TESTS_REPO: 'RocketChat/public-releases'
 
-
 jobs:
-  can-i-run:
+  # this 3 jobs will run in parallel for warming up the workflow
+  clone:
     runs-on: ubuntu-latest
-    steps:
+    steps: &clone
       - name: Clone helm chart repository
         uses: actions/checkout@v3
         with:
-          repository: ${{ env.REPO }}
-          path: ./helm-charts
-      - name: Clone tests
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.TESTS_REPO }}
-          path: tests
           submodules: true
 
-      - name: Setup k3d
-        uses: AbsaOSS/k3d-action@main
-        with:
-          cluster-name: helm
-          
-      - name: Show helm version
-        run: helm version
+  setup-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup docker
+        uses: docker/setup-docker-action@v4
 
-      - name: Run tests
-        shell: bash
-        env:
-          ROCKETCHAT_MAX_ATTEMPTS: 250
-          ROCKETCHAT_TAG: ${{inputs.tag}}
-          HELM_TAG: ${{inputs.chartVersion}}
-        run: |
-          sudo apt-get install --no-install-recommends -y jo jq
-          export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
-          cd tests &&
-            bash run_k8s.bash
+  setup-task:
+    runs-on: ubuntu-latest
+    steps: &setup-task
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+  setup-kind:
+    runs-on: ubuntu-latest
+    steps: &setup-kind
+      - name: Kubernetes KinD Cluster
+        id: kind
+        uses: helm/kind-action@v1
+        with:
+          install_only: true
+
+  test-rocketchat-chart:
+    needs: setup
+    strategy:
+      matrix: 
+        mode:
+          - monolith
+          - microservices
+    runs-on: ubuntu-latest
+    steps:
+      # this will be much faster due to the warm cache
+      - <<: *clone
+      - <<: *setup-task
+      - run: task rocketchat:kwok:${{matrix.mode}}
+      - run: task rocketchat:kind:${{matrix.mode}}
+      
+    
+      # # - name: Setup k3d
+      # #   uses: AbsaOSS/k3d-action@main
+      # #   with:
+      # #     cluster-name: helm
+          
+      # - name: Show helm version
+      #   run: helm version
+
+      # - name: Run tests
+      #   shell: bash
+      #   env:
+      #     ROCKETCHAT_MAX_ATTEMPTS: 250
+      #     ROCKETCHAT_TAG: ${{inputs.tag}}
+      #     HELM_TAG: ${{inputs.chartVersion}}
+      #   run: |
+      #     sudo apt-get install --no-install-recommends -y jo jq
+      #     export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
+      #     cd tests &&
+      #       bash run_k8s.bash
 

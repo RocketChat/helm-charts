@@ -1,0 +1,74 @@
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  submodules:
+    cmds:
+      - git submodule update --init --recursive
+    silent: true
+
+  mock-rocketchat:
+    cmds:
+      - docker compose -f mock/compose.yaml up -d
+    silent: true
+
+  kwok:*:create:
+    vars:
+      PROJECT_NAME: "{{index .MATCH 0}}"
+    preconditions:
+      - sh: |
+          if test -f /tmp/{{.PROJECT_NAME}}.lock; then
+            echo "{{.PROJECT_NAME}} already exists"
+            exit 1
+          fi
+    cmds:
+      - task: kwok:{{.PROJECT_NAME}}:up -d
+      - defer: touch /tmp/{{.PROJECT_NAME}}.lock
+      - echo "{{.PROJECT_NAME}} created"
+
+  kwok:*:delete:
+    vars:
+      PROJECT_NAME: "{{index .MATCH 0}}"
+    cmds:
+      - task: kwok:{{.PROJECT_NAME}}:down --volumes --remove-orphans
+      - rm /tmp/{{.PROJECT_NAME}}.lock
+
+  kwok:*:*:
+    vars:
+      PROJECT_NAME: "{{index .MATCH 0}}"
+      CLI_ARGS: "{{index .MATCH 1}}"
+    cmds:
+      - |
+        docker compose \
+          -f mock/compose.yaml \
+          --project-name {{.PROJECT_NAME}} \
+          {{.CLI_ARGS}}
+  
+  kind:*:*:
+    vars:
+      CLUSTER_NAME: "{{index .MATCH 0}}"
+      ACTION: "{{index .MATCH 1}}"
+    cmds:
+      - kind {{.ACTION}} cluster --name {{.CLUSTER_NAME}}
+
+
+
+  rocketchat:kwok:*:
+    vars:
+      MODE: "{{index .MATCH 0}}"
+      PROJECT_NAME: "kwok-{{.MODE}}"
+    cmds:
+      - task: kwok:{{.PROJECT_NAME}}:create
+      - defer: task kwok:{{.PROJECT_NAME}}:delete
+      - ./rocketchat/tests/run.bash {{.MODE}}
+      
+  rocketchat:kind:*:
+    vars:
+      MODE: "{{index .MATCH 0}}"
+      CLUSTER_NAME: "kind-{{.MODE}}"
+    cmds:
+      - task: kind:{{.CLUSTER_NAME}}:create
+      - defer: task kind:{{.CLUSTER_NAME}}:delete
+      - ./rocketchat/tests/run.bash {{.MODE}}
