@@ -50,16 +50,16 @@ setup_file() {
   run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
 }
 
-# bats test_tags=pre
-@test "verify chart --dry-run" {
-  helm_dry_run
-}
-
 # bats test_tags=pre,deploy
 @test "verify dependency install" {
   [[ -d "${ROCKETCHAT_CHART_DIR%/}/charts" ]] &&
     skip "dependencies already downloaded"
   run_and_assert_success helm dependency update "$ROCKETCHAT_CHART_DIR"
+}
+
+# bats test_tags=pre
+@test "verify chart --dry-run" {
+  helm_dry_run
 }
 
 # bats test_tags=pre,deploy

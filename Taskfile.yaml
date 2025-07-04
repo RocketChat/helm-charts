@@ -19,13 +19,14 @@ tasks:
       PROJECT_NAME: "{{index .MATCH 0}}"
     preconditions:
       - sh: |
-          if test -f /tmp/{{.PROJECT_NAME}}.lock; then
+          if task kwok:{{.PROJECT_NAME}}:ps | grep -q "{{.PROJECT_NAME}}-kwok"; then
             echo "{{.PROJECT_NAME}} already exists"
             exit 1
           fi
+          exit 0
+        msg: "{{.PROJECT_NAME}} already exists"
     cmds:
       - task: kwok:{{.PROJECT_NAME}}:up -d
-      - defer: touch /tmp/{{.PROJECT_NAME}}.lock
       - echo "{{.PROJECT_NAME}} created"
 
   kwok:*:delete:
@@ -33,7 +34,6 @@ tasks:
       PROJECT_NAME: "{{index .MATCH 0}}"
     cmds:
       - task: kwok:{{.PROJECT_NAME}}:down --volumes --remove-orphans
-      - rm /tmp/{{.PROJECT_NAME}}.lock
 
   kwok:*:*:
     vars:
