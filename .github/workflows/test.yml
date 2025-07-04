@@ -67,6 +67,7 @@ jobs:
       - setup-docker
       - setup-task
       - setup-kind
+      - clone
     strategy:
       matrix: 
         mode:
