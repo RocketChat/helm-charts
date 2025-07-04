@@ -71,7 +71,7 @@ install_prometheus_operator() {
     --install \
     prometheus-operator \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
-    --values "${TESTS_DIR}/../../prometheus-operator/values.yaml" \
+    --values "${TESTS_DIR}/../../mock/prometheus-operator/values.yaml" \
     --repo https://prometheus-community.github.io/helm-charts \
     kube-prometheus-stack \
     --wait \
