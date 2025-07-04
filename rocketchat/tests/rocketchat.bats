@@ -34,7 +34,10 @@ setup_file() {
     "Pod retries: ${POD_RETRIES}" \
     "Pod retry interval: ${POD_RETRY_INTERVAL}" \
     "Values file: ${VALUES_FILE}" \
-    "Values: ${VALUES}"
+    "Values: ${VALUES}" \
+    "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
+    "PWD: $(pwd)" \
+    "$(ls -la)"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
   cat "mock/prometheus-operator/values.yaml" >"${PROMETHEUS_OPERATOR_VALUES}"
