@@ -55,7 +55,7 @@ jobs:
 
   setup-kind:
     runs-on: ubuntu-latest
-    steps: &setup-kind
+    steps:
       - name: Kubernetes KinD Cluster
         id: kind
         uses: helm/kind-action@v1
