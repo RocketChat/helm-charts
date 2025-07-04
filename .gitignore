@@ -1,14 +1,15 @@
 rocketchat/Chart.lock
 rocketchat/*.tgz
 rocketchat/charts/
-values.yml
-Values.yml
-values.yaml
-Values.yaml
+./values.yml
+./Values.yml
+./values.yaml
+./Values.yaml
 .idea/
 **/.DS_Store
-
 
 **/.vim/
 cert-issuer.yaml
 pvc.yaml
+*.tgz
+Makefile
