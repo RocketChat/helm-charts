@@ -72,3 +72,8 @@ tasks:
       - task: kind:{{.CLUSTER_NAME}}:create
       - defer: task kind:{{.CLUSTER_NAME}}:delete
       - ./rocketchat/tests/run.bash {{.MODE}}
+
+
+  clean:
+    cmds:
+      - rm -rf rocketchat/charts
