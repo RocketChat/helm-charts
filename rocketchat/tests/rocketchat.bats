@@ -47,6 +47,9 @@ setup_file() {
 
 # bats test_tags=pre,deploy
 @test "verify dependency install" {
+  [[ "$(ls -1 "${ROCKETCHAT_CHART_DIR}/charts" | wc -l)" -eq 3 ]] ||
+    skip "dependencies already downloaded"
+
   run_and_assert_success helm dependency update "$ROCKETCHAT_CHART_DIR"
 }
 
