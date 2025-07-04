@@ -45,16 +45,16 @@ setup_file() {
   assert [ -f "${VALUES}" ]
 }
 
-# bats test_tags=pre
-@test "lint chart" {
-  run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
-}
-
 # bats test_tags=pre,deploy
 @test "verify dependency install" {
   [[ -d "${ROCKETCHAT_CHART_DIR%/}/charts" ]] &&
     skip "dependencies already downloaded"
   run_and_assert_success helm dependency update "$ROCKETCHAT_CHART_DIR"
+}
+
+# bats test_tags=pre
+@test "lint chart" {
+  run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
 }
 
 # bats test_tags=pre
