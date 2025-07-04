@@ -23,6 +23,7 @@ setup_file() {
   export POD_RETRIES="${POD_RETRIES:-5}"
   export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-30}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
+  export PROMETHEUS_OPERATOR_VALUES="${BATS_TMPDIR}/prometheus-operator-values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
 
   info_message \
@@ -36,13 +37,23 @@ setup_file() {
     "Values: ${VALUES}"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
+  cat "mock/prometheus-operator/values.yaml" >"${PROMETHEUS_OPERATOR_VALUES}"
 
 }
 
 # bats test_tags=pre,deploy,monolith,microservices
 @test "sanity check" {
+  debug_message_on_failure \
+    "PWD: $(pwd)" \
+    "$(ls -la)" \
+    "VALUES: ${VALUES}" \
+    "PROMETHEUS_OPERATOR_VALUES: ${PROMETHEUS_OPERATOR_VALUES}" \
+    "ROCKETCHAT_CHART_DIR: ${ROCKETCHAT_CHART_DIR}" \
+    "ROCKETCHAT_CHART_ARCHIVE: ${ROCKETCHAT_CHART_ARCHIVE}"
+
   assert [ -n "${DEPLOYMENT_NAME}" ]
   assert [ -f "${VALUES}" ]
+  assert [ -f "${PROMETHEUS_OPERATOR_VALUES}" ]
 }
 
 # bats test_tags=pre,deploy

@@ -1,15 +1,5 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2312
-export DETIK_CLIENT_NAMESPACE
-export DEPLOYMENT_NAME
-export ROCKETCHAT_CHART_DIR
-export VALUES_FILE
-export DEPLOYMENT_NAME
-export HELM_REPO_RELEASE
-export ROCKETCHAT_CHART_ARCHIVE
-export ROCKETCHAT_TAG
-export TESTS_DIR
-export HELM_TAG
 
 helm_dry_run() {
   run_and_assert_success helm install \
@@ -71,7 +61,7 @@ install_prometheus_operator() {
     --install \
     prometheus-operator \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
-    --values "mock/prometheus-operator/values.yaml" \
+    --values "${PROMETHEUS_OPERATOR_VALUES}" \
     --repo https://prometheus-community.github.io/helm-charts \
     kube-prometheus-stack \
     --wait \
