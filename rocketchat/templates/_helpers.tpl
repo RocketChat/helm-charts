@@ -145,9 +145,9 @@ Usage:
 {{ $nodeSelector = get (get .Values.microservices $name) "nodeSelector" }}
 {{- end }}
 {{- if (and (kindIs "map" $nodeSelector) (gt (len $nodeSelector) 0)) }}
-{{- toYaml $nodeSelector | indent 2 }}
+{{- toYaml $nodeSelector }}
 {{- else if (and (kindIs "map" .Values.global.nodeSelector) (gt (keys .Values.global.nodeSelector | len) 0)) }}
-{{- toYaml .Values.global.nodeSelector | indent 2 }}
+{{- toYaml .Values.global.nodeSelector }}
 {{- end }}
 {{- end }}
 {{- end -}}
@@ -163,9 +163,9 @@ Usage:
 {{ $nodeAffinity = get (get .Values.microservices $name) "affinity" }}
 {{- end }}
 {{- if (and (kindIs "map" $nodeAffinity) (gt (len $nodeAffinity) 0)) }}
-{{- toYaml $nodeAffinity | indent 8 }}
+{{- toYaml $nodeAffinity }}
 {{- else if (and (kindIs "map" .Values.global.affinity) (gt (keys .Values.global.affinity | len) 0)) }}
-{{- toYaml .Values.global.affinity | indent 8 }}
+{{- toYaml .Values.global.affinity }}
 {{- end }}
 {{- end }}
 {{- end -}}

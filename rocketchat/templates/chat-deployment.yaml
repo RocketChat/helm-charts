@@ -251,7 +251,7 @@ spec:
 {{- if or .Values.podAntiAffinity .Values.affinity }}
       affinity:
 {{- if .Values.affinity }}
-        {{ include "rocketchat.nodeAffinity" (dict "name" "meteor"  "context" $) | indent 10 }}
+        {{- include "rocketchat.nodeAffinity" (dict "name" "meteor"  "context" $) | indent 8 }}
 {{- end }}
 {{- if eq .Values.podAntiAffinity "hard" }}
         podAntiAffinity:
