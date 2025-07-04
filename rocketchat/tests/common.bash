@@ -8,6 +8,7 @@ export DEPLOYMENT_NAME
 export HELM_REPO_RELEASE
 export ROCKETCHAT_CHART_ARCHIVE
 export ROCKETCHAT_TAG
+export TESTS_DIR
 export HELM_TAG
 
 helm_dry_run() {
@@ -70,7 +71,7 @@ install_prometheus_operator() {
     --install \
     prometheus-operator \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
-    --values mock/prometheus-operator/values.yaml \
+    --values "${TESTS_DIR}/../../prometheus-operator/values.yaml" \
     --repo https://prometheus-community.github.io/helm-charts \
     kube-prometheus-stack \
     --wait \

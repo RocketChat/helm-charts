@@ -62,7 +62,7 @@ jobs:
         with:
           install_only: true
 
-  test-rocketchat-chart-kwok:
+  rocketchat-chart-kwok:
     needs:
       - setup-docker
       - setup-task
@@ -89,9 +89,9 @@ jobs:
       - run: task rocketchat:kwok:${{matrix.mode}}
       
     
-  test-rocketchat-chart-kind:
+  rocketchat-chart-kind:
     needs:
-      - test-rocketchat-chart-kwok
+      - rocketchat-chart-kwok
     strategy:
       matrix: 
         mode:
