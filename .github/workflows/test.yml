@@ -62,7 +62,7 @@ jobs:
         with:
           install_only: true
 
-  test-rocketchat-chart:
+  test-rocketchat-chart-kwok:
     needs:
       - setup-docker
       - setup-task
@@ -87,9 +87,32 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task rocketchat:kwok:${{matrix.mode}}
+      
+    
+  test-rocketchat-chart-kind:
+    needs:
+      - test-rocketchat-chart-kwok
+    strategy:
+      matrix: 
+        mode:
+          - monolith
+          - microservices
+    runs-on: ubuntu-latest
+    steps:
+      # this will be much faster due to the warm cache
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: task rocketchat:kind:${{matrix.mode}}
       
     
+
       # # - name: Setup k3d
       # #   uses: AbsaOSS/k3d-action@main
       # #   with:
