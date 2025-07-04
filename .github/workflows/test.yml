@@ -93,6 +93,11 @@ jobs:
   rocketchat-chart-kind:
     needs:
       - rocketchat-chart-kwok
+    strategy:
+      matrix: 
+        mode:
+          - monolith
+          - microservices
     runs-on: ubuntu-latest
     steps:
       # this will be much faster due to the warm cache
@@ -105,8 +110,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: task rocketchat:kind:monolith
-      - run: task rocketchat:kind:microservices
+      - run: task rocketchat:kind:${{matrix.mode}}
       
     
 
