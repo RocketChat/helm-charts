@@ -63,7 +63,10 @@ jobs:
           install_only: true
 
   test-rocketchat-chart:
-    needs: setup
+    needs:
+      - setup-docker
+      - setup-task
+      - setup-kind
     strategy:
       matrix: 
         mode:
