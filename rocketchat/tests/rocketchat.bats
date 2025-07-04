@@ -23,7 +23,7 @@ setup_file() {
   export POD_RETRIES="${POD_RETRIES:-5}"
   export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-30}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
-  export PROMETHEUS_OPERATOR_VALUES="${BATS_TMPDIR}/prometheus-operator-values.yaml"
+  export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
 
   info_message \
@@ -40,7 +40,6 @@ setup_file() {
     "$(ls -la)"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
-  cat "mock/prometheus-operator/values.yaml" >"${PROMETHEUS_OPERATOR_VALUES}"
 
 }
 
