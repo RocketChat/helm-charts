@@ -7,6 +7,6 @@
 [submodule "bats/bats-assert"]
 	path = bats/bats-assert
 	url = https://github.com/bats-core/bats-assert.git
-[submodule "bats/detik"]
-	path = bats/detik
+[submodule "bats/bats-detik"]
+	path = bats/bats-detik
 	url = https://github.com/bats-core/bats-detik.git
