@@ -23,6 +23,7 @@ on:
       - 'bats/**'
       - 'mock/**'
       - '.github/workflows/test.yml'
+      - 'task.bash'
 
 env: 
   REPO: 'RocketChat/helm-charts'
