@@ -60,7 +60,7 @@ kind.run() {
 }
 
 function rocketchat() {
-  modes=("microservices" "single")
+  modes=("microservices" "monolith")
 
   MODE="${1}"
   shift
