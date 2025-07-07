@@ -21,7 +21,7 @@ setup_file() {
   export TESTS_DIR="$(dirname "${BATS_TEST_FILENAME}")"
   export HELM_REPO_RELEASE="https://rocketchat.github.io/helm-charts"
   export POD_RETRIES="${POD_RETRIES:-5}"
-  export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-30}"
+  export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-60}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
   export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
