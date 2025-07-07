@@ -53,7 +53,7 @@ jobs:
           # we will create the cluster manually
           skip-creation: true
 
-  rocketchat-chart-kwok:
+  rocketchat-chart-mock:
     needs:
       - setup-docker
       - setup-k3d
@@ -72,15 +72,12 @@ jobs:
 
       - run: ./task.bash rocketchat ${{matrix.mode}} mock
       
-    
-  rocketchat-chart-kind:
+
+  # Running this in parallel causes a lot of trouble due to resource usage
+  rocketchat-chart-cluster:
     needs:
-      - rocketchat-chart-kwok
-    strategy:
-      matrix: 
-        mode:
-          - monolith
-          - microservices
+      - setup-docker
+      - rocketchat-chart-mock
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -93,5 +90,5 @@ jobs:
           # we will create the cluster manually
           skip-creation: true
 
-
-      - run: ./task.bash rocketchat ${{matrix.mode}} cluster
+      - run: ./task.bash rocketchat monolith cluster
+      - run: ./task.bash rocketchat microservices cluster
