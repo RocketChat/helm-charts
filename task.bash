@@ -4,6 +4,13 @@
 
 set -euo pipefail
 
+declare -A PORTS
+
+PORTS["mock-rocketchat-monolith"]=8080
+PORTS["mock-rocketchat-microservices"]=8081
+PORTS["cluster-rocketchat-monolith"]=9080
+PORTS["cluster-rocketchat-microservices"]=9081
+
 function _error() {
   for line in "${@}"; do
     echo -e "[ERROR]: ${line}" >&2
@@ -21,10 +28,11 @@ function submodules() {
   git submodule update --init --recursive
 }
 
-function kwok.run() {
-  KWOK_PORT="${KWOK_PORT:-8080}"
+function mock.run() {
   KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
   PROJECT_NAME="${PROJECT_NAME:-${1}}"
+
+  KWOK_PORT="${PORTS[${PROJECT_NAME}]}"
 
   sed "s/8080/${KWOK_PORT}/g" mock/kubeconfig.yaml >"${KUBECONFIG_FILE}"
 
@@ -46,15 +54,29 @@ function kwok.run() {
   "${@}"
 }
 
-kind.run() {
+cluster.run() {
   PROJECT_NAME="${PROJECT_NAME:-${1}}"
+  PORT="${PORTS[${PROJECT_NAME}]}"
+  KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
 
   function create() {
-    kind create cluster --name "${PROJECT_NAME}" || true
+    k3d cluster create \
+      --api-port "${PORT}" \
+      --image rancher/k3s:v1.33.2-k3s1 \
+      --kubeconfig-switch-context=false \
+      --kubeconfig-update-default=false \
+      --no-lb \
+      "${PROJECT_NAME}"
+
+    get_kubeconfig >"${KUBECONFIG_FILE}"
+  }
+
+  function get_kubeconfig() {
+    k3d kubeconfig get "${PROJECT_NAME}"
   }
 
   function delete() {
-    kind delete cluster --name "${PROJECT_NAME}"
+    k3d cluster delete "${PROJECT_NAME}"
   }
 
   "${@}"
@@ -77,36 +99,33 @@ function rocketchat() {
     ./rocketchat/tests/run.bash "${MODE}"
   }
 
+  export KUBECONFIG_FILE
+  export PROJECT_NAME
+  export KUBECONFIG
+
   KUBECONFIG_FILE="$(mktemp)"
+  KUBECONFIG="${KUBECONFIG_FILE}"
+  PROJECT_NAME="${1}-rocketchat-${MODE}"
+
+  _info \
+    "Running tests for ${MODE} mode" \
+    "Using project name: ${PROJECT_NAME}" \
+    "Using kubeconfig file: ${KUBECONFIG_FILE}"
 
   function mock() {
-    export PROJECT_NAME="kwok-${MODE}"
-    export KUBECONFIG="${KUBECONFIG_FILE}"
 
-    if [[ "${MODE}" == "microservices" ]]; then
-      port="8081"
-    else
-      port="8080"
-    fi
-
-    export KWOK_PORT="${port}"
-
-    # Set up cleanup trap to ensure kwok.run delete always runs
     [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'kwok.run delete' EXIT
+      trap 'mock.run delete' EXIT
 
-    kwok.run create
+    mock.run create
     _run_tests
   }
 
   function cluster() {
-    export PROJECT_NAME="kind-${MODE}"
-    unset KUBECONFIG || true
-
     [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'kind.run delete' EXIT
+      trap 'cluster.run delete' EXIT
 
-    kind.run create
+    cluster.run create
     _run_tests
   }
 
