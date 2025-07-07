@@ -42,7 +42,7 @@ setup_file() {
 
 }
 
-# bats test_tags=pre,deploy,monolith,microservices
+# bats test_tags=pre,deploy
 @test "sanity check" {
   debug_message_on_failure \
     "PWD: $(pwd)" \
@@ -54,6 +54,7 @@ setup_file() {
   assert [ -n "${DEPLOYMENT_NAME}" ]
   assert [ -f "${VALUES}" ]
   assert [ -f "${PROMETHEUS_OPERATOR_VALUES}" ]
+  assert [[ "${POD_RETRY_INTERVAL}" =~ ^[0-9]+$ ]] # just numbers
 }
 
 # bats test_tags=pre,deploy
