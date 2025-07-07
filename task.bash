@@ -117,7 +117,7 @@ function rocketchat() {
       trap 'mock.run delete' EXIT
 
     export POD_RETRIES="2"
-    export POD_RETRY_INTERVAL="5s"
+    export POD_RETRY_INTERVAL="5"
 
     mock.run create
     _run_tests
