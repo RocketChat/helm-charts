@@ -52,19 +52,35 @@ tasks:
     vars:
       MODE: "{{index .MATCH 0}}"
       PROJECT_NAME: "kwok-{{.MODE}}"
+      KUBECONFIG_ENV:
+        sh: mktemp
+      KWOK_PORT:
+        sh: |
+          if [[ "{{.MODE}}" == "microservices" ]]; then
+            echo 8081
+          else
+            echo 8080
+          fi
+      CLUSTER_NAME: "kwok-{{.MODE}}"
+    env:
+      KWOK_PORT: "{{.KWOK_PORT}}"
+
     cmds:
       - |
         if ! task kwok:{{.CLUSTER_NAME}}:ps | grep -q "{{.CLUSTER_NAME}}"; then
-          task: kind:{{.CLUSTER_NAME}}:create
+          task kwok:{{.CLUSTER_NAME}}:create
         fi
-      - KUBECONFIG=mock/kubeconfig.yaml ./rocketchat/tests/run.bash {{.MODE}}
+      - defer: task kwok:{{.CLUSTER_NAME}}:delete
+      - sed "s/8080/${KWOK_PORT:-8080}/g" mock/kubeconfig.yaml > "{{.KUBECONFIG_ENV}}"
+      - KUBECONFIG="{{.KUBECONFIG_ENV}}" ./rocketchat/tests/run.bash {{.MODE}}
 
   rocketchat:kind:*:
     vars:
       MODE: "{{index .MATCH 0}}"
       CLUSTER_NAME: "kind-{{.MODE}}"
     cmds:
-      - task: kind:{{.CLUSTER_NAME}}:create
+      - task kind:{{.CLUSTER_NAME}}:create
+      - defer: task kind:{{.CLUSTER_NAME}}:delete
       - ./rocketchat/tests/run.bash {{.MODE}}
 
     
@@ -72,12 +88,9 @@ tasks:
     vars:
       TOOL: "{{index .MATCH 0}}"
       MODE: "{{index .MATCH 1}}"
-      PROJECT_NAME: "{{.TOOL}}-{{.MODE}}"
     cmds:
       - task: clean
-      - task: "{{.TOOL}}:{{.PROJECT_NAME}}:create"
-      - defer: task "{{.TOOL}}:{{.PROJECT_NAME}}:delete"
-      - ./rocketchat/tests/run.bash {{.MODE}}
+      - task: rocketchat:{{.TOOL}}:{{.MODE}}
 
   clean:
     cmds:

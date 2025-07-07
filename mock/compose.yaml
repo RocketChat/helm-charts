@@ -2,7 +2,7 @@ services:
   kwok:
     image: registry.k8s.io/kwok/cluster:v0.4.0-k8s.v1.28.0
     ports:
-      - 8080:8080
+      - ${KWOK_PORT:-8080}:8080
     networks:
       - kwok-network
     healthcheck:
@@ -29,13 +29,12 @@ services:
       - -c
       - |
         set -euo pipefail
-        sed 's/127.0.0.1/kwok/' /kubeconfig.yaml \
+        sed -E 's/127.0.0.1:[0-9]+/kwok:8080/' /kubeconfig.yaml \
           > /kubeconfig-volume/kubeconfig.yaml
         kubectl \
           -s http://kwok:8080 \
           apply -f /manifests/
         cat /kubeconfig-volume/kubeconfig.yaml
-    
 
   noop_provisioner:
     image: ghcr.io/adriansuarez/noop-provisioner:latest
