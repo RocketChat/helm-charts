@@ -22,7 +22,6 @@ We welcome contributions to the RocketChat Helm charts! This section provides in
 Before contributing, ensure you have the following tools installed:
 
 - **Helm 3**: For chart management and testing
-- **Task**: For running automated tasks (install via [Task's official installation guide](https://taskfile.dev/installation/))
 - **Docker**: For running mock services and containerized tests
 - **kubectl**: For Kubernetes cluster interaction
 - **BATS (Bash Automated Testing System)**: Already included as a submodule in the `bats/` directory
@@ -33,7 +32,6 @@ Our testing setup uses several tools and frameworks:
 
 - **BATS**: Bash Automated Testing System for writing and running tests
 - **BATS-Detik**: Kubernetes-specific BATS library for testing Kubernetes resources
-- **Task**: Task runner for orchestrating test workflows
 - **KWOK**: Kubernetes WithOut Kubelet for lightweight cluster testing
 - **KinD**: Kubernetes in Docker for local cluster testing
 - **Docker Compose**: For running mock services
@@ -46,12 +44,12 @@ The easiest way to run tests is using the Task runner:
 
 ```bash
 # Run tests using KWOK (lightweight, recommended for development)
-task rocketchat:kwok:monolith:e2e      # Test monolith deployment
-task rocketchat:kwok:microservices:e2e # Test microservices deployment
+./task.bash clean rocketchat microservices mock
+./task.bash clean rocketchat microservices mock
 
 # Run tests using KinD (full Kubernetes cluster)
-task rocketchat:kind:monolith:e2e      # Test monolith deployment
-task rocketchat:kind:microservices:e2e # Test microservices deployment
+./task.bash clean rocketchat microservices cluster
+./task.bash clean rocketchat microservices cluster
 ```
 
 #### Test Modes
@@ -60,26 +58,6 @@ The tests support two deployment modes:
 
 - **Monolith**: Single RocketChat instance with all services
 - **Microservices**: Distributed RocketChat deployment with separate services
-
-### Available Tasks
-
-Use `task --list-all` to see all available tasks. Key testing tasks include:
-
-```bash
-# Cluster management
-task kwok:project-name:create    # Create KWOK cluster
-task kwok:project-name:delete    # Delete KWOK cluster
-task kind:cluster-name:create    # Create KinD cluster
-task kind:cluster-name:delete    # Delete KinD cluster
-
-# Test execution
-task rocketchat:<kwok|kind>:<monolith|microservices>:e2e    # Run end-to-end tests with KWOK
-task rocketchat:<kwok|kind>:<monolith|microservices>:e2e    # Run end-to-end tests with KinD
-
-# Utility tasks
-task clean                       # Clean up helm artifacts files
-task submodules                  # Download git submodules
-```
 
 ### Adding New Tests
 
@@ -110,11 +88,10 @@ load "../../bats/common.sh"
 load "../../bats/kubernetes_common.sh"
 load "common.bash"
 
-# bats test_tags=assertion,microservices
-@test "verify custom service configuration" {
-  # Your test logic here
-  assert [ -n "${SERVICE_NAME}" ]
-  # Use kubernetes_common.sh functions for K8s assertions
+# bats test_tags=assertion
+@test "verify custom pod configuration" {
+  test_pods \
+    "somepod-0" \
 }
 ```
 
@@ -125,17 +102,6 @@ The test framework provides several utilities:
 - **Kubernetes assertions**: Use functions from `bats/kubernetes_common.sh`
 - **Common utilities**: Use functions from `bats/common.sh`
 - **Chart-specific utilities**: Use functions from `rocketchat/tests/common.bash`
-
-#### Running Specific Tests
-
-```bash
-# Run tests with specific tags
-./bats/core/bin/bats --filter-tags monolith rocketchat/tests/rocketchat.bats
-./bats/core/bin/bats --filter-tags microservices rocketchat/tests/rocketchat.bats
-
-# Run specific test file
-./bats/core/bin/bats rocketchat/tests/your-new-test.bats
-```
 
 ### Continuous Integration
 
@@ -150,19 +116,10 @@ The CI pipeline runs tests for both monolith and microservices modes using both 
 
 #### Common Issues
 
-1. **Submodules not initialized**: Run `task submodules`
+1. **Submodules not initialized**: Run `./task.bash submodules`
 2. **Docker not running**: Ensure Docker daemon is running
 3. **Port conflicts**: Check if required ports are available
-4. **Cluster already exists**: Use `task clean` or delete existing clusters
-
-#### Debug Mode
-
-Enable debug output for tests:
-
-```bash
-export DEBUG_DETIK="true"
-./bats/core/bin/bats rocketchat/tests/rocketchat.bats
-```
+4. **Cluster already exists**: Verify with `docker ps` and `king get cluster` if there is no leftovers from a failed run
 
 #### Environment Variables
 
