@@ -31,9 +31,8 @@ function submodules() {
 function mock.run() {
   KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
   PROJECT_NAME="${PROJECT_NAME:-${1}}"
-
+  export KWOK_PORT
   KWOK_PORT="${PORTS[${PROJECT_NAME}]}"
-
   sed "s/8080/${KWOK_PORT}/g" mock/kubeconfig.yaml >"${KUBECONFIG_FILE}"
 
   function _compose() {
@@ -117,6 +116,9 @@ function rocketchat() {
     [[ -z "${IGNORE_CLEANUP:-}" ]] &&
       trap 'mock.run delete' EXIT
 
+    export POD_RETRIES="2"
+    export POD_RETRY_INTERVAL="5s"
+
     mock.run create
     _run_tests
   }
@@ -134,6 +136,11 @@ function rocketchat() {
 
 function clean() {
   find . -name "*.tgz" -delete
+  "$@"
+}
+
+function keep() {
+  export IGNORE_CLEANUP="true"
   "$@"
 }
 
