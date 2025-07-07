@@ -136,6 +136,13 @@ function rocketchat() {
 
 function clean() {
   find . -name "*.tgz" -delete
+  for mode in "microservices" "monolith"; do
+    PROJECT_NAME="mock-rocketchat-${mode}" \
+      mock.run delete || true
+    PROJECT_NAME="cluster-rocketchat-${mode}" \
+      cluster.run delete || true
+  done
+
   "$@"
 }
 

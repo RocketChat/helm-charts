@@ -54,7 +54,8 @@ setup_file() {
   assert [ -n "${DEPLOYMENT_NAME}" ]
   assert [ -f "${VALUES}" ]
   assert [ -f "${PROMETHEUS_OPERATOR_VALUES}" ]
-  assert [[ "${POD_RETRY_INTERVAL}" =~ ^[0-9]+$ ]] # just numbers
+  [[ "${POD_RETRY_INTERVAL}" =~ ^[0-9]+$ ]] ||
+    fail "POD_RETRY_INTERVAL is not a number"
 }
 
 # bats test_tags=pre,deploy
