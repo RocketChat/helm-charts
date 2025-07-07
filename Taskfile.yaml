@@ -9,11 +9,6 @@ tasks:
       - git submodule update --init --recursive
     silent: true
 
-  mock-rocketchat:
-    cmds:
-      - docker compose -f mock/compose.yaml up -d
-    silent: true
-
   kwok:*:create:
     vars:
       PROJECT_NAME: "{{index .MATCH 0}}"
@@ -53,27 +48,37 @@ tasks:
     cmds:
       - kind {{.ACTION}} cluster --name {{.CLUSTER_NAME}}
 
-
-
   rocketchat:kwok:*:
     vars:
       MODE: "{{index .MATCH 0}}"
       PROJECT_NAME: "kwok-{{.MODE}}"
     cmds:
-      - task: kwok:{{.PROJECT_NAME}}:create
-      - defer: task kwok:{{.PROJECT_NAME}}:delete
-      - ./rocketchat/tests/run.bash {{.MODE}}
-      
+      - |
+        if ! task kwok:{{.CLUSTER_NAME}}:ps | grep -q "{{.CLUSTER_NAME}}"; then
+          task: kind:{{.CLUSTER_NAME}}:create
+        fi
+      - KUBECONFIG=mock/kubeconfig.yaml ./rocketchat/tests/run.bash {{.MODE}}
+
   rocketchat:kind:*:
     vars:
       MODE: "{{index .MATCH 0}}"
       CLUSTER_NAME: "kind-{{.MODE}}"
     cmds:
       - task: kind:{{.CLUSTER_NAME}}:create
-      - defer: task kind:{{.CLUSTER_NAME}}:delete
       - ./rocketchat/tests/run.bash {{.MODE}}
 
+    
+  e2e:rocketchat:*:*:
+    vars:
+      TOOL: "{{index .MATCH 0}}"
+      MODE: "{{index .MATCH 1}}"
+      PROJECT_NAME: "{{.TOOL}}-{{.MODE}}"
+    cmds:
+      - task: clean
+      - task: "{{.TOOL}}:{{.PROJECT_NAME}}:create"
+      - defer: task "{{.TOOL}}:{{.PROJECT_NAME}}:delete"
+      - ./rocketchat/tests/run.bash {{.MODE}}
 
   clean:
     cmds:
-      - rm -rf rocketchat/charts
+      - find . -name "*.tgz" -delete

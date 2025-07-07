@@ -87,7 +87,7 @@ jobs:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: task rocketchat:kwok:${{matrix.mode}}
+      - run: task e2e:rocketchat:kwok:${{matrix.mode}}
       
     
   rocketchat-chart-kind:
@@ -110,7 +110,7 @@ jobs:
         with:
           version: 3.x
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: task rocketchat:kind:${{matrix.mode}}
+      - run: task e2e:rocketchat:kind:${{matrix.mode}}
       
     
 
