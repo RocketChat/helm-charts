@@ -45,19 +45,18 @@ jobs:
       - name: Setup docker
         uses: docker/setup-docker-action@v4
 
-  setup-kind:
+  setup-k3d:
     runs-on: ubuntu-latest
     steps:
-      - name: Kubernetes KinD Cluster
-        id: kind
-        uses: helm/kind-action@v1
+      - uses: nolar/setup-k3d-k3s@v1
         with:
-          install_only: true
+          # we will create the cluster manually
+          skip-creation: true
 
   rocketchat-chart-kwok:
     needs:
       - setup-docker
-      - setup-kind
+      - setup-k3d
       - clone
     strategy:
       matrix: 
@@ -91,24 +90,3 @@ jobs:
         with:
           submodules: true
       - run: ./task.bash rocketchat ${{matrix.mode}} cluster
-      
-      # # - name: Setup k3d
-      # #   uses: AbsaOSS/k3d-action@main
-      # #   with:
-      # #     cluster-name: helm
-          
-      # - name: Show helm version
-      #   run: helm version
-
-      # - name: Run tests
-      #   shell: bash
-      #   env:
-      #     ROCKETCHAT_MAX_ATTEMPTS: 250
-      #     ROCKETCHAT_TAG: ${{inputs.tag}}
-      #     HELM_TAG: ${{inputs.chartVersion}}
-      #   run: |
-      #     sudo apt-get install --no-install-recommends -y jo jq
-      #     export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
-      #     cd tests &&
-      #       bash run_k8s.bash
-
