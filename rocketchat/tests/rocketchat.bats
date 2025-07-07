@@ -36,8 +36,7 @@ setup_file() {
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
     "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
-    "PWD: $(pwd)" \
-    "$(ls -la)"
+    "PWD: $(pwd)"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
 
@@ -47,7 +46,6 @@ setup_file() {
 @test "sanity check" {
   debug_message_on_failure \
     "PWD: $(pwd)" \
-    "$(ls -la)" \
     "VALUES: ${VALUES}" \
     "PROMETHEUS_OPERATOR_VALUES: ${PROMETHEUS_OPERATOR_VALUES}" \
     "ROCKETCHAT_CHART_DIR: ${ROCKETCHAT_CHART_DIR}" \
