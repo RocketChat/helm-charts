@@ -169,6 +169,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
 | `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
 | `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
+| `extraDeploy`| Extra objects to deploy (value evaluated as a template) | `[]` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
