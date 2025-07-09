@@ -30,6 +30,19 @@ jobs:
         with:
           repository: ${{ env.REPO }}
           path: ./helm-charts
+
+      # This would avoid the need spin a k3s cluster for testing
+      # incase the template is invalid, the workflow would fail fast
+      - name: Helm template validation
+        run: |
+          helm dependency build ./helm-charts/rocketchat/
+          helm template \
+            -f ./helm-charts/rocketchat/values.yaml \
+            --set mongodb.auth.passwords={rocketchat},mongodb.auth.rootPassword=rocketchat \
+            ./helm-charts/rocketchat \
+            > /dev/null
+
+
       - name: Clone tests
         uses: actions/checkout@v3
         with:
