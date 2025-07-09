@@ -431,3 +431,6 @@ hooks:
     podLabels: {}
   # nodeSelector: {}
   # affinity: {}
+
+# Extra objects to deploy (value evaluated as a template)
+extraDeploy: []
