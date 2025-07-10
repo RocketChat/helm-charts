@@ -114,8 +114,7 @@ function cluster() {
 
   KUBECONFIG_FILE="$(mktemp)"
   KUBECONFIG="${KUBECONFIG_FILE}"
-  PROJECT_NAME="kind-${1}"
-  shift
+  PROJECT_NAME="cluster-${1}"
 
   _info \
     "Running tests for ${1} mode" \
