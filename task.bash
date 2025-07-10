@@ -102,9 +102,7 @@ function mock() {
     trap 'mock.run delete' EXIT
 
   mock.run create
-  _info "Running tests for ${PROJECT_NAME} mode"
   "$@"
-  _info "Tests for ${PROJECT_NAME} mode completed"
 }
 
 function cluster() {
