@@ -22,11 +22,6 @@ on:
 env: 
   REPO: 'RocketChat/helm-charts'
 
-concurrency:
-  group: chart-deploy-test
-  cancel-in-progress: false
-
-
 jobs:
   # this 3 jobs will run in parallel for warming up the workflow
   clone:
