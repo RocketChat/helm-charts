@@ -74,7 +74,7 @@ jobs:
         with:
           submodules: true
 
-      - run: ./task.bash rocketchat ${{matrix.mode}} mock
+      - run: ./task.bash mock rocketchat ${{matrix.mode}}
       
 
   rocketchat-chart-monolith-cluster:
@@ -91,7 +91,7 @@ jobs:
         with:
           skip-creation: true
 
-      - run: ./task.bash rocketchat monolith cluster
+      - run: ./task.bash cluster rocketchat monolith
 
   rocketchat-chart-microservices-cluster:
     needs:
@@ -107,4 +107,4 @@ jobs:
         with:
           skip-creation: true
 
-      - run: ./task.bash rocketchat microservices cluster
+      - run: ./task.bash cluster rocketchat microservices
