@@ -111,9 +111,8 @@ helm_common() {
 @test "cleanup" {
   [[ -n "$IGNORE_CLEANUP" ]] &&
     skip "Skipping cleanup due to IGNORE_CLEANUP"
+
   helm uninstall \
     --namespace "$DETIK_CLIENT_NAMESPACE" \
-    --wait \
-    --timeout 600s \
     "$DEPLOYMENT_NAME"
 }
