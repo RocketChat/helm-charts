@@ -10,6 +10,8 @@ PORTS["mock-rocketchat-monolith"]=8080
 PORTS["mock-rocketchat-microservices"]=8081
 PORTS["cluster-rocketchat-monolith"]=9080
 PORTS["cluster-rocketchat-microservices"]=9081
+PORTS["mock-prometheus"]=8082
+PORTS["cluster-prometheus"]=9082
 
 function _error() {
   for line in "${@}"; do
@@ -81,6 +83,52 @@ cluster.run() {
   "${@}"
 }
 
+function mock() {
+  export KUBECONFIG_FILE
+  export PROJECT_NAME
+  export KUBECONFIG
+
+  KUBECONFIG_FILE="$(mktemp)"
+  KUBECONFIG="${KUBECONFIG_FILE}"
+  args="$*"
+  PROJECT_NAME="mock-${args//\ /-}"
+  echo "${PROJECT_NAME}"
+
+  _info \
+    "Using project name: ${PROJECT_NAME}" \
+    "Using kubeconfig file: ${KUBECONFIG_FILE}"
+
+  [[ -z "${IGNORE_CLEANUP:-}" ]] &&
+    trap 'mock.run delete' EXIT
+
+  mock.run create
+  _info "Running tests for ${PROJECT_NAME} mode"
+  "$@"
+  _info "Tests for ${PROJECT_NAME} mode completed"
+}
+
+function cluster() {
+  export KUBECONFIG_FILE
+  export PROJECT_NAME
+  export KUBECONFIG
+
+  KUBECONFIG_FILE="$(mktemp)"
+  KUBECONFIG="${KUBECONFIG_FILE}"
+  PROJECT_NAME="kind-${1}"
+  shift
+
+  _info \
+    "Running tests for ${1} mode" \
+    "Using project name: ${PROJECT_NAME}" \
+    "Using kubeconfig file: ${KUBECONFIG_FILE}"
+
+  [[ -z "${IGNORE_CLEANUP:-}" ]] &&
+    trap 'cluster.run delete' EXIT
+
+  cluster.run create
+  "$@"
+}
+
 function rocketchat() {
   modes=("microservices" "monolith")
 
@@ -94,44 +142,11 @@ function rocketchat() {
     return 1
   }
 
-  _run_tests() {
-    ./rocketchat/tests/run.bash "${MODE}"
-  }
+  ./rocketchat/tests/run.bash "${MODE}" "$@"
+}
 
-  export KUBECONFIG_FILE
-  export PROJECT_NAME
-  export KUBECONFIG
-
-  KUBECONFIG_FILE="$(mktemp)"
-  KUBECONFIG="${KUBECONFIG_FILE}"
-  PROJECT_NAME="${1}-rocketchat-${MODE}"
-
-  _info \
-    "Running tests for ${MODE} mode" \
-    "Using project name: ${PROJECT_NAME}" \
-    "Using kubeconfig file: ${KUBECONFIG_FILE}"
-
-  function mock() {
-
-    [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'mock.run delete' EXIT
-
-    export POD_RETRIES="2"
-    export POD_RETRY_INTERVAL="5"
-
-    mock.run create
-    _run_tests
-  }
-
-  function cluster() {
-    [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'cluster.run delete' EXIT
-
-    cluster.run create
-    _run_tests
-  }
-
-  "$@"
+function prometheus() {
+  ./bats/core/bin/bats ./prometheus/tests/tests.bats "$@"
 }
 
 function clean() {
@@ -142,6 +157,11 @@ function clean() {
     PROJECT_NAME="cluster-rocketchat-${mode}" \
       cluster.run delete || true
   done
+
+  PROJECT_NAME="mock-prometheus-operator" \
+    mock.run delete || true
+  PROJECT_NAME="cluster-prometheus-operator" \
+    cluster.run delete || true
 
   "$@"
 }

@@ -12,10 +12,12 @@ on:
       tag:
         type: string
         required: true
+      chartName:
+        type: string
+        required: true
 
 env:
   REPO: 'RocketChat/helm-charts'
-
 
 jobs:
   release:
@@ -40,16 +42,16 @@ jobs:
         shell: bash
         id: version
         run: |
-          sed -i -r '/^appVersion:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/rocketchat/Chart.yaml
-          sed -i -r '/^version:/ s/ .+/ ${{ inputs.chartVersion }}/' ./helm-charts/rocketchat/Chart.yaml
+          sed -i -r '/^appVersion:/ s/ .+/ ${{ inputs.tag }}/' ./helm-charts/${{ inputs.chartName }}/Chart.yaml
+          sed -i -r '/^version:/ s/ .+/ ${{ inputs.chartVersion }}/' ./helm-charts/${{ inputs.chartName }}/Chart.yaml
 
       - name: Pull dependencies
         shell: bash
-        run: helm dependency update ./helm-charts/rocketchat
+        run: helm dependency update ./helm-charts/${{ inputs.chartName }}
 
       - name: Generate helm package
         shell: bash
-        run: helm package ./helm-charts/rocketchat -d gh-pages/charts/
+        run: helm package ./helm-charts/${{ inputs.chartName }} -d gh-pages/charts/
 
       - name: Re-generate helm index
         run: helm repo index ./gh-pages/
@@ -57,7 +59,7 @@ jobs:
       - name: Push to master
         uses: EndBug/add-and-commit@v9
         with:
-          add: "rocketchat/Chart.yaml"
+          add: "${{ inputs.chartName }}/Chart.yaml"
           cwd: helm-charts
           message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.chartVersion }} with Rocket.Chat version ${{ inputs.tag }}"
           push: true
@@ -67,18 +69,18 @@ jobs:
         with:
           add: "."
           cwd: gh-pages
-          message: "Chore: bump Rocket.Chat and chart version to ${{ inputs.chartVersion }} with Rocket.Chat version ${{ inputs.tag }}"
+          message: "Chore: bump ${{ inputs.chartName }} and chart version to ${{ inputs.chartVersion }} with AppVersion version ${{ inputs.tag }}"
           push: true
       
       - name: Create a release with artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ format('./gh-pages/charts/rocketchat-{0}.tgz', inputs.chartVersion) }}
+          files: ${{ format('./gh-pages/charts/${0}-{1}.tgz', inputs.chartVersion, inputs.chartVersion) }}
           prerelease: false
           repository: ${{ env.REPO }}
           token: ${{ secrets.github-token }}
           name: ${{ inputs.chartVersion }}
           tag_name: ${{ inputs.chartVersion }}
-          body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{0}', inputs.tag) }}
+          body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{1}-{0}', inputs.chartName, inputs.tag) }}
           generate_release_notes: true
           draft: false

@@ -1,0 +1,77 @@
+name: Test Rocket.Chat helm chart
+
+on:
+  workflow_call:
+    inputs:
+      chartVersion:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      chartVersion:
+        description: 'Chart version to test'
+        required: true
+  push:
+    paths:
+      - 'prometheus/**'
+      - 'bats/**'
+      - 'mock/**'
+      - '.github/workflows/test-prometheus.yml'
+      - 'task.bash'
+
+env: 
+  REPO: 'RocketChat/helm-charts'
+
+jobs:
+  # this 3 jobs will run in parallel for warming up the workflow
+  clone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+  setup-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup docker
+        uses: docker/setup-docker-action@v4
+
+  setup-k3d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          skip-creation: true
+
+  prometheus-chart-mock:
+    needs:
+      - setup-docker
+      - setup-k3d
+      - clone
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - run: ./task.bash mock prometheus
+      
+
+  prometheus-chart-cluster:
+    needs:
+      - prometheus-chart-mock
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          skip-creation: true
+
+      - run: ./task.bash cluster prometheus
