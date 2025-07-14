@@ -429,5 +429,6 @@ hooks:
   preUpgrade:
     podAnnotations: {}
     podLabels: {}
+    resources: {}
   # nodeSelector: {}
   # affinity: {}
