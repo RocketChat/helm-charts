@@ -77,12 +77,9 @@ jobs:
         run: |
           declare -a chartNames
 
-          for file in $(echo "${{ steps.files.outputs.all_changed_files }}"); do
+          for file in ${{ steps.files.outputs.all_changed_files }}; do
             case "$file" in
-              bats/*)
-              mock/**)
-              task.bash)
-              .github/workflows/test.yml)
+              bats/*|mock/*|task.bash|.github/workflows/test.yml)
                 chartNames+=("rocketchat" "monitoring")
                 break
                 ;;
@@ -96,12 +93,13 @@ jobs:
           done
           echo "===================="
 
-          strings=""
-          for chart in "${chartNmaes[@]}"; do
-            strings+="\"${chart}\""
-          done
-          strings="[${string}]"
-          echo "::set-output name=chartNames::${strings}" | tee -a $GITHUB_OUTPUT
+          # Remove duplicates
+          unique_chartNames=($(printf "%s\n" "${chartNames[@]}" | sort -u))
+
+          # Build JSON array string
+          json_array="[\"$(IFS=\",\"; echo "${unique_chartNames[*]}")\"]"
+
+          echo "chartNames=${json_array}" >> $GITHUB_OUTPUT
 
 
   mock:
