@@ -122,18 +122,22 @@ jobs:
       - run: ./task.bash mock "${{ matrix.chartName }}"
 
 
-  # cluster:
-  #   needs:
-  #     - mock
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Clone helm chart repository
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: true
+  cluster:
+    needs:
+      - detect-changes
+      - mock
+    strategy:
+      matrix:
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
 
-  #     - uses: nolar/setup-k3d-k3s@v1
-  #       with:
-  #         skip-creation: true
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          skip-creation: true
 
-  #     - run: ./task.bash cluster "${{ needs.detect-changes.outputs.chartname }}"
+      - run: ./task.bash cluster "${{ matrix.chartName }}"
