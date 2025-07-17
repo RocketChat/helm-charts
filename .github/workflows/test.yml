@@ -109,7 +109,6 @@ jobs:
       - detect-changes
       - setup-docker
       - setup-k3d
-      - clone
     strategy:
       matrix:
         chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
