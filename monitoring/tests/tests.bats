@@ -15,11 +15,11 @@ setup_file() {
   export BATS_TMPDIR
   BATS_TMPDIR="$(mktemp -d)"
   TESTS_DIR="$(dirname "${BATS_TEST_FILENAME}")"
-  export CHART_DIR="${TESTS_DIR}/../../prometheus"
+  export CHART_DIR="${TESTS_DIR}/../../monitoring"
   export POD_RETRIES="${POD_RETRIES:-5}"
   export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-60}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
-  export CHART_ARCHIVE="${BATS_TMPDIR}/prometheus-${HELM_TAG}.tgz"
+  export CHART_ARCHIVE="${BATS_TMPDIR}/monitoring-${HELM_TAG}.tgz"
 
   info_message \
     "Bats tmpdir: ${BATS_TMPDIR}" \

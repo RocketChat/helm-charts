@@ -1,9 +1,0 @@
-dependencies:
-- name: kube-prometheus-stack
-  repository: https://prometheus-community.github.io/helm-charts
-  version: 75.9.0
-- name: grafana-operator
-  repository: oci://ghcr.io/grafana/helm-charts
-  version: v5.18.0
-digest: sha256:af9ce0ad563bc1999ebd73e17c43f5ef6dca1b73c7a8e5c89a48dae3cd637e89
-generated: "2025-07-08T14:12:33.479503319-03:00"

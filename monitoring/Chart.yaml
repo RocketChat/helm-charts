@@ -1,6 +1,6 @@
 apiVersion: v2
-name: prometheus
-description: Wrap prometheus operator and grafana with sane defaults for deploying along with rocketchat
+name: monitoring
+description: Wrap recommended monitoring stack with sane defaults for deploying along with rocketchat
 type: application
 
 # Prometheus operator version
