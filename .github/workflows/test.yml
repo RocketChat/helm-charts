@@ -9,6 +9,11 @@ on:
       chartVersion:
         type: string
         required: true
+      chartName:
+        required: true
+        type: string
+        description: "Path to the script"
+
   workflow_dispatch:
     inputs:
       tag:
@@ -17,6 +22,10 @@ on:
       chartVersion:
         description: 'Chart version to test'
         required: true
+      chartName:
+        required: true
+        type: string
+        description: "Path to the script"
   push:
     paths:
       - 'rocketchat/**'
@@ -54,6 +63,7 @@ jobs:
           skip-creation: true
 
   rocketchat-chart-mock:
+    if: "${{inputs.chartName}} == 'rocketchat'"
     needs:
       - setup-docker
       - setup-k3d
@@ -104,3 +114,23 @@ jobs:
           skip-creation: true
 
       - run: ./task.bash cluster rocketchat microservices
+
+  monitoring-mock:
+    if: "${{inputs.chartName}} == 'monitoring'"
+    needs:
+      - setup-docker
+      - setup-k3d
+      - clone
+    strategy:
+      matrix: 
+        mode:
+          - mock
+          - cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - run: ./task.bash ${{matrix.mode}} monitoring

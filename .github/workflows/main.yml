@@ -84,10 +84,11 @@ jobs:
     needs:
       - set-versions
     if: ${{ needs.set-versions.outputs.run }} == 'true'
-    uses: ./.github/workflows/test-${{inputs.chartName}}.yml
+    uses: ./.github/workflows/test.yml
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version }}
+      chartName: ${{ inputs.chartName }}
 
   update-release:
     needs:
