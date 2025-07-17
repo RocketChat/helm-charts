@@ -80,7 +80,7 @@ jobs:
         id: set-chartname
         run: |
           chartNames=()
-          changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
+          changed_files="${{ steps.changed-files.outputs.charts_changed_files }}"
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
           else
