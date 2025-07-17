@@ -68,11 +68,11 @@ jobs:
         uses: tj-actions/changed-files@v46
         with:
           files_yaml: |
-            - bats/**
-            - task.bash
-            - .github/workflows/test.yml
-            - rocketchat/**
-            - monitoring/**
+            bats/**
+            task.bash
+            .github/workflows/test.yml
+            rocketchat/**
+            monitoring/**
 
       - name: Set chartname variable
         id: set-chartname
