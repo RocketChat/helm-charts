@@ -1,0 +1,12 @@
+ingress:
+  enabled: true
+  ingressClassName: "nginx" # nginx or traefik or blank for trying auto-detect
+  tls: false
+  prometheus:
+    enabled: true
+    host: "prometheus.rocket.chat"
+    path: /
+  grafana:
+    enabled: true
+    host: "grafana.rocket.chat"
+    path: /

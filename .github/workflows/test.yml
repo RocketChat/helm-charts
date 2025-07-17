@@ -9,6 +9,11 @@ on:
       chartVersion:
         type: string
         required: true
+      chartName:
+        required: true
+        type: string
+        description: "Chartname to test"
+
   workflow_dispatch:
     inputs:
       tag:
@@ -17,13 +22,18 @@ on:
       chartVersion:
         description: 'Chart version to test'
         required: true
+      chartName:
+        required: true
+        type: string
+        description: "Name of the chart to test"
   push:
     paths:
-      - 'rocketchat/**'
-      - 'bats/**'
-      - 'mock/**'
-      - '.github/workflows/test.yml'
-      - 'task.bash'
+      - rocketchat/**
+      - monitoring/**
+      - bats/**
+      - mock/**
+      - .github/workflows/test.yml
+      - task.bash
 
 env: 
   REPO: 'RocketChat/helm-charts'
@@ -31,14 +41,6 @@ env:
 
 jobs:
   # this 3 jobs will run in parallel for warming up the workflow
-  clone:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
   setup-docker:
     runs-on: ubuntu-latest
     steps:
@@ -50,19 +52,70 @@ jobs:
     steps:
       - uses: nolar/setup-k3d-k3s@v1
         with:
-          # we will create the cluster manually
           skip-creation: true
 
-  rocketchat-chart-mock:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      chartNames: ${{ steps.set-chartname.outputs.chartname }}
+      runMock: ${{ steps.set-chartname.outputs.run_mock }}
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+
+      - name: Set chartname variable
+        id: set-chartname
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          INPUT_CHART_NAME: ${{ inputs.chartName }}
+        run: |
+          chartNames=()
+          changed_files="${ALL_CHANGED_FILES}"
+          run_mock="0"
+          if [[ -z "$changed_files" ]]; then
+            echo "No changed files detected"
+          elif [[ -n "${INPUT_CHART_NAME}" ]]; then
+            chartNames+=(${INPUT_CHART_NAME})
+          else
+            if echo "$changed_files" | grep -qE 'rocketchat/'; then
+              chartNames+=("rocketchat")
+              run_mock=1
+            fi
+            if echo "$changed_files" | grep -qE 'monitoring/'; then
+              chartNames+=("monitoring")
+              run_mock=1
+            fi
+            # if ci things are changed retest all charts
+            if echo "$changed_files" | grep -qE 'bats/|mock/|test.yml|task.bash'; then
+              chartNames+=("rocketchat" "monitoring")
+              run_mock=1
+            fi
+          fi
+
+          # Remove duplicates
+          unique_chartNames=($(printf "%s\n" "${chartNames[@]}" | sort -u))
+
+          # Build JSON array string
+          json_array=$(printf '"%s",' "${unique_chartNames[@]}")
+          json_array="[${json_array%,}]"
+          echo "runMock=${run_mock}" | tee -a $GITHUB_OUTPUT
+          echo "chartname=${json_array}" | tee -a $GITHUB_OUTPUT
+
+  mock:
+    if: ${{ needs.detect-changes.outputs.chartNames }} != [""]
     needs:
+      - detect-changes
       - setup-docker
       - setup-k3d
-      - clone
     strategy:
-      matrix: 
-        mode:
-          - monolith
-          - microservices
+      matrix:
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -70,12 +123,16 @@ jobs:
         with:
           submodules: true
 
-      - run: ./task.bash rocketchat ${{matrix.mode}} mock
-      
+      - run: ./task.bash mock "${{ matrix.chartName }}"
 
-  rocketchat-chart-monolith-cluster:
+
+  cluster:
     needs:
-      - rocketchat-chart-mock
+      - detect-changes
+      - mock
+    strategy:
+      matrix:
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -87,20 +144,4 @@ jobs:
         with:
           skip-creation: true
 
-      - run: ./task.bash rocketchat monolith cluster
-
-  rocketchat-chart-microservices-cluster:
-    needs:
-      - rocketchat-chart-monolith-cluster
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - uses: nolar/setup-k3d-k3s@v1
-        with:
-          skip-creation: true
-
-      - run: ./task.bash rocketchat microservices cluster
+      - run: ./task.bash cluster "${{ matrix.chartName }}"
