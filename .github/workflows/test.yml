@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       chartNames: ${{ steps.set-chartname.outputs.chartname }}
+      runMock: ${{ steps.set-chartname.outputs.run_mock }}
     steps:
       - name: Clone helm chart repository
         uses: actions/checkout@v3
@@ -74,14 +75,17 @@ jobs:
         run: |
           chartNames=()
           changed_files="${ALL_CHANGED_FILES}"
+          run_mock="0"
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
           else
             if echo "$changed_files" | grep -qE '^rocketchat/| rocketchat/'; then
               chartNames+=("rocketchat")
+              run_mock=1
             fi
             if echo "$changed_files" | grep -qE '^monitoring/| monitoring/'; then
               chartNames+=("monitoring")
+              run_mock=1
             fi
           fi
 
@@ -91,11 +95,11 @@ jobs:
           # Build JSON array string
           json_array=$(printf '"%s",' "${unique_chartNames[@]}")
           json_array="[${json_array%,}]"
-
-          echo "chartname=${json_array}" >> $GITHUB_OUTPUT
+          echo "runMock=${run_mock}" | tee -a $GITHUB_OUTPUT
+          echo "chartname=${json_array}" | tee -a $GITHUB_OUTPUT
 
   mock:
-    if: "${{ needs.detect-changes.outputs.chartNames }}"
+    if: "${{ needs.detect-changes.outputs.runMock }} == 1"
     needs:
       - detect-changes
       - setup-docker
