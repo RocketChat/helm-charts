@@ -72,12 +72,15 @@ jobs:
         id: set-chartname
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          INPUT_CHART_NAME: ${{ inputs.chartName }}
         run: |
           chartNames=()
           changed_files="${ALL_CHANGED_FILES}"
           run_mock="0"
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
+          elif [[ -n "${INPUT_CHART_NAME}" ]]
+            chartNames+=(${INPUT_CHART_NAME})
           else
             if echo "$changed_files" | grep -qE 'rocketchat/'; then
               chartNames+=("rocketchat")
