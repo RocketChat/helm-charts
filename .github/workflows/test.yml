@@ -13,47 +13,94 @@ on:
     inputs:
       tag:
         required: true
+        description: 'RocketChat tag to test'
       chartVersion:
+        description: 'Chart version to test'
         required: true
+  push:
+    paths:
+      - 'rocketchat/**'
+      - 'bats/**'
+      - 'mock/**'
+      - '.github/workflows/test.yml'
+      - 'task.bash'
 
 env: 
   REPO: 'RocketChat/helm-charts'
   TESTS_REPO: 'RocketChat/public-releases'
 
-
 jobs:
-  can-i-run:
+  # this 3 jobs will run in parallel for warming up the workflow
+  clone:
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
         uses: actions/checkout@v3
         with:
-          repository: ${{ env.REPO }}
-          path: ./helm-charts
-      - name: Clone tests
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ env.TESTS_REPO }}
-          path: tests
           submodules: true
 
-      - name: Setup k3d
-        uses: AbsaOSS/k3d-action@main
+  setup-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup docker
+        uses: docker/setup-docker-action@v4
+
+  setup-k3d:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nolar/setup-k3d-k3s@v1
         with:
-          cluster-name: helm
-          
-      - name: Show helm version
-        run: helm version
+          # we will create the cluster manually
+          skip-creation: true
 
-      - name: Run tests
-        shell: bash
-        env:
-          ROCKETCHAT_MAX_ATTEMPTS: 250
-          ROCKETCHAT_TAG: ${{inputs.tag}}
-          HELM_TAG: ${{inputs.chartVersion}}
-        run: |
-          sudo apt-get install --no-install-recommends -y jo jq
-          export ROCKETCHAT_CHART_DIR="$(realpath ./helm-charts/rocketchat)"
-          cd tests &&
-            bash run_k8s.bash
+  rocketchat-chart-mock:
+    needs:
+      - setup-docker
+      - setup-k3d
+      - clone
+    strategy:
+      matrix: 
+        mode:
+          - monolith
+          - microservices
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
 
+      - run: ./task.bash rocketchat ${{matrix.mode}} mock
+      
+
+  rocketchat-chart-monolith-cluster:
+    needs:
+      - rocketchat-chart-mock
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          skip-creation: true
+
+      - run: ./task.bash rocketchat monolith cluster
+
+  rocketchat-chart-microservices-cluster:
+    needs:
+      - rocketchat-chart-monolith-cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - uses: nolar/setup-k3d-k3s@v1
+        with:
+          skip-creation: true
+
+      - run: ./task.bash rocketchat microservices cluster

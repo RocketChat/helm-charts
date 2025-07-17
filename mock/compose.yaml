@@ -1,0 +1,58 @@
+services:
+  kwok:
+    image: registry.k8s.io/kwok/cluster:v0.4.0-k8s.v1.28.0
+    ports:
+      - ${KWOK_PORT:-8080}:8080
+    networks:
+      - kwok-network
+    healthcheck:
+      test: ["CMD", "kwokctl", "kubectl", "get", "ns"]
+      interval: 1s
+      timeout: 10s
+      retries: 10
+      start_period: 2s
+
+  kubeconfig:
+    image: bitnami/kubectl:latest
+    networks:
+      - kwok-network
+    volumes:
+      - ./kubeconfig.yaml:/kubeconfig.yaml:ro
+      - ./manifests:/manifests:ro
+      - kubeconfig-volume:/kubeconfig-volume:rw
+    entrypoint: bash
+    user: root
+    depends_on:
+      kwok:
+        condition: service_healthy
+    command: 
+      - -c
+      - |
+        set -euo pipefail
+        sed -E 's/127.0.0.1:[0-9]+/kwok:8080/' /kubeconfig.yaml \
+          > /kubeconfig-volume/kubeconfig.yaml
+        kubectl \
+          -s http://kwok:8080 \
+          apply -f /manifests/
+        cat /kubeconfig-volume/kubeconfig.yaml
+
+  noop_provisioner:
+    image: ghcr.io/adriansuarez/noop-provisioner:latest
+    networks:
+      - kwok-network
+    depends_on:
+      kubeconfig:
+        condition: service_completed_successfully
+    environment:
+      - KUBERNETES_MASTER=http://kwok:8080
+    volumes:
+      - kubeconfig-volume:/kubeconfig-volume
+    command: -kubeconfig=/kubeconfig-volume/kubeconfig.yaml
+
+volumes:
+  kubeconfig-volume:
+    driver: local
+
+networks:
+  kwok-network:
+    driver: bridge
