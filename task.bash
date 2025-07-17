@@ -6,10 +6,8 @@ set -euo pipefail
 
 declare -A PORTS
 
-PORTS["mock-rocketchat-monolith"]=8080
-PORTS["mock-rocketchat-microservices"]=8081
-PORTS["cluster-rocketchat-monolith"]=9080
-PORTS["cluster-rocketchat-microservices"]=9081
+PORTS["mock-rocketchat"]=8080
+PORTS["cluster-rocketchat"]=9080
 PORTS["mock-monitoring"]=8082
 PORTS["cluster-monitoring"]=9082
 
