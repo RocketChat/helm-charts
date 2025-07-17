@@ -4,10 +4,10 @@ description: Wrap recommended monitoring stack with sane defaults for deploying 
 type: application
 
 # Prometheus operator version
-appVersion: "0.83.0"
+appVersion: 0.83.0
 
 # Chart version
-version: 1.0.0
+version: 0.0.1
 
 dependencies:
 - name: kube-prometheus-stack
