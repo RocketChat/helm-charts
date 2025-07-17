@@ -79,16 +79,16 @@ jobs:
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
           else
-            if echo "$changed_files" | grep -qE '^rocketchat/| rocketchat/'; then
+            if echo "$changed_files" | grep -qE 'rocketchat/'; then
               chartNames+=("rocketchat")
               run_mock=1
             fi
-            if echo "$changed_files" | grep -qE '^monitoring/| monitoring/'; then
+            if echo "$changed_files" | grep -qE 'monitoring/'; then
               chartNames+=("monitoring")
               run_mock=1
             fi
             # if ci things are changed retest all charts
-            if echo "$changed_files" | grep -qE 'bats/| mock/ | test.yml | task.bash'; then
+            if echo "$changed_files" | grep -qE 'bats/|mock/|test.yml |task.bash'; then
               chartNames+=("rocketchat" "monitoring")
               run_mock=1
             fi
