@@ -2,7 +2,6 @@
 
 load "../../bats/common.sh"
 load "../../bats/kubernetes_common.sh"
-load "common.bash"
 
 export DETIK_CLIENT_NAME="kubectl"
 
