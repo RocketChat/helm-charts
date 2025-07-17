@@ -87,7 +87,7 @@ operator:
     enabled: false
 
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName: "" # nginx or traefik or blank for trying auto-detect
   tls: false
   prometheus:
