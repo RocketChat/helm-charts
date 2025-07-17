@@ -12,7 +12,7 @@ on:
       chartName:
         required: true
         type: string
-        description: "Path to the script"
+        description: "Chartname to test"
 
   workflow_dispatch:
     inputs:
@@ -25,7 +25,7 @@ on:
       chartName:
         required: true
         type: string
-        description: "Path to the script"
+        description: "Name of the chart to test"
   push:
     paths:
       - 'rocketchat/**'
@@ -40,14 +40,6 @@ env:
 
 jobs:
   # this 3 jobs will run in parallel for warming up the workflow
-  clone:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
   setup-docker:
     runs-on: ubuntu-latest
     steps:
@@ -61,11 +53,66 @@ jobs:
         with:
           skip-creation: true
 
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      chartname: ${{ steps.set-chartname.outputs.chartname }}
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Get changed files
+        id: files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            rocketchat/**
+            monitoring/**
+            bats/**
+            mock/**
+      - name: Set chartname variable
+        id: set-chartname
+        run: |
+          declare -a chartNames
+
+          for file in $(echo "${{ steps.files.outputs.all_changed_files }}"); do
+            case "$file" in
+              bats/*)
+              mock/**)
+              task.bash)
+              .github/workflows/test.yml)
+                chartNames+=("rocketchat" "monitoring")
+                break
+                ;;
+              rocketchat/*)
+                chartNames+=("rocketchat")
+                ;;
+              monitoring/*)
+                chartNames+=("monitoring")
+                ;;
+            esac
+          done
+          echo "===================="
+
+          strings=""
+          for chart in "${chartNmaes[@]}"; do
+            strings+="\"${chart}\""
+          done
+          strings="[${string}]"
+          echo "::set-output name=chartname::${strings}" | tee -a $GITHUB_OUTPUT
+
+
   mock:
     needs:
+      - detect-changes
       - setup-docker
       - setup-k3d
       - clone
+    strategy:
+      matrix:
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartname) }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -73,20 +120,21 @@ jobs:
         with:
           submodules: true
 
-      - run: ./task.bash mock ${{ inputs.chartName }}
+      - run: ./task.bash mock "${{ needs.detect-changes.outputs.chartname }}"
 
-  cluster:
-    needs:
-      - mock
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
 
-      - uses: nolar/setup-k3d-k3s@v1
-        with:
-          skip-creation: true
+  # cluster:
+  #   needs:
+  #     - mock
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Clone helm chart repository
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: true
 
-      - run: ./task.bash cluster "${{ inputs.chartName }}"
+  #     - uses: nolar/setup-k3d-k3s@v1
+  #       with:
+  #         skip-creation: true
+
+  #     - run: ./task.bash cluster "${{ needs.detect-changes.outputs.chartname }}"
