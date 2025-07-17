@@ -100,5 +100,6 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version}}
+      chartName: ${{ inputs.chartName }}
     secrets:
       github-token: ${{ secrets.github-token }}
