@@ -56,7 +56,7 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      chartname: ${{ steps.set-chartname.outputs.chartname }}
+      chartNames: ${{ steps.set-chartname.outputs.chartname }}
     steps:
       - name: Clone helm chart repository
         uses: actions/checkout@v3
@@ -101,7 +101,7 @@ jobs:
             strings+="\"${chart}\""
           done
           strings="[${string}]"
-          echo "::set-output name=chartname::${strings}" | tee -a $GITHUB_OUTPUT
+          echo "::set-output name=chartNames::${strings}" | tee -a $GITHUB_OUTPUT
 
 
   mock:
@@ -112,7 +112,7 @@ jobs:
       - clone
     strategy:
       matrix:
-        chartName: ${{ fromJson(needs.detect-changes.outputs.chartname) }}
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
