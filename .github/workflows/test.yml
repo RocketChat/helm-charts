@@ -68,19 +68,17 @@ jobs:
         uses: tj-actions/changed-files@v46
         with:
           files_yaml: |
-            ci:
-              - bats/**
-              - task.bash
-              - .github/workflows/test.yml
-            charts:
-              - rocketchat/**
-              - monitoring/**
+            - bats/**
+            - task.bash
+            - .github/workflows/test.yml
+            - rocketchat/**
+            - monitoring/**
 
       - name: Set chartname variable
         id: set-chartname
         run: |
           chartNames=()
-          changed_files="${{ steps.changed-files.outputs.charts_changed_files }}"
+          changed_files="${{ steps.changed-files.outputs.all_changed_files  }}"
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
           else
