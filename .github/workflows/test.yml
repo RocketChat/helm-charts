@@ -66,13 +66,6 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v46
-        with:
-          files_yaml: |
-            bats/**
-            task.bash
-            .github/workflows/test.yml
-            rocketchat/**
-            monitoring/**
 
       - name: Set chartname variable
         id: set-chartname
@@ -102,6 +95,7 @@ jobs:
           echo "chartname=${json_array}" >> $GITHUB_OUTPUT
 
   mock:
+    if: "${{ needs.detect-changes.outputs.chartNames }}"
     needs:
       - detect-changes
       - setup-docker
