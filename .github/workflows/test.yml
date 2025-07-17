@@ -59,20 +59,13 @@ jobs:
     steps:
       - uses: nolar/setup-k3d-k3s@v1
         with:
-          # we will create the cluster manually
           skip-creation: true
 
-  rocketchat-chart-mock:
-    if: "${{inputs.chartName}} == 'rocketchat'"
+  mock:
     needs:
       - setup-docker
       - setup-k3d
       - clone
-    strategy:
-      matrix: 
-        mode:
-          - monolith
-          - microservices
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -80,12 +73,11 @@ jobs:
         with:
           submodules: true
 
-      - run: ./task.bash mock rocketchat ${{matrix.mode}}
-      
+      - run: ./task.bash mock ${{ inputs.chartName }}
 
-  rocketchat-chart-monolith-cluster:
+  cluster:
     needs:
-      - rocketchat-chart-mock
+      - mock
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -97,40 +89,4 @@ jobs:
         with:
           skip-creation: true
 
-      - run: ./task.bash cluster rocketchat monolith
-
-  rocketchat-chart-microservices-cluster:
-    needs:
-      - rocketchat-chart-monolith-cluster
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - uses: nolar/setup-k3d-k3s@v1
-        with:
-          skip-creation: true
-
-      - run: ./task.bash cluster rocketchat microservices
-
-  monitoring-mock:
-    if: "${{inputs.chartName}} == 'monitoring'"
-    needs:
-      - setup-docker
-      - setup-k3d
-      - clone
-    strategy:
-      matrix: 
-        mode:
-          - mock
-          - cluster
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clone helm chart repository
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - run: ./task.bash ${{matrix.mode}} monitoring
+      - run: ./task.bash cluster "${{ inputs.chartName }}"

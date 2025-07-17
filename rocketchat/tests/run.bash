@@ -16,11 +16,16 @@ function monolith() {
   ./bats/core/bin/bats --filter-tags !microservices rocketchat/tests/rocketchat.bats
 }
 
-echo "Running $*"
-
 echo "ROCKETCHAT_HOST: ${ROCKETCHAT_HOST}"
 echo "ROCKETCHAT_TAG: ${ROCKETCHAT_TAG}"
 
-"$@"
+echo "==========================================="
+echo "Monolith"
+monolith
 
+echo "==========================================="
+echo "Microservices"
+microservices
+
+echo "==========================================="
 echo "Done"
