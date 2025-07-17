@@ -29,6 +29,7 @@ on:
   push:
     paths:
       - 'rocketchat/**'
+      - 'monitoring/**'
       - 'bats/**'
       - 'mock/**'
       - '.github/workflows/test.yml'
