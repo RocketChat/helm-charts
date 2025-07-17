@@ -126,19 +126,7 @@ function cluster() {
 }
 
 function rocketchat() {
-  modes=("microservices" "monolith")
-
-  MODE="${1}"
-  shift
-
-  [[ ! " ${modes[*]} " =~ ${MODE} ]] && {
-    _error \
-      "Invalid mode: ${MODE}" \
-      "Valid modes: ${modes[*]}"
-    return 1
-  }
-
-  ./rocketchat/tests/run.bash "${MODE}" "$@"
+  ./rocketchat/tests/run.bash "$@"
 }
 
 function monitoring() {
