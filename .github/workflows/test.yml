@@ -87,6 +87,11 @@ jobs:
               chartNames+=("monitoring")
               run_mock=1
             fi
+            # if ci things are changed retest all charts
+            if echo "$changed_files" | grep -qE 'bats/| mock/ | test.yml | task.bash'; then
+              chartNames+=("rocketchat" "monitoring")
+              run_mock=1
+            fi
           fi
 
           # Remove duplicates
