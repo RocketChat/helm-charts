@@ -64,43 +64,42 @@ jobs:
           submodules: true
 
       - name: Get changed files
-        id: files
-        uses: tj-actions/changed-files@v44
+        id: changed-files
+        uses: tj-actions/changed-files@v46
         with:
-          files: |
-            rocketchat/**
-            monitoring/**
-            bats/**
-            mock/**
+          files_yaml: |
+            ci:
+              - bats/**
+              - task.bash
+              - .github/workflows/test.yml
+            charts:
+              - rocketchat/**
+              - monitoring/**
+
       - name: Set chartname variable
         id: set-chartname
         run: |
-          declare -a chartNames
-
-          for file in ${{ steps.files.outputs.all_changed_files }}; do
-            case "$file" in
-              bats/*|mock/*|task.bash|.github/workflows/test.yml)
-                chartNames+=("rocketchat" "monitoring")
-                break
-                ;;
-              rocketchat/*)
-                chartNames+=("rocketchat")
-                ;;
-              monitoring/*)
-                chartNames+=("monitoring")
-                ;;
-            esac
-          done
-          echo "===================="
+          chartNames=()
+          changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
+          if [[ -z "$changed_files" ]]; then
+            echo "No changed files detected"
+          else
+            if echo "$changed_files" | grep -qE '^rocketchat/| rocketchat/'; then
+              chartNames+=("rocketchat")
+            fi
+            if echo "$changed_files" | grep -qE '^monitoring/| monitoring/'; then
+              chartNames+=("monitoring")
+            fi
+          fi
 
           # Remove duplicates
           unique_chartNames=($(printf "%s\n" "${chartNames[@]}" | sort -u))
 
           # Build JSON array string
-          json_array="[\"$(IFS=\",\"; echo "${unique_chartNames[*]}")\"]"
+          json_array=$(printf '"%s",' "${unique_chartNames[@]}")
+          json_array="[${json_array%,}]"
 
-          echo "chartNames=${json_array}" | tee -a $GITHUB_OUTPUT
-
+          echo "chartname=${json_array}" >> $GITHUB_OUTPUT
 
   mock:
     needs:
