@@ -38,7 +38,7 @@ jobs:
           path: ./gh-pages
           token: ${{ secrets.github-token }}
 
-      - name: Update chart and rocketchat versions
+      - name: Update chart and app versions
         shell: bash
         id: version
         run: |
@@ -75,12 +75,12 @@ jobs:
       - name: Create a release with artifact
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ format('./gh-pages/charts/${0}-{1}.tgz', inputs.chartVersion, inputs.chartVersion) }}
+          files: ${{ format('./gh-pages/charts/${0}-{1}.tgz', inputs.chartName, inputs.chartVersion) }}
           prerelease: false
           repository: ${{ env.REPO }}
           token: ${{ secrets.github-token }}
-          name: ${{ inputs.chartVersion }}
-          tag_name: ${{ inputs.chartVersion }}
+          name: ${{ inputs.chartName }}-${{ inputs.chartVersion }}
+          tag_name: ${{ inputs.chartName}}-${{ inputs.chartVersion }}
           body: ${{ format('https://github.com/RocketChat/Rocket.Chat/releases/{1}-{0}', inputs.chartName, inputs.tag) }}
           generate_release_notes: true
           draft: false
