@@ -79,7 +79,7 @@ jobs:
           run_mock="0"
           if [[ -z "$changed_files" ]]; then
             echo "No changed files detected"
-          elif [[ -n "${INPUT_CHART_NAME}" ]]
+          elif [[ -n "${INPUT_CHART_NAME}" ]]; then
             chartNames+=(${INPUT_CHART_NAME})
           else
             if echo "$changed_files" | grep -qE 'rocketchat/'; then
