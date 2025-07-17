@@ -28,12 +28,12 @@ on:
         description: "Name of the chart to test"
   push:
     paths:
-      - 'rocketchat/**'
-      - 'monitoring/**'
-      - 'bats/**'
-      - 'mock/**'
-      - '.github/workflows/test.yml'
-      - 'task.bash'
+      - rocketchat/**
+      - monitoring/**
+      - bats/**
+      - mock/**
+      - .github/workflows/test.yml
+      - task.bash
 
 env: 
   REPO: 'RocketChat/helm-charts'
