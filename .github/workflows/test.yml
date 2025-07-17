@@ -99,7 +99,7 @@ jobs:
           # Build JSON array string
           json_array="[\"$(IFS=\",\"; echo "${unique_chartNames[*]}")\"]"
 
-          echo "chartNames=${json_array}" >> $GITHUB_OUTPUT
+          echo "chartNames=${json_array}" | tee -a $GITHUB_OUTPUT
 
 
   mock:
