@@ -32,7 +32,6 @@ function submodules() {
 
 function mock.run() {
   KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
-  PROJECT_NAME="${PROJECT_NAME:-${1}}"
   export KWOK_PORT
   KWOK_PORT="${PORTS[${PROJECT_NAME}]}"
   sed "s/8080/${KWOK_PORT}/g" mock/kubeconfig.yaml >"${KUBECONFIG_FILE}"
@@ -112,7 +111,9 @@ function cluster() {
 
   KUBECONFIG_FILE="$(mktemp)"
   KUBECONFIG="${KUBECONFIG_FILE}"
-  PROJECT_NAME="cluster-${1}"
+  args="${*}"
+
+  PROJECT_NAME="cluster-${args// /-}"
 
   _info \
     "Running tests for ${1} mode" \
