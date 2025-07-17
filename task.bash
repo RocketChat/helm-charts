@@ -10,8 +10,8 @@ PORTS["mock-rocketchat-monolith"]=8080
 PORTS["mock-rocketchat-microservices"]=8081
 PORTS["cluster-rocketchat-monolith"]=9080
 PORTS["cluster-rocketchat-microservices"]=9081
-PORTS["mock-prometheus"]=8082
-PORTS["cluster-prometheus"]=9082
+PORTS["mock-monitoring"]=8082
+PORTS["cluster-monitoring"]=9082
 
 function _error() {
   for line in "${@}"; do
@@ -142,8 +142,8 @@ function rocketchat() {
   ./rocketchat/tests/run.bash "${MODE}" "$@"
 }
 
-function prometheus() {
-  ./bats/core/bin/bats ./prometheus/tests/tests.bats "$@"
+function monitoring() {
+  ./bats/core/bin/bats ./monitoring/tests/tests.bats "$@"
 }
 
 function clean() {
@@ -155,9 +155,9 @@ function clean() {
       cluster.run delete || true
   done
 
-  PROJECT_NAME="mock-prometheus-operator" \
+  PROJECT_NAME="mock-monitoring" \
     mock.run delete || true
-  PROJECT_NAME="cluster-prometheus-operator" \
+  PROJECT_NAME="cluster-monitoring" \
     cluster.run delete || true
 
   "$@"

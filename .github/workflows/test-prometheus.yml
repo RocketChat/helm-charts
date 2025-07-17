@@ -13,10 +13,10 @@ on:
         required: true
   push:
     paths:
-      - 'prometheus/**'
+      - 'monitoring/**'
       - 'bats/**'
       - 'mock/**'
-      - '.github/workflows/test-prometheus.yml'
+      - '.github/workflows/test-monitoring.yml'
       - 'task.bash'
 
 env: 
@@ -45,7 +45,7 @@ jobs:
         with:
           skip-creation: true
 
-  prometheus-chart-mock:
+  monitoring-chart-mock:
     needs:
       - setup-docker
       - setup-k3d
@@ -57,12 +57,12 @@ jobs:
         with:
           submodules: true
 
-      - run: ./task.bash mock prometheus
+      - run: ./task.bash mock monitoring
       
 
-  prometheus-chart-cluster:
+  monitoring-chart-cluster:
     needs:
-      - prometheus-chart-mock
+      - monitoring-chart-mock
     runs-on: ubuntu-latest
     steps:
       - name: Clone helm chart repository
@@ -74,4 +74,4 @@ jobs:
         with:
           skip-creation: true
 
-      - run: ./task.bash cluster prometheus
+      - run: ./task.bash cluster monitoring

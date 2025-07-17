@@ -14,7 +14,7 @@ on:
         type: choice
         options: 
           - rocketchat
-          - prometheus
+          - monitoring
 
 jobs:
   config:
