@@ -1,0 +1,11 @@
+{{- if (dig "extensionsFile" "listOfExtensions" false (.Values | merge (dict))) -}}
+# Albeit generically named, the sole purpose of this ConfigMap is to
+# provide the list of extensions to be used by FreeSWITCH, and therefore 
+# is only needed if there's list of extensions to be used. 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rocketchat-plugin-voip.fullname" . }}
+data:
+  extension_list.txt: {{- tpl .Values.extensionsFile.listOfExtensions . | nindent 4 }}
+{{- end }}

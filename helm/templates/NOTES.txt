@@ -1,0 +1,8 @@
+Rocket.Chat VoIP Plugin has been successfully installed!
+
+{{- if eq .Values.freeswitch.rtpServiceType "nlb" }}
+Please ensure you either set the IP or FQDN of the RTP service to the FQDN of the NLB in your the values.yaml file or set DNS configuration accordingly.
+You can retrieve the external IP or hostname of the NLB by running:
+kubectl get svc -n {{ .Release.Namespace }} {{ include "rocketchat-plugin-voip.fullname" . }}-rtp
+{{- end }}
+

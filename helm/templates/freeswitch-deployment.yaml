@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rocketchat-plugin-voip.fullname" . }}
+  labels:
+    {{- include "rocketchat-plugin-voip.labels" . | nindent 4 }}
+spec:
+  # This is NOT made to run in multiple replicas, it's SUPER-DOOPER stateful,
+  # as it was made to run on a bare metal entirely dedicated to it.
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "rocketchat-plugin-voip.selectorLabels" . | nindent 6 }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "rocketchat-plugin-voip.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rocketchat-plugin-voip.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+        image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: FREESWITCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: freeswitch-passwords
+              key: freeswitch_password
+        - name: EXTENSION_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: freeswitch-passwords
+              key: extension_password
+        - name: DEBUG_MODE
+          value: "{{ tpl .Values.freeswitch.debug_mode . }}"
+        - name: EXTERNAL_ADDRESS_FQDN
+          value: "{{ tpl .Values.freeswitch.externalAddressRtp . }}"
+        - name: WSS_PORT
+          value: "{{ .Values.freeswitch.wssPort }}"
+        - name: RTP_START_PORT
+          value: "{{ .Values.freeswitch.rtpPortRangeStart }}"
+        - name: RTP_END_PORT
+          value: "{{ .Values.freeswitch.rtpPortRangeEnd }}"
+        - name: INTERNAL_INBOUND_MEDIA
+          value: "{{ tpl .Values.freeswitch.internalInboundMedia . }}"
+        - name: INTERNAL_OUTBOUND_TO_INTERNAL
+          value: "{{ tpl .Values.freeswitch.internalOutboundToInternal . }}"
+        - name: EXTERNAL_INBOUND_MEDIA
+          value: "{{ tpl .Values.freeswitch.externalInboundMedia . }}"
+        - name: EXTENSIONS
+          value: "{{ tpl .Values.freeswitch.extensions . }}"
+        ports:
+        - containerPort: 8021
+          protocol: TCP
+        - containerPort: 443
+          protocol: TCP
+        - containerPort: 5060
+          protocol: TCP
+        - containerPort: 5080
+          protocol: UDP
+        - containerPort: 5081
+          protocol: UDP
+        {{- $start := .Values.freeswitch.rtpPortRangeStart | int }}
+        {{- $end := .Values.freeswitch.rtpPortRangeEnd | int }}
+        {{- range $port := untilStep $start $end 1 }}
+        - containerPort: {{ $port }}
+          protocol: UDP
+        {{- end }}
+        {{- with .Values.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.volumeMounts }}
+        volumeMounts:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        # If an extension file is provided: 
+        {{- if (dig "extensionsFile" "listOfExtensions" false (.Values | merge (dict))) -}}
+        {{ if .Values.volumeMounts | empty }}
+        volumeMounts:
+        {{- end }}
+          - mountPath: /etc/freeswitch/extension_list.txt
+            name: config
+            subPath: extension_list.txt
+        {{- end }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if (dig "extensionsFile" "listOfExtensions" false (.Values | merge (dict))) -}}
+      {{ if .Values.volumes | empty }}
+      volumes:
+      {{- end }}
+        - configMap:
+            defaultMode: 420
+            name: {{ include "rocketchat-plugin-voip.fullname" . }}
+          name: config
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
