@@ -1,0 +1,31 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rocketchat-voip.fullname" . }}
+  annotations:
+    {{- if eq .Values.freeswitch.ingressController "traefik" }}
+    kubernetes.io/ingress.class: "traefik"
+    {{- end }}
+    {{- if .Values.ingress.certManager.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager.clusterIssuer }}
+    {{- end }}
+spec:
+  rules:
+  - host: "{{ tpl .Values.freeswitch.externalAddressWebsocket .  }}"
+    http:
+      paths:
+      - backend:
+          service: 
+            name: {{ include "rocketchat-voip.fullname" $ }}
+            port: 
+              number: 443
+        path: /
+        pathType: Prefix
+  {{- if .Values.ingress.certManager.enabled }}
+  tls:
+  - hosts:
+    - "{{ tpl .Values.freeswitch.externalAddressWebsocket . }}"
+    secretName: "{{ include "rocketchat-voip.fullname" . }}-cert"
+  {{- end }}
+{{- end }}
