@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rocketchat-plugin-voip.fullname" . }}
+  name: {{ include "rocketchat-voip.fullname" . }}
   labels:
-    {{- include "rocketchat-plugin-voip.labels" . | nindent 4 }}
+    {{- include "rocketchat-voip.labels" . | nindent 4 }}
 spec:
   # This is NOT made to run in multiple replicas, it's SUPER-DOOPER stateful,
   # as it was made to run on a bare metal entirely dedicated to it.
   replicas: 1
   selector:
     matchLabels:
-      {{- include "rocketchat-plugin-voip.selectorLabels" . | nindent 6 }}
+      {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -23,7 +23,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "rocketchat-plugin-voip.labels" . | nindent 8 }}
+        {{- include "rocketchat-voip.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -32,7 +32,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "rocketchat-plugin-voip.serviceAccountName" . }}
+      serviceAccountName: {{ include "rocketchat-voip.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -128,7 +128,7 @@ spec:
       {{- end }}
         - configMap:
             defaultMode: 420
-            name: {{ include "rocketchat-plugin-voip.fullname" . }}
+            name: {{ include "rocketchat-voip.fullname" . }}
           name: config
       {{- end }}
       {{- with .Values.nodeSelector }}

@@ -47,15 +47,15 @@ helm install -f values.example.yaml --namespace teste foobar .
 > You can use `helm install --dry-run [...]` if you want to inspect the generated files before actually applying them. 
 
 This should create: 
-* A `Deployment` called `foobar-rocketchat-plugin-voip`; 
-* A `LoadBalancer` service called `foobar-rocketchat-plugin-voip-rtp`; 
-* A `ClusterIP` service called `foobar-rocketchat-plugin-voip`; 
+* A `Deployment` called `foobar-rocketchat-voip`; 
+* A `LoadBalancer` service called `foobar-rocketchat-voip-rtp`; 
+* A `ClusterIP` service called `foobar-rocketchat-voip`; 
 * A `Pod`, as a result of the aforementioned deployment (seen bellow.) 
 
 ```
 $ kubectl -n foobar get pods
 NAME                                                 READY   STATUS    RESTARTS   AGE
-pod/foobar-rocketchat-plugin-voip-76d87bc887-l7m42   1/1     Running   0          17m
+pod/foobar-rocketchat-voip-76d87bc887-l7m42   1/1     Running   0          17m
 [...]
 ```
 
@@ -78,9 +78,9 @@ Elastic Kubernetes Services (EKS) cluster, causes the load balancer to
 get it's own external address, as we can see here: 
 
 ```
-$ kubectl -n foobar get svc foobar-rocketchat-plugin-voip-rtp 
+$ kubectl -n foobar get svc foobar-rocketchat-voip-rtp 
 NAME                                TYPE           CLUSTER-IP       EXTERNAL-IP                                                                     PORT(S)                                                                                                                                                                                          AGE
-foobar-rocketchat-plugin-voip-rtp   LoadBalancer   172.30.210.119   aaf2c3919b45d4a1d8c76b29d0ac9beb-b6c16c2368089984.elb.us-east-1.amazonaws.com   20000:31997/UDP,[...],20046:30636/UDP   68s
+foobar-rocketchat-voip-rtp   LoadBalancer   172.30.210.119   aaf2c3919b45d4a1d8c76b29d0ac9beb-b6c16c2368089984.elb.us-east-1.amazonaws.com   20000:31997/UDP,[...],20046:30636/UDP   68s
 ```
 
 Be sure to point `rtp.chat.foobar.org` as a CNAME to that immense address 
@@ -106,4 +106,4 @@ section of the main `README.md`.
 
 Considering we're running Rocket.Chat in the same namespace as FreeSWITCH's, 
 `FreeSWITCH Host` setting should point to the `ClusterIP` service name, that 
-is: `foobar-rocketchat-plugin-voip`, in our particular case. 
+is: `foobar-rocketchat-voip`, in our particular case. 

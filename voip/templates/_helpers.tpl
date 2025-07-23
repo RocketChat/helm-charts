@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "rocketchat-plugin-voip.name" -}}
+{{- define "rocketchat-voip.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "rocketchat-plugin-voip.fullname" -}}
+{{- define "rocketchat-voip.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "rocketchat-plugin-voip.chart" -}}
+{{- define "rocketchat-voip.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "rocketchat-plugin-voip.labels" -}}
-helm.sh/chart: {{ include "rocketchat-plugin-voip.chart" . }}
-{{ include "rocketchat-plugin-voip.selectorLabels" . }}
+{{- define "rocketchat-voip.labels" -}}
+helm.sh/chart: {{ include "rocketchat-voip.chart" . }}
+{{ include "rocketchat-voip.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "rocketchat-plugin-voip.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "rocketchat-plugin-voip.name" . }}
+{{- define "rocketchat-voip.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "rocketchat-voip.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "rocketchat-plugin-voip.serviceAccountName" -}}
+{{- define "rocketchat-voip.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "rocketchat-plugin-voip.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "rocketchat-voip.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

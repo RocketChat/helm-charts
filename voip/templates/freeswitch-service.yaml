@@ -21,11 +21,11 @@ metadata:
     traefik.ingress.kubernetes.io/service.serversscheme: https
     traefik.ingress.kubernetes.io/service.serverstransport: {{ .Release.Namespace }}-freeswitch-skip-tls-verify@kubernetescrd
     {{- end }}
-  name: {{ include "rocketchat-plugin-voip.fullname" . }}
+  name: {{ include "rocketchat-voip.fullname" . }}
 spec:
   type: ClusterIP
   selector:
-    {{- include "rocketchat-plugin-voip.selectorLabels" . | nindent 4 }}
+    {{- include "rocketchat-voip.selectorLabels" . | nindent 4 }}
   ports:
   - name: ssh
     targetPort: 22
