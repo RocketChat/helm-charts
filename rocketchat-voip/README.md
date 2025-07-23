@@ -7,9 +7,7 @@
 
 ## Preamble
 
-This chart can be used either by our internal deployment system (known as 
-_Launchcontrol_) or directly via Helm tools. This should go without saying,  
-but this chart **doesn't** deploy Rocket.Chat. In fact, it doesn't even 
+This chart **doesn't** deploy Rocket.Chat. In fact, it doesn't even 
 require an workspace to be running. All it does is to deploy FreeSWITCH to 
 the specified namespace. The way Rocket.Chat is deployed is up to you, but 
 for it to work, the instance has to be able to talk with FreeSWITCH's API. 

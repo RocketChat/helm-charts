@@ -1,6 +1,6 @@
 apiVersion: v2
 name: rocketchat-voip
-description: A Helm Chart plugin for deploying Rocket.Chat VoIP using Freeswitch
+description: A Helm Chart for deploying Rocket.Chat VoIP using Freeswitch
 
 type: application
 
