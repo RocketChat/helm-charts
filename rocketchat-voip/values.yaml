@@ -2,14 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-# this will be overwritten by launchcontrol to template the values below
-launchcontrol:
-  baseDomain: test.rocket.chat
-  workspaceName: workspace-sample
-
 freeswitch:
-  externalAddressRtp: rtp.{{ .Values.launchcontrol.workspaceName }}.{{ .Values.launchcontrol.baseDomain }}
-  externalAddressWebsocket: voip.{{ .Values.launchcontrol.workspaceName }}.{{ .Values.launchcontrol.baseDomain }}
+  externalAddressRtp: rtp.test.rocket.chat
+  externalAddressWebsocket: voip.test.rocket.chat
   freeswitchPassword: "defaultFreeswitchPassword"
   extensionPassword: "defaultExtensionPassword"
   # Must be a string, because «wrong type for value; expected string; got bool» type of hubris
