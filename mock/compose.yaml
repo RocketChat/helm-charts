@@ -2,7 +2,7 @@ services:
   kwok:
     image: registry.k8s.io/kwok/cluster:v0.4.0-k8s.v1.28.0
     ports:
-      - ${KWOK_PORT}:8080
+      - ${KWOK_PORT:-8080}:8080
     networks:
       - kwok-network
     healthcheck:
