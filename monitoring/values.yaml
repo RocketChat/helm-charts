@@ -24,7 +24,7 @@ operator:
 
   kubeApiServer:
     enabled: true
-    
+
   kubelet:
     enabled: true
 
@@ -36,7 +36,7 @@ operator:
 
   kubeDns:
     enabled: true
-    
+
   kubeEtcd:
     enabled: true
 
@@ -60,7 +60,7 @@ operator:
     enabled: false
 
   persistence:
-    enabled: false
+    enabled: true
     type: pvc
     # storageClassName: standard
     accessModes: ["ReadWriteOnce"]
@@ -75,32 +75,35 @@ operator:
       serviceMonitorSelectorNilUsesHelmValues: false
       podMonitorSelectorNilUsesHelmValues: false
       retention: 15d
-      retentionSize: 5GB
-      volumeClaimTemplate:
-        spec:
-          # storageClassName: default
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 5Gi
+      retentionSize: 7GB
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            # storageClassName: default
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
   ingress:
     enabled: false
 
 ingress:
-  enabled: true
+  enabled: false
+  domain: "example.com" # Default domain for ingress
   ingressClassName: "" # nginx or traefik or blank for trying auto-detect
   tls: false
   prometheus:
     enabled: false
     host: ""
-    path: /
+    path: ""
   grafana:
     enabled: true
     host: ""
-    path: /
+    path: ""
 
 grafana:
   enabled: true
+  nodePort: ""
   folders:
     rocketchat:
       - name: "rocketchat"

@@ -51,6 +51,8 @@ spec:
           labels:
             grafana: dashboards  # THIS LABELS is very important
         spec:
+          securityContext:
+            fsGroup: 10001
           containers:
             - name: grafana
               resources: {}
@@ -74,29 +76,30 @@ spec:
             runAsGroup: 1001
             runAsNonRoot: true
             runAsUser: 1001
-          # volumes:
-          #   - name: grafana-data
-          #     persistentVolumeClaim:
-          #       claimName: grafana-pvc
-  # persistentVolumeClaim:
-  #   spec:
-  #     accessModes:
-  #       - ReadWriteOnce
-  #     resources:
-  #       requests:
-  #         storage: 4Gi
-
-  # ingress:
-  #   spec:
-  #     ingressClassName: nginx-internal
-  #     rules:
-  #       - host: monitoring.lab.internal
-  #         http:
-  #           paths:
-  #             - backend:
-  #                 service:
-  #                   name: grafana-service
-  #                   port:
-  #                     number: 3000
-  #               path: /
-  #               pathType: Prefix
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi
+---
+{{- if and .Values.grafana.enabled .Values.grafana.nodePort }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-grafana-nodeport
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    grafana: dashboards  # THIS LABELS is very important
+  ports:
+    - name: grafana
+      port: {{ .Values.grafana.nodePort }}
+      targetPort: 3000
+  type: NodePort
+{{- end }}

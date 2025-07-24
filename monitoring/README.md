@@ -11,17 +11,17 @@ The basic configuration needed for this chart to work is as follow:
 
 ```yaml
 ingress:
-  enabled: true
-  ingressClassName: "nginx" # nginx or traefik or blank for trying auto-detect
+  enabled: false
+  ingressClassName: "traefik"
   tls: false
   prometheus:
     enabled: true
-    host: "prometheus.rocket.chat"
-    path: /
+    host: ""
+    path: ""
   grafana:
     enabled: true
-    host: "grafana.rocket.chat"
-    path: /
+    host: ""
+    path: ""
 operator:
   prometheus:
     prometheusSpec:

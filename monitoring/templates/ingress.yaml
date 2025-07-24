@@ -11,13 +11,13 @@ spec:
   ingressClassName: "{{ .Values.ingress.ingressClassName }}"
   rules:
     {{- if .Values.ingress.prometheus.enabled }}
-      {{- if not .Values.ingress.prometheus.host }}
-        {{- fail "ingress.prometheus.host is required when ingress.enabled is true" }}
+      {{- if and (not .Values.ingress.prometheus.host) (not .Values.ingress.prometheus.path) }}
+        {{- fail "either ingress.prometheus.host or ingress.prometheus.path is required when ingress.enabled is true" }}
       {{- end }}
-    - host: {{ .Values.ingress.prometheus.host }}
+    - host: {{ not .Values.ingress.prometheus.host | ternary .Values.ingress.domain .Values.ingress.prometheus.host}}
       http:
         paths:
-          - path: {{ .Values.ingress.prometheus.path }}
+          - path: {{ .Values.ingress.prometheus.path | default "/" }}
             pathType: Prefix
             backend:
               service:
@@ -26,13 +26,13 @@ spec:
                   name: http-web
     {{- end }}
     {{- if .Values.ingress.grafana.enabled }}
-      {{- if not .Values.ingress.grafana.host }}
-        {{- fail "ingress.grafana.host is required when ingress.enabled is true" }}
+    - host: {{ not .Values.ingress.grafana.host | ternary .Values.ingress.domain .Values.ingress.grafana.host }}
+      {{- if and (not .Values.ingress.grafana.host) (not .Values.ingress.grafana.path) }}
+        {{- fail "either ingress.grafana.host or ingress.grafana.path is required when ingress.enabled is true" }}
       {{- end }}
-    - host: {{ .Values.ingress.grafana.host }}
       http:
         paths:
-          - path: {{ .Values.ingress.grafana.path }}
+          - path: "{{ .Values.ingress.grafana.path | default "/" }}"
             pathType: Prefix
             backend:
               service:
