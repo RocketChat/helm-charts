@@ -76,4 +76,10 @@ spec:
             items:
               - key: verifyMongodb.js
                 path: verifyMongodb.js
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{ toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{ toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
 {{- end }}
