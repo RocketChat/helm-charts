@@ -65,6 +65,7 @@ spec:
             - sh
             - -c
             - 'mongosh "$MONGODB_HOST" /tmp/verifyMongodb.js {{ .Values.mongodb.image.tag }}'
+          resources: {{- toYaml .Values.hooks.preUpgrade.resources | nindent 12 }}
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
