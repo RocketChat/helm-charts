@@ -1,0 +1,137 @@
+# Default values for rocketchat-voip.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# RESERVED FOR FUTURE USE
+provider: freeswitch
+
+freeswitch:
+  externalAddressRtp: rtp.test.rocket.chat
+  externalAddressWebsocket: voip.test.rocket.chat
+  freeswitchPassword: "defaultFreeswitchPassword"
+  extensionPassword: "defaultExtensionPassword"
+  # Must be a string, because «wrong type for value; expected string; got bool» type of hubris
+  debug_mode: "false"
+  wssPort: "443" # probably shouldn't change this as it's pretty much hardcoded everywhere else.
+  # Obs this is limited to 49 ports for the AWS NLB
+  rtpPortRangeStart: 20000
+  rtpPortRangeEnd: 20047
+  rtpServiceEnabled: true
+  rtpServiceType: "nlb" # Options: "nlb", "NodePort"
+  serviceAnnotations: {}
+  rtpServiceAnnotations: {}
+  ingressController: traefik # Options: traefik, generic. Probably at the wrong place tbh, but I thought leaving it in ingress.ingressClass was even worse
+  # The list of extensions, here reflecting the default behaviour. 
+  # NOTE: we don't usually test arrays as value to this variable on 
+  #       Kubernetes, thus, if you want to use anything different 
+  #       from a single interval, please use `extensionFile` section. 
+  extensions: "1001-1008"
+  # Sets the media mode, cf. main README.md
+  internalInboundMedia: "relay"
+  internalOutboundToInternal: "relay"
+  externalInboundMedia: "relay"
+
+extensionsFile: 
+  # Add here a list of extensions. 
+  # Please note that, if this is uncommented, the `extensions` parameter 
+  # above stops working, since, as seen on «generate-extensions.sh» script, 
+  # extension file takes precedence, and, as such, this chart follows suit.  
+  # -- Tadeu, 15/JUL/2025
+  # listOfExtensions: |
+  #   1001
+  #   1002
+  #   1003
+  # This also works: 
+  # listOfExtensions: "1001 1002 1003"
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/0
+image:
+  # This is the image name.
+  name: rocketchat/freeswitch
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "stable"
+
+terminationGracePeriodSeconds: 30
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  # https://medium.com/@natrajrams4/binding-to-low-ports-as-non-root-user-in-kubernetes-79666f52c6ae
+  sysctls:
+    - name: "net.ipv4.ip_unprivileged_port_start"
+      value: "0"
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# This is slightly different from what you might expect
+ingress:
+  enabled: true
+  certManager:
+    enabled: true
+    clusterIssuer: "production-cert-issuer" # Specify the cluster issuer to use when cert-manager is enabled
+
+resources:
+  requests:
+    memory: 4Gi
+  limits:
+    memory: 8Gi
+
+# This is a very preliminary liveness test, may not be 100% reliable,
+# but it's based on what the official project has as `HEALTHCHECK`
+# field on their Dockerfile.
+# cf. https://github.com/signalwire/freeswitch/blob/master/docker/base_image/healthcheck.sh
+livenessProbe:
+  exec:
+    command:
+      - fs_cli
+      - -x status | grep -q ^UP
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+readinessProbe: {}
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

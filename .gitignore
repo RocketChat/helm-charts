@@ -14,3 +14,4 @@ pvc.yaml
 *.tgz
 Makefile
 Chart.lock
+*.ignore
