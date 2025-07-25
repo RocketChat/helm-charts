@@ -122,7 +122,7 @@ grafana:
     community:
       - name: "node-exporter-full"
         id: "1860"
-        revision: 41
+        revision: latest
       - name: "kubernetes-deployment"
         id: "741"
         revision: latest
