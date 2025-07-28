@@ -130,4 +130,12 @@ grafana:
         id: "740"
         revision: latest
       - name: "kubernetes-node"
+        id: "739"
+        revision: latest
+      - name: "ingress-nginx"
+        id: "20275"
+        revision: latest
+      - name: "ingress-traefik"
+        id: "17347"
+        revision: latest
     extra: [] # If user wants to add extra dashboards, they can do so here
