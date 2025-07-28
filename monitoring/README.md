@@ -50,10 +50,15 @@ With Rocket.Chat, MongoDB, and Kubernetes metrics scraped every 60 seconds, expe
 > These estimates do **not** account for other workloads or applications running in your cluster.  
 > If you are running additional services or exporting more metrics, you should increase the storage and retention values accordingly.
 
+> The storage request should be at least 15% higher than the *retentionSize*.  
+> If the disk becomes full, Prometheus may be unable to read the TSDB during a restart.  
+> Using a larger storage request minimizes the chance of this issue occurring.
+
 **Recommended settings for single node cluster:**
 - Scrape interval: 60s
 - Retention: 15 days
 - Minimum storage: 4 GB for Prometheus
+
 
 Example configuration:
 ```yaml
