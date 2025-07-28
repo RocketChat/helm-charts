@@ -75,7 +75,7 @@ operator:
       serviceMonitorSelectorNilUsesHelmValues: false
       podMonitorSelectorNilUsesHelmValues: false
       retention: 15d
-      retentionSize: 7GB
+      retentionSize: 8GB
       storageSpec:
         volumeClaimTemplate:
           spec:
