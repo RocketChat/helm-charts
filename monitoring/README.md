@@ -13,16 +13,16 @@ Below is a minimal configuration example to get started:
 
 ```yaml
 ingress:
-  enabled: false
+  enabled: true
   ingressClassName: "traefik"
   tls: false
   Prometheus:
-    enabled: true
+    enabled: false
     host: ""
     path: ""
   grafana:
     enabled: true
-    host: ""
+    host: "grafana.localhost"
     path: ""
 operator:
   Prometheus:
