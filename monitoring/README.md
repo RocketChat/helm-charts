@@ -32,6 +32,13 @@ operator:
           storageClassName: <YOUR STORAGE CLASS> # Get available classes with: kubectl get storageclasses.storage.k8s.io
 ```
 
+If instead of ingress you wan't to bind a NodePort, you can use as:
+
+```yaml
+grafana:
+  nodePort: 3050
+```
+
 ## Storage and Retention
 
 To change the default retention settings, modify the values below. For more details, see the [Prometheus storage documentation](https://prometheus.io/docs/prometheus/latest/storage/).
