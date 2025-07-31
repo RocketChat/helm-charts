@@ -6,10 +6,10 @@ set -euo pipefail
 
 declare -A PORTS
 
-PORTS["mock-rocketchat-monolith"]=8080
-PORTS["mock-rocketchat-microservices"]=8081
-PORTS["cluster-rocketchat-monolith"]=9080
-PORTS["cluster-rocketchat-microservices"]=9081
+PORTS["mock-rocketchat"]=8080
+PORTS["cluster-rocketchat"]=9080
+PORTS["mock-monitoring"]=8082
+PORTS["cluster-monitoring"]=9082
 
 function _error() {
   for line in "${@}"; do
@@ -30,7 +30,6 @@ function submodules() {
 
 function mock.run() {
   KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
-  PROJECT_NAME="${PROJECT_NAME:-${1}}"
   export KWOK_PORT
   KWOK_PORT="${PORTS[${PROJECT_NAME}]}"
   sed "s/8080/${KWOK_PORT}/g" mock/kubeconfig.yaml >"${KUBECONFIG_FILE}"
@@ -81,57 +80,57 @@ cluster.run() {
   "${@}"
 }
 
-function rocketchat() {
-  modes=("microservices" "monolith")
-
-  MODE="${1}"
-  shift
-
-  [[ ! " ${modes[*]} " =~ ${MODE} ]] && {
-    _error \
-      "Invalid mode: ${MODE}" \
-      "Valid modes: ${modes[*]}"
-    return 1
-  }
-
-  _run_tests() {
-    ./rocketchat/tests/run.bash "${MODE}"
-  }
-
+function mock() {
   export KUBECONFIG_FILE
   export PROJECT_NAME
   export KUBECONFIG
 
   KUBECONFIG_FILE="$(mktemp)"
   KUBECONFIG="${KUBECONFIG_FILE}"
-  PROJECT_NAME="${1}-rocketchat-${MODE}"
+  args="$*"
+  PROJECT_NAME="mock-${args//\ /-}"
+  echo "${PROJECT_NAME}"
 
   _info \
-    "Running tests for ${MODE} mode" \
     "Using project name: ${PROJECT_NAME}" \
     "Using kubeconfig file: ${KUBECONFIG_FILE}"
 
-  function mock() {
+  [[ -z "${IGNORE_CLEANUP:-}" ]] &&
+    trap 'mock.run delete' EXIT
 
-    [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'mock.run delete' EXIT
-
-    export POD_RETRIES="2"
-    export POD_RETRY_INTERVAL="5"
-
-    mock.run create
-    _run_tests
-  }
-
-  function cluster() {
-    [[ -z "${IGNORE_CLEANUP:-}" ]] &&
-      trap 'cluster.run delete' EXIT
-
-    cluster.run create
-    _run_tests
-  }
-
+  mock.run create
   "$@"
+}
+
+function cluster() {
+  export KUBECONFIG_FILE
+  export PROJECT_NAME
+  export KUBECONFIG
+
+  KUBECONFIG_FILE="$(mktemp)"
+  KUBECONFIG="${KUBECONFIG_FILE}"
+  args="${*}"
+
+  PROJECT_NAME="cluster-${args// /-}"
+
+  _info \
+    "Running tests for ${1} mode" \
+    "Using project name: ${PROJECT_NAME}" \
+    "Using kubeconfig file: ${KUBECONFIG_FILE}"
+
+  [[ -z "${IGNORE_CLEANUP:-}" ]] &&
+    trap 'cluster.run delete' EXIT
+
+  cluster.run create
+  "$@"
+}
+
+function rocketchat() {
+  ./rocketchat/tests/run.bash "$@"
+}
+
+function monitoring() {
+  ./bats/core/bin/bats ./monitoring/tests/tests.bats "$@"
 }
 
 function clean() {
@@ -142,6 +141,11 @@ function clean() {
     PROJECT_NAME="cluster-rocketchat-${mode}" \
       cluster.run delete || true
   done
+
+  PROJECT_NAME="mock-monitoring" \
+    mock.run delete || true
+  PROJECT_NAME="cluster-monitoring" \
+    cluster.run delete || true
 
   "$@"
 }
