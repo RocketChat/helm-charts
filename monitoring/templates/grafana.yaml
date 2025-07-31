@@ -71,6 +71,16 @@ spec:
                     secretKeyRef:
                       key: GF_SECURITY_ADMIN_PASSWORD
                       name: grafana-admin-credentials
+                - name: GF_SERVER_SERVE_FROM_SUB_PATH
+                  value: "{{ eq .Values.ingress.grafana.path "/" | ternary "false" "true" }}"
+                - name: GF_SERVER_ROOT_URL
+                  {{/* This is hacky, but Grafana requires a trailing slash, but adding two breaks things */}}
+                  {{- if hasSuffix "/" .Values.ingress.grafana.path }}
+                  value: "{{ .Values.ingress.tls | ternary "https" "http" }}://{{ .Values.ingress.grafana.host }}{{ .Values.ingress.grafana.path | default "" }}"
+                  {{- else }}
+                  value: "{{ .Values.ingress.tls | ternary "https" "http" }}://{{ .Values.ingress.grafana.host }}{{ .Values.ingress.grafana.path | default "" }}/"
+                  {{- end }}
+
           securityContext:
             fsGroup: 1001
             runAsGroup: 1001
