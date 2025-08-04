@@ -26,3 +26,32 @@
     .Values.operator.prometheus.prometheusSpec.retentionSize
     ) -}}
 {{- end -}}
+
+
+{{- if eq .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName "" -}}
+  {{- fail (printf 
+    "\n%s=%s should not be empty, please set it to a valid storage class"
+    ".Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName"
+    .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
+    ) -}}
+{{- end -}}
+
+{{- if and .Values.grafana.deploy.enabled (eq .Values.grafana.deploy.storageClassName "") -}}
+  {{- fail (printf 
+    "\n%s=%s should not be empty, please set it to a valid storage class"
+    ".Values.grafana.deploy.storageClassName"
+    .Values.grafana.deploy.storageClassName
+    ) -}}
+{{- end -}}
+
+{{- if and .Values.operator.grafana.enabled .Values.grafana.deploy.enabled -}}
+  {{- fail (printf 
+    "\n%s=%s and %s=%s are both enabled, please choose one"
+    ".Values.operator.grafana.enabled"
+    .Values.operator.grafana.enabled
+    ".Values.grafana.deploy.enabled"
+    .Values.grafana.deploy.enabled
+    ) -}}
+{{- end -}}
+
+  

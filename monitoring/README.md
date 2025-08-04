@@ -25,11 +25,16 @@ ingress:
     host: "grafana.localhost"
     path: ""
 operator:
-  Prometheus:
-    PrometheusSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: <YOUR STORAGE CLASS> # Get available classes with: kubectl get storageclasses.storage.k8s.io
+  prometheus:
+    prometheusSpec:
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: <YOUR STORAGE CLASS> # Get available classes with: kubectl get storageclasses.storage.k8s.io
+grafana:
+  enabled: true
+  deploy:
+    storageClassName: <YOUR STORAGE CLASS> # Get available classes with: kubectl get storageclasses.
 ```
 
 If instead of ingress you wan't to bind a NodePort, you can use as:

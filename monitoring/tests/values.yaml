@@ -10,3 +10,16 @@ ingress:
     enabled: true
     host: "grafana.rocket.chat"
     path: /
+
+
+operator:
+  prometheus:
+    prometheusSpec:
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: something # Get available classes with: kubectl get storageclasses.storage.k8s.io
+grafana:
+  enabled: true
+  deploy:
+    storageClassName: something # Get available classes with: kubectl get storageclasses.

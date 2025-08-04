@@ -60,13 +60,12 @@ operator:
     enabled: false
 
   persistence:
-    enabled: true
-    type: pvc
-    # storageClassName: standard
-    accessModes: ["ReadWriteOnce"]
-    size: 1Gi
-    finalizers:
-      - kubernetes.io/pvc-protection
+    enabled: false
+    # type: pvc
+    # accessModes: ["ReadWriteOnce"]
+    # size: 1Gi
+    # finalizers:
+    #   - kubernetes.io/pvc-protection
 
   prometheus:
     prometheusSpec:
@@ -79,7 +78,7 @@ operator:
       storageSpec:
         volumeClaimTemplate:
           spec:
-            # storageClassName: default
+            storageClassName: ""
             accessModes: ["ReadWriteOnce"]
             resources:
               requests:
@@ -103,7 +102,10 @@ ingress:
 
 grafana:
   enabled: true
-  nodePort: ""
+  deploy:
+    enabled: true
+    storageClassName: "" # Get available classes with: kubectl get storageclasses.
+    nodePort: ""
   folders:
     rocketchat:
       - name: "rocketchat"

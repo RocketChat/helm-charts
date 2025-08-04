@@ -155,4 +155,27 @@ function keep() {
   "$@"
 }
 
+function usage() {
+  echo "Usage: $0 <command> [args]"
+  echo "Available commands:"
+  echo "  submodules       - Initialize git submodules"
+  echo "  mock             - Run mock tests"
+  echo "  cluster          - Run cluster tests"
+  echo "  rocketchat       - Run Rocket.Chat tests"
+  echo "  monitoring       - Run monitoring tests"
+  echo "  clean            - Clean up generated files and resources"
+  echo "  keep             - Keep resources after running tests"
+  echo "  help             - Show this help message"
+
+  echo "Example usage:"
+  echo "  $0 [keep] mock rocketchat"
+  echo "  $0 [keep] cluster monitoring"
+}
+
+
+if [[ -z "${1:-}" ]]; then
+  _error "$(usage)"
+  exit 1
+fi
+
 "$@"

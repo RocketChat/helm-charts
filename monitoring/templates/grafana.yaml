@@ -1,3 +1,4 @@
+{{- if and .Values.grafana.enabled .Values.grafana.deploy.enabled }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -80,7 +81,6 @@ spec:
                   {{- else }}
                   value: "{{ .Values.ingress.tls | ternary "https" "http" }}://{{ .Values.ingress.grafana.host }}{{ .Values.ingress.grafana.path | default "" }}/"
                   {{- end }}
-
           securityContext:
             fsGroup: 1001
             runAsGroup: 1001
@@ -94,11 +94,12 @@ spec:
     spec:
       accessModes:
       - ReadWriteOnce
+      storageClassName: "{{ .Values.grafana.deploy.storageClassName }}"
       resources:
         requests:
           storage: 5Gi
 ---
-{{- if and .Values.grafana.enabled .Values.grafana.nodePort }}
+{{- if .Values.grafana.deploy.nodePort }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -109,7 +110,8 @@ spec:
     grafana: dashboards  # THIS LABELS is very important
   ports:
     - name: grafana
-      port: {{ .Values.grafana.nodePort }}
+      port: {{ .Values.grafana.deploy.nodePort }}
       targetPort: 3000
   type: NodePort
-{{- end }}
+{{- end }} # if .Values.grafana.deploy.nodePort
+{{- end }} # if .Values.grafana.enabled
