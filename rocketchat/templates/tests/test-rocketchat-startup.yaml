@@ -9,9 +9,9 @@ spec:
     - name: {{ .Release.Name }}-startup-test
       image: r0zbot/rocketchat-test-utils
       imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-      {{- if .Values.securityContext.enabled }}
+      {{- with .Values.securityContext }}
       securityContext:
-        runAsUser: {{ .Values.securityContext.runAsUser }}
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       env:
         - name: ROCKETCHAT_HOST
