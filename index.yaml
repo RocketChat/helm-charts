@@ -3021,4 +3021,16 @@ entries:
     urls:
     - charts/rocketchat-3.0.0.tgz
     version: 3.0.0
-generated: "2025-08-04T16:07:38.526934591Z"
+  rocketchat-voip:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2025-08-12T03:57:30.107741889-03:00"
+    description: A Helm Chart for deploying Rocket.Chat VoIP using Freeswitch
+    digest: 8f884e4f1d7489fbbcac9b7ccc2028721ca4625fea28846e39c928901f5e0238
+    name: rocketchat-voip
+    type: application
+    urls:
+    - charts/rocketchat-voip-0.1.0.tgz
+    version: 0.1.0
+generated: "2025-08-12T03:57:29.153652417-03:00"
+
