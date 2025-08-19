@@ -1,0 +1,144 @@
+operator:
+  enabled: true
+  global:
+    rbac:
+      create: true
+
+  prometheusOperator:
+    enabled: true
+
+  crds:
+    enabled: true
+
+  defaultRules:
+    create: false
+
+  windowsMonitoring:
+    enabled: false
+
+  alertmanager:
+    enabled: false
+
+  kubernetesServiceMonitors:
+    enabled: true
+
+  kubeApiServer:
+    enabled: true
+
+  kubelet:
+    enabled: true
+
+  kubeControllerManager:
+    enabled: true
+
+  coreDns:
+    enabled: false
+
+  kubeDns:
+    enabled: true
+
+  kubeEtcd:
+    enabled: true
+
+  kubeScheduler:
+    enabled: true
+
+  kubeProxy:
+    enabled: true
+
+  kubeStateMetrics:
+    enabled: true
+
+  nodeExporter:
+    enabled: true
+
+  cleanPrometheusOperatorObjectNames: false
+
+  extraManifests: null
+
+  grafana:
+    enabled: false
+
+  persistence:
+    enabled: false
+    # type: pvc
+    # accessModes: ["ReadWriteOnce"]
+    # size: 1Gi
+    # finalizers:
+    #   - kubernetes.io/pvc-protection
+
+  prometheus:
+    prometheusSpec:
+      enableAdminAPI: true
+      # this allows to get monitors from any namespace
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      retention: 15d
+      retentionSize: 8GB
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            # Set if you want to use a specific storage class
+            #storageClassName: "local-path"
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 10Gi
+  ingress:
+    enabled: false
+
+ingress:
+  enabled: false
+  domain: "example.com" # Default domain for ingress
+  ingressClassName: "" # nginx or traefik or blank for trying auto-detect
+  tls: false
+  prometheus:
+    enabled: false
+    host: ""
+    path: ""
+  grafana:
+    enabled: true
+    host: ""
+    path: ""
+
+grafana:
+  enabled: true
+  deploy:
+    enabled: true
+    storageClassName: # Get available classes with: kubectl get storageclasses.
+    nodePort: ""
+  folders:
+    rocketchat:
+      - name: "rocketchat"
+        id: "rocketchat"
+    extra: [] # If user wants to add extra folders, they can do so here
+  dashboards:
+    rocketchat:
+      - name: "rocketchat-metrics"
+        folder: "rocketchat"
+        id: "23428"
+        revision: latest
+      - name: "rocketchat-microservices"
+        folder: "rocketchat"
+        id: "23427"
+        revision: latest
+    community:
+      - name: "node-exporter-full"
+        id: "1860"
+        revision: latest
+      - name: "kubernetes-deployment"
+        id: "741"
+        revision: latest
+      - name: "kubernetes-pod"
+        id: "740"
+        revision: latest
+      - name: "kubernetes-node"
+        id: "739"
+        revision: latest
+      - name: "ingress-nginx"
+        id: "20275"
+        revision: latest
+      - name: "ingress-traefik"
+        id: "17347"
+        revision: latest
+    extra: [] # If user wants to add extra dashboards, they can do so here

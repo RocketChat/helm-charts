@@ -12,6 +12,9 @@ on:
       chartVersion:
         required: false
         type: string
+      chartName:
+        required: true
+        type: string
 
 env:
   HELM_REPO: RocketChat/helm-charts
@@ -41,9 +44,9 @@ jobs:
             exit 0
           fi
 
-          chart_version="$(awk '/^version:/ {print $2}' rocketchat/Chart.yaml)"
+          chart_version="$(awk '/^version:/ {print $2}' ${{ inputs.chartName}}/Chart.yaml)"
           [[ -n "$chart_version" ]]
-          app_version="$(awk '/^appVersion:/ {print $2}' rocketchat/Chart.yaml)"
+          app_version="$(awk '/^appVersion:/ {print $2}' ${{ inputs.chartName}}/Chart.yaml)"
           [[ -n "$app_version" ]]
 
           new_version="${{ inputs.tag }}"
@@ -85,6 +88,7 @@ jobs:
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version }}
+      chartName: ${{ inputs.chartName }}
 
   update-release:
     needs:
@@ -96,5 +100,6 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
       chartVersion: ${{ needs.set-versions.outputs.chart-version}}
+      chartName: ${{ inputs.chartName }}
     secrets:
       github-token: ${{ secrets.github-token }}

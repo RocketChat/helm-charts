@@ -13,4 +13,5 @@ cert-issuer.yaml
 pvc.yaml
 *.tgz
 Makefile
+Chart.lock
 *.ignore

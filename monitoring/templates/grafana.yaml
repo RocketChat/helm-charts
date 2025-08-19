@@ -1,0 +1,119 @@
+{{- if and .Values.grafana.enabled .Values.grafana.deploy.enabled }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin-credentials
+type: Opaque
+stringData:
+  GF_SECURITY_ADMIN_USER: admin
+  GF_SECURITY_ADMIN_PASSWORD: admin
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: prometheus
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana: dashboards
+  datasource:
+    name: prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus-operated.{{.Release.Namespace}}.svc.cluster.local:9090
+    isDefault: true
+    jsonData:
+      "tlsSkipVerify": true
+      "timeInterval": "5s"
+    editable: true
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels:
+    grafana: dashboards  # THIS LABELS is very important
+spec:
+  config:
+    log:
+      mode: console
+    auth:
+      disable_login_form: "false"
+  deployment:
+    metadata:
+      labels:
+        grafana: dashboards  # THIS LABELS is very important
+    spec:
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            grafana: dashboards  # THIS LABELS is very important
+        spec:
+          securityContext:
+            fsGroup: 10001
+          containers:
+            - name: grafana
+              resources: {}
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop: ["ALL"]
+              env:
+                - name: GF_SECURITY_ADMIN_USER
+                  valueFrom:
+                    secretKeyRef:
+                      key: GF_SECURITY_ADMIN_USER
+                      name: grafana-admin-credentials
+                - name: GF_SECURITY_ADMIN_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: GF_SECURITY_ADMIN_PASSWORD
+                      name: grafana-admin-credentials
+                - name: GF_SERVER_SERVE_FROM_SUB_PATH
+                  value: "{{ eq .Values.ingress.grafana.path "/" | ternary "false" "true" }}"
+                - name: GF_SERVER_ROOT_URL
+                  {{/* This is hacky, but Grafana requires a trailing slash, but adding two breaks things */}}
+                  {{- if hasSuffix "/" .Values.ingress.grafana.path }}
+                  value: "{{ .Values.ingress.tls | ternary "https" "http" }}://{{ .Values.ingress.grafana.host }}{{ .Values.ingress.grafana.path | default "" }}"
+                  {{- else }}
+                  value: "{{ .Values.ingress.tls | ternary "https" "http" }}://{{ .Values.ingress.grafana.host }}{{ .Values.ingress.grafana.path | default "" }}/"
+                  {{- end }}
+          securityContext:
+            fsGroup: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+          volumes:
+            - name: grafana-data
+              persistentVolumeClaim:
+                claimName: grafana-pvc
+  persistentVolumeClaim:
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      {{- if .Values.grafana.deploy.storageClassName }}
+      storageClassName: "{{ .Values.grafana.deploy.storageClassName }}"
+      {{- end}}
+      resources:
+        requests:
+          storage: 5Gi
+---
+{{- if .Values.grafana.deploy.nodePort }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-grafana-nodeport
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    grafana: dashboards  # THIS LABELS is very important
+  ports:
+    - name: grafana
+      port: {{ .Values.grafana.deploy.nodePort }}
+      targetPort: 3000
+  type: NodePort
+{{- end }} # if .Values.grafana.deploy.nodePort
+{{- end }} # if .Values.grafana.enabled
