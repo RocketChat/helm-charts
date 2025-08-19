@@ -78,7 +78,8 @@ operator:
       storageSpec:
         volumeClaimTemplate:
           spec:
-            storageClassName: ""
+            # Set if you want to use a specific storage class
+            #storageClassName: "local-path"
             accessModes: ["ReadWriteOnce"]
             resources:
               requests:
@@ -104,7 +105,7 @@ grafana:
   enabled: true
   deploy:
     enabled: true
-    storageClassName: "" # Get available classes with: kubectl get storageclasses.
+    storageClassName: # Get available classes with: kubectl get storageclasses.
     nodePort: ""
   folders:
     rocketchat:

@@ -1,10 +1,10 @@
 ---
-{{- $retentionGb := 
+{{- $retentionGb :=
     index
       (regexSplit "G+" (printf "%v" $.Values.operator.prometheus.prometheusSpec.retentionSize) -1)
       0
 -}}
-{{- $retentionStorage := 
+{{- $retentionStorage :=
   index
     (regexSplit "G+" (printf "%v" $.Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage) -1)
     0
@@ -18,7 +18,7 @@
   (float64 (mul $retentionStorage 1.15))
   (float64 $retentionGb)
 -}}
-  {{- fail (printf 
+  {{- fail (printf
     "\n%s=%s should be at least 15%% higher than %s=%s"
     ".Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage"
     .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
@@ -28,24 +28,8 @@
 {{- end -}}
 
 
-{{- if eq .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName "" -}}
-  {{- fail (printf 
-    "\n%s=%s should not be empty, please set it to a valid storage class"
-    ".Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName"
-    .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.storageClassName
-    ) -}}
-{{- end -}}
-
-{{- if and .Values.grafana.deploy.enabled (eq .Values.grafana.deploy.storageClassName "") -}}
-  {{- fail (printf 
-    "\n%s=%s should not be empty, please set it to a valid storage class"
-    ".Values.grafana.deploy.storageClassName"
-    .Values.grafana.deploy.storageClassName
-    ) -}}
-{{- end -}}
-
 {{- if and .Values.operator.grafana.enabled .Values.grafana.deploy.enabled -}}
-  {{- fail (printf 
+  {{- fail (printf
     "\n%s=%s and %s=%s are both enabled, please choose one"
     ".Values.operator.grafana.enabled"
     .Values.operator.grafana.enabled
@@ -53,5 +37,3 @@
     .Values.grafana.deploy.enabled
     ) -}}
 {{- end -}}
-
-  
