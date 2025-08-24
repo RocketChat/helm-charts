@@ -8,6 +8,9 @@ metadata:
   annotations:
 {{ toYaml . | indent 4 }}
 {{- end }}
+{{- if .Values.ingress.finalizers }}
+  finalizers: {{ .Values.ingress.finalizers }}
+{{- end }}
   labels:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
