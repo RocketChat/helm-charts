@@ -5,7 +5,6 @@ metadata:
   name: {{ .Release.Name }}-ingress
   namespace: {{ .Release.Namespace }}
 spec:
-  ingressClassName: "{{ .Values.ingress.ingressClassName }}"
   {{- if .Values.ingress.ingressClassName }}
   ingressClassName: {{ .Values.ingress.ingressClassName }}
   {{- end }}
