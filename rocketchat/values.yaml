@@ -186,7 +186,6 @@ securityContext:
 
 containerSecurityContext:
   runAsUser: 999
-  fsGroup: 999
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
