@@ -65,7 +65,7 @@ setup_file() {
 
 # bats test_tags=pre
 @test "lint chart" {
-  run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
+  run_and_assert_success helm lint --values "$VALUES_FILE" "$ROCKETCHAT_CHART_DIR"
 }
 
 # bats test_tags=pre
