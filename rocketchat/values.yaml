@@ -317,7 +317,7 @@ podDisruptionBudget:
 ## Deploy as microservices?
 # Monolithic architecture, by default
 microservices:
-  enabled: false
+  enabled: true
 
   logLevel: warn
 
