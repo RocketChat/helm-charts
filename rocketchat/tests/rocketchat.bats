@@ -288,6 +288,8 @@ setup_file() {
 
 # bats test_tags=cleanup
 @test "cleanup" {
+  [[ -n "${IGNORE_CLEANUP:-}" ]] &&
+    skip "cleanup is disabled"
   run_and_assert_success helm uninstall \
     "$DEPLOYMENT_NAME" \
     -n "$DETIK_CLIENT_NAMESPACE" \

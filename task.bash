@@ -152,6 +152,9 @@ function clean() {
 
 function keep() {
   export IGNORE_CLEANUP="true"
+  _info "---"
+  _info "Resources will be kept after running tests"
+  _info "---"
   "$@"
 }
 
