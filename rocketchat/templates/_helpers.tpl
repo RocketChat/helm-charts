@@ -193,7 +193,7 @@ One of the following must be true to set the TRANSPORTER environment variable:
       key: {{ .Values.nats.existingSecret.key }}
 {{- else }}
 - name: TRANSPORTER
-  value: "nats://{{ .Release.name }}-nats:4222"
+  value: "nats://{{ .Release.Name }}-nats:4222"
 {{- end -}}
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
