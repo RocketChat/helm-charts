@@ -169,3 +169,31 @@ Usage:
 {{- end }}
 {{- end }}
 {{- end -}}
+
+
+{{/* Nats */}}
+{{- define "rocketchat.transporter.connectionString" -}}
+{{/*
+One of the following must be true to set the TRANSPORTER environment variable:
+1. If running microservices, and nats.enabled is not set, then we have deployed it
+2. If nats.enabled is true, then we have deployed it
+3. If nats.existingSecret is set, then we are using an external NATS server
+*/}}
+{{- if
+    or
+        (and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) (not (hasKey .Values.nats "enabled")))
+        (and (hasKey .Values.nats "enabled") (.Values.nats.enabled))
+        (and (hasKey .Values.nats "existingSecret") (not (empty .Values.nats.existingSecret)))
+-}}
+{{- if (hasKey .Values.nats "existingSecret") }}
+- name: TRANSPORTER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.nats.existingSecret.name }}
+      key: {{ .Values.nats.existingSecret.key }}
+{{- else }}
+- name: TRANSPORTER
+  value: "nats://{{ .Release.name }}-nats:4222"
+{{- end -}}
+{{- end -}} {{/* End if Nats enabled */}}
+{{- end -}} {{/* rocketchat.transporter.connectionString */}}

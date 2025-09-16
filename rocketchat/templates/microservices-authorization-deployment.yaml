@@ -62,8 +62,7 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
         {{- end }}
-        - name: TRANSPORTER
-          value: nats://{{ .Release.Name }}-nats:4222
+        {{- include "rocketchat.transporter.connectionString" (dict "Values" .Values "Release" .Release) | nindent 8 }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL

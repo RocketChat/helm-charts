@@ -389,6 +389,22 @@ microservices:
   authorizationService:
 
 nats:
+  # Helm docs: https://helm.sh/docs/topics/charts/#tags-and-condition-resolution
+  #
+  # IMPORTANT: Do not set nats.enabled here unless you want to override the default behavior.
+  # By default, nats.enabled is nil and its deployment is determined by microservices.enabled:
+  #   - microservices.enabled: true, nats.enabled: nil        = NATS is enabled and deployed internally, this is the default behavior
+  #   - microservices.enabled: true, nats.enabled: false      = NATS is NOT deployed (use external NATS)
+  #   - microservices.enabled: false, nats.enabled: true      = Monolith RC with NATS deployed
+  #   - microservices.enabled: false, nats.enabled: nil/false = Monolith RC without NATS
+  #
+  # To deploy NATS, uncomment and set enabled: true below. To use an external NATS, set enabled: false.
+  # enabled: true
+
+  # For using an external NATS server, uncomment and set existingSecret below with the name of a Kubernetes Secret containing the connection string
+  # existingSecret:
+  #   name: nats-secret
+  #   key: connectionString
   nats:
     image: nats:2.4-alpine
   cluster:
