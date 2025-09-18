@@ -56,6 +56,11 @@ spec:
         - secretRef:
             name: {{ .Values.extraSecret }}
         {{- end }}
+        {{- if .Values.extraEnvFromConfigMap }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.extraEnvFromConfigMap }}
+        {{- end }}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
