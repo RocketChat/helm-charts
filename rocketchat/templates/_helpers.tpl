@@ -192,8 +192,14 @@ One of the following must be true to set the TRANSPORTER environment variable:
       name: {{ .Values.nats.existingSecret.name }}
       key: {{ .Values.nats.existingSecret.key }}
 {{- else }}
+{{/* Determine protocol to use */}}
+{{- $natsProtocol := "nats" -}}
+{{- if and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) -}}
+{{- $natsProtocol = "monolith+nats" -}}
+{{- end -}}
 - name: TRANSPORTER
-  value: "nats://{{ .Release.Name }}-nats:4222"
+  value: "{{ $natsProtocol }}://{{ .Release.Name }}-nats:4222"
+
 {{- end -}}
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
