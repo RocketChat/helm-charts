@@ -113,7 +113,8 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 mongodb:
   ## Enable or disable MongoDB dependency completely.
   enabled: true
-
+  serviceMonitor:
+    enabled: true
   initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:
@@ -407,6 +408,8 @@ nats:
   #   key: connectionString
   nats:
     image: nats:2.4-alpine
+  podMonitor:
+    enabled: true
   cluster:
     enabled: true
     replicas: 2
