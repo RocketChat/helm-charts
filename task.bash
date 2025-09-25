@@ -78,7 +78,7 @@ cluster.run() {
 
     if [[ "${IGNORE_CLEANUP:-}" == "true" && "${cluster_exists}" == "true" ]]; then
       _warn "Cluster ${PROJECT_NAME} already exists, skipping creation."
-    else
+    elif [[ "${cluster_exists}" == "true" ]]; then
       _error "Failed to create cluster ${PROJECT_NAME}."
     fi
 
