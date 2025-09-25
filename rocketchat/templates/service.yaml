@@ -41,7 +41,7 @@ spec:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 ---
-{{- if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
+{{ if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
 {{- $service := .Values.service -}}
 apiVersion: v1
 kind: Service

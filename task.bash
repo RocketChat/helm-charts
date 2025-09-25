@@ -18,6 +18,12 @@ function _error() {
   return 1
 }
 
+function _warn() {
+  for line in "${@}"; do
+    echo -e "[WARN]: ${line}" >&2
+  done
+}
+
 function _info() {
   for line in "${@}"; do
     echo -e "[INFO]: ${line}"
@@ -34,6 +40,7 @@ function mock.run() {
   KWOK_PORT="${PORTS[${PROJECT_NAME}]}"
   sed "s/8080/${KWOK_PORT}/g" mock/kubeconfig.yaml >"${KUBECONFIG_FILE}"
 
+  # shellcheck disable=SC2329
   function _compose() {
     docker compose \
       --file mock/compose.yaml \
@@ -41,10 +48,12 @@ function mock.run() {
       "$@"
   }
 
+  # shellcheck disable=SC2329
   function create() {
     _compose up -d
   }
 
+  # shellcheck disable=SC2329
   function delete() {
     _compose down --volumes --remove-orphans
   }
@@ -56,7 +65,8 @@ cluster.run() {
   PROJECT_NAME="${PROJECT_NAME:-${1}}"
   PORT="${PORTS[${PROJECT_NAME}]}"
   KUBECONFIG_FILE="${KUBECONFIG_FILE:-$(mktemp)}"
-
+  local cluster_exists="false"
+  # shellcheck disable=SC2329
   function create() {
     k3d cluster create \
       --api-port "${PORT}" \
@@ -64,15 +74,23 @@ cluster.run() {
       --kubeconfig-switch-context=false \
       --kubeconfig-update-default=false \
       --no-lb \
-      "${PROJECT_NAME}"
+      "${PROJECT_NAME}" || cluster_exists="true"
+
+    if [[ "${IGNORE_CLEANUP:-}" == "true" && "${cluster_exists}" == "true" ]]; then
+      _warn "Cluster ${PROJECT_NAME} already exists, skipping creation."
+    elif [[ "${cluster_exists}" == "true" ]]; then
+      _error "Failed to create cluster ${PROJECT_NAME}."
+    fi
 
     get_kubeconfig >"${KUBECONFIG_FILE}"
   }
 
+  # shellcheck disable=SC2329
   function get_kubeconfig() {
     k3d kubeconfig get "${PROJECT_NAME}"
   }
 
+  # shellcheck disable=SC2329
   function delete() {
     k3d cluster delete "${PROJECT_NAME}"
   }
@@ -111,7 +129,7 @@ function cluster() {
   KUBECONFIG="${KUBECONFIG_FILE}"
   args="${*}"
 
-  PROJECT_NAME="cluster-${args// /-}"
+  PROJECT_NAME="cluster-${1}"
 
   _info \
     "Running tests for ${1} mode" \
@@ -152,6 +170,9 @@ function clean() {
 
 function keep() {
   export IGNORE_CLEANUP="true"
+  _info "---"
+  _info "Resources will be kept after running tests"
+  _info "---"
   "$@"
 }
 

@@ -1,4 +1,13 @@
-{{ if and .Values.nats.exporter.enabled (not .Values.nats.exporter.serviceMonitor.enabled) }}
+{{/* if nats.podmonitor.enabled is true, microservices enabled and nats is nil or nats.enabled is true */}}
+{{- if
+  and 
+    .Values.nats.podMonitor.enabled
+    (or
+      (and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) (not (hasKey .Values.nats "enabled")))
+      (and (hasKey .Values.nats "enabled") (.Values.nats.enabled))
+    )
+-}}
+
 {{ if (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
 {{/* if there is the monitoring.coreos.com/v1 API, use it */}}
 apiVersion: monitoring.coreos.com/v1
@@ -7,7 +16,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/name: nats
-  name: {{ .Release.Name }}-nats
+  name: {{ .Release.Name }}-nats-monitor
   namespace: {{ .Release.Namespace }}
 spec:
   podMetricsEndpoints:

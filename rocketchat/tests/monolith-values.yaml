@@ -15,6 +15,9 @@ federation:
 microservices:
   enabled: false
 
+nats:
+  enabled: true
+
 host: "${ROCKETCHAT_HOST}"
 image:
   tag: "${ROCKETCHAT_TAG}"

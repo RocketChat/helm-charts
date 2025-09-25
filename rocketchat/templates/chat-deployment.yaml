@@ -28,7 +28,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
-        {{- end }}   
+        {{- end }}
       annotations:  
           {{ include "rocketchat.annotations" (dict "name" "meteor" "context" $) | indent 8 }}
         checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
@@ -132,9 +132,8 @@ spec:
         {{- end }}
         {{- end }}
         # Environment variables for microservices option
+        {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         {{- if .Values.microservices.enabled }}
-        - name: TRANSPORTER
-          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL

@@ -36,7 +36,8 @@ setup_file() {
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
     "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
-    "PWD: $(pwd)"
+    "PWD: $(pwd)" \
+    "KUBECONFIG: ${KUBECONFIG:-}"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
 
@@ -65,7 +66,7 @@ setup_file() {
 
 # bats test_tags=pre
 @test "lint chart" {
-  run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
+  run_and_assert_success helm lint --values "$VALUES" "$ROCKETCHAT_CHART_DIR"
 }
 
 # bats test_tags=pre
@@ -288,6 +289,8 @@ setup_file() {
 
 # bats test_tags=cleanup
 @test "cleanup" {
+  [[ -n "${IGNORE_CLEANUP:-}" ]] &&
+    skip "cleanup is disabled"
   run_and_assert_success helm uninstall \
     "$DEPLOYMENT_NAME" \
     -n "$DETIK_CLIENT_NAMESPACE" \

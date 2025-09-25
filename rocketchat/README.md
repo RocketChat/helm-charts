@@ -82,6 +82,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `externalMongodbUrl`                   | MongoDB URL if using an externally provisioned MongoDB                                                                                                                                                                                                                                                                                                                                                                                                         | `""`                               |
 | `externalMongodbOplogUrl`              | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set                                                                                                                                                                                                                                                                                                                                                          | `""`                               |
 | `mongodb.enabled`                      | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information                                                                                                                                                                                                                                                                                     | `true`                             |
+| `mongodb.serviceMonitor.enabled` | Enable mongodb service monitor or service with scrape annotation | `true` |
 | `persistence.enabled`                  | Enable persistence using a PVC. This is not necessary if you're using the default [GridFS](https://rocket.chat/docs/administrator-guides/file-upload/) file storage                                                                                                                                                                                                                                                                          | `false`                            |
 | `persistence.storageClass`             | Storage class of the PVC to use                                                                                                                                                                                                                                                                                                                                                                                                                                | `""`                               |
 | `persistence.accessMode`               | Access mode of the PVC                                                                                                                                                                                                                                                                                                                                                                                                                                         | `ReadWriteOnce`                    |
@@ -169,13 +170,51 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
 | `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
 | `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
-
+| `nats.enabled` | Enable or disabled NATS deploy, if using microservices and this is nil them it will be deployed | true for microservices (default), false for monolith |
+| `nats.existingSecret.name` | Existing Secret name for an external NATS server | empty |
+| `nats.existingSecret.key` | Existing Secret key for the `nats.existingSecret.name` containing the connection string | empty |
+| `nats.podMonitor.enabled | enable nats pod monitor or service with annotation | `true` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
 
 ```bash
 $ helm install rocketchat -f values.yaml rocketchat/rocketchat
+```
+
+
+### External Nats
+
+This chart supports using an existing NATS server instead of deploying a new one. This is useful when you have a shared NATS infrastructure or want to manage NATS separately from your Rocket.Chat deployment.
+
+#### Using an External NATS Server
+
+To use an external NATS server, you need to:
+
+1. **Create a Kubernetes Secret** containing the NATS connection string:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-nats-secret
+  namespace: rocketchat
+type: Opaque
+data:
+  # Base64 encoded NATS connection string
+  # Example: nats://user:password@nats-server:4222
+  nats-url: bmF0czovL3VzZXI6cGFzc3dvcmRAbmF0cy1zZXJ2ZXI6NDIyMg==
+```
+
+2. **Configure the chart** to use the external NATS server:
+
+```yaml
+# Disable the built-in NATS deployment
+nats:
+  enabled: false
+  existingSecret:
+    name: "my-nats-secret"
+    key: "nats-url"
 ```
 
 ### Database Setup
