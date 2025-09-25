@@ -193,9 +193,9 @@ One of the following must be true to set the TRANSPORTER environment variable:
       key: {{ .Values.nats.existingSecret.key }}
 {{- else }}
 {{/* Determine protocol to use */}}
-{{- $natsProtocol := "nats" -}}
+{{- $natsProtocol := "monolith+nats" -}}
 {{- if and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) -}}
-{{- $natsProtocol = "monolith+nats" -}}
+{{- $natsProtocol = "nats" -}}
 {{- end -}}
 - name: TRANSPORTER
   value: "{{ $natsProtocol }}://{{ .Release.Name }}-nats:4222"
