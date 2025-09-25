@@ -36,7 +36,8 @@ setup_file() {
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
     "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
-    "PWD: $(pwd)"
+    "PWD: $(pwd)" \
+    "KUBECONFIG: ${KUBECONFIG:-}"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
 
