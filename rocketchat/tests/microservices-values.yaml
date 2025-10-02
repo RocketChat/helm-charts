@@ -10,14 +10,12 @@ mongodb:
 
 federation:
   enabled: true
-  host: "synapse.${ROCKETCHAT_HOST}"
+  host: "synapse.lab"
 
 microservices:
   enabled: true
 
-host: "${ROCKETCHAT_HOST}"
-image:
-  tag: "${ROCKETCHAT_TAG}"
+host: "lab"
 ingress:
   enabled: true
   federation:

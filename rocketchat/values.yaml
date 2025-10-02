@@ -113,6 +113,22 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 mongodb:
   image:
     repository: bitnamilegacy/mongodb
+  tls:
+    image:
+      repository: bitnamilegacy/nginx
+  externalAccess:
+    autoDiscovery:
+      image:
+        registry: docker.io
+        repository: bitnamilegacy/kubectl
+  dnsCheck:
+    image:
+      repository: bitnamilegacy/os-shell
+  volumePermissions:
+    enabled: true
+    image:
+      repository: bitnamilegacy/os-shell
+
   ## Enable or disable MongoDB dependency completely.
   enabled: true
   serviceMonitor:
@@ -158,7 +174,6 @@ mongodb:
     accessMode: ReadWriteOnce
     size: 8Gi
 
-  volumePermissions: { enabled: true }
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
