@@ -473,5 +473,4 @@ hooks:
   # nodeSelector: {}
   # affinity: {}
 
-
-/// sanity check
+# sanity
