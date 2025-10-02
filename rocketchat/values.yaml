@@ -111,6 +111,8 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 ### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
 ##
 mongodb:
+  image:
+    repository: bitnamilegacy/mongodb
   ## Enable or disable MongoDB dependency completely.
   enabled: true
   serviceMonitor:
@@ -136,6 +138,8 @@ mongodb:
 
   metrics:
     enabled: true
+    image:
+      repository: bitnamilegacy/mongodb-exporter
     serviceMonitor:
       enabled: false # default to false and use ours that checks for the crd
 

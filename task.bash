@@ -106,7 +106,7 @@ function mock() {
   KUBECONFIG_FILE="$(mktemp)"
   KUBECONFIG="${KUBECONFIG_FILE}"
   args="$*"
-  PROJECT_NAME="mock-${args//\ /-}"
+  PROJECT_NAME="mock-${1}"
   echo "${PROJECT_NAME}"
 
   _info \
