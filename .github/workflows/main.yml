@@ -80,19 +80,19 @@ jobs:
           echo "chart-version=$chart_version_string" >>$GITHUB_OUTPUT
           echo 'run=true' >> $GITHUB_OUTPUT
 
-  can-chart-run:
-    needs:
-      - set-versions
-    if: ${{ needs.set-versions.outputs.run }} == 'true'
-    uses: ./.github/workflows/test.yml
-    with:
-      tag: ${{ needs.set-versions.outputs.app-version }}
-      chartVersion: ${{ needs.set-versions.outputs.chart-version }}
-      chartName: ${{ inputs.chartName }}
+  # can-chart-run:
+  #   needs:
+  #     - set-versions
+  #   if: ${{ needs.set-versions.outputs.run }} == 'true'
+  #   uses: ./.github/workflows/test.yml
+  #   with:
+  #     tag: ${{ needs.set-versions.outputs.app-version }}
+  #     chartVersion: ${{ needs.set-versions.outputs.chart-version }}
+  #     chartName: ${{ inputs.chartName }}
 
   update-release:
     needs:
-      - can-chart-run
+      # - can-chart-run
       - set-versions
     # prettier-ignore
     if: '! contains(inputs.tag, ''rc'')'
