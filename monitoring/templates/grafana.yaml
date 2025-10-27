@@ -7,8 +7,8 @@ type: Opaque
 stringData:
   GF_SECURITY_ADMIN_USER: admin
   GF_SECURITY_ADMIN_PASSWORD: admin
----
 {{- if and (.Values.operators.prometheus.enabled) (.Values.operators.enabled) }}
+---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
