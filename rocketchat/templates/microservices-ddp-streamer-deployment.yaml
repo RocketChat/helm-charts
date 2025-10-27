@@ -78,10 +78,33 @@ spec:
           value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
         {{- end }}
         ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
         {{- if .Values.prometheusScraping.enabled }}
         - name: ms-metrics
           containerPort: {{ .Values.prometheusScraping.msPort }}
         {{- end }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 2
+          timeoutSeconds: 1
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+            scheme: HTTP
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+          periodSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
         volumeMounts: 
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
