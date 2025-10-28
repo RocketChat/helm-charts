@@ -68,6 +68,7 @@ operator:
     #   - kubernetes.io/pvc-protection
 
   prometheus:
+    enabled: true
     prometheusSpec:
       enableAdminAPI: true
       # this allows to get monitors from any namespace
@@ -75,6 +76,7 @@ operator:
       podMonitorSelectorNilUsesHelmValues: false
       retention: 15d
       retentionSize: 8GB
+      scrapeInterval: 30s
       storageSpec:
         volumeClaimTemplate:
           spec:

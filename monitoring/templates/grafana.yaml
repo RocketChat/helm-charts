@@ -7,6 +7,7 @@ type: Opaque
 stringData:
   GF_SECURITY_ADMIN_USER: admin
   GF_SECURITY_ADMIN_PASSWORD: admin
+{{- if and (.Values.operators.prometheus.enabled) (.Values.operators.enabled) }}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
@@ -23,10 +24,11 @@ spec:
     access: proxy
     url: http://prometheus-operated.{{.Release.Namespace}}.svc.cluster.local:9090
     isDefault: true
+    editable: false
     jsonData:
       "tlsSkipVerify": true
-      "timeInterval": "5s"
-    editable: true
+      "timeInterval": {{ $timeInterval := .Values.operators.prometheus.scrapeInterval | default "30s" }}{{ $timeInterval }}
+{{- end }}
 ---
 apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
