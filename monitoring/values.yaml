@@ -124,6 +124,14 @@ grafana:
         folder: "rocketchat"
         id: "23427"
         revision: latest
+      - name: "rocketchat-mongo-8"
+        folder: "rocketchat"
+        id: "24296"
+        revision: latest
+      - name: "rocketchat-mongo-7"
+        folder: "rocketchat"
+        id: "23712"
+        revision: latest
     community:
       - name: "node-exporter-full"
         id: "1860"
