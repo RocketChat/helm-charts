@@ -101,6 +101,8 @@ affinity: {}
 
 ## Use an existing secret file with the MongoDB Url and OplogUrl
 existingMongodbSecret: ""
+existingMongodbSecretKey: "mongo-uri"
+existingMongodbOplogSecretKey: "mongo-oplog-uri"
 
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
