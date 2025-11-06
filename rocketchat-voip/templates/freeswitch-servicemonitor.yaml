@@ -1,4 +1,5 @@
-{{- if .Values.freeswitch.monitoring.prometheus.enabled }}
+{{- if and .Values.freeswitch.monitoring.prometheus.enabled (not .Values.useLegacyArch) }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -12,6 +13,5 @@ spec:
       {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
   endpoints:
   - port: prometheus-metrics
-    interval: 30s
-    path: /metrics
+{{- end }}
 {{- end }}
