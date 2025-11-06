@@ -51,3 +51,9 @@ spec:
     targetPort: 5061
     port: 5061
     protocol: UDP
+  {{- if .Values.freeswitch.monitoring.prometheus.enabled }}
+  - name: prometheus-metrics
+    targetPort: {{ .Values.freeswitch.monitoring.prometheus.exporter.port }}
+    port: {{ .Values.freeswitch.monitoring.prometheus.exporter.port }}
+    protocol: TCP
+  {{- end }}
