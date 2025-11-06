@@ -1,0 +1,17 @@
+{{- if .Values.freeswitch.monitoring.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "rocketchat-voip.fullname" . }}-freeswitch
+  labels:
+    {{- include "rocketchat-voip.labels" . | nindent 4 }}
+    app.kubernetes.io/component: freeswitch
+spec:
+  selector:
+    matchLabels:
+      {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - port: prometheus-metrics
+    interval: 30s
+    path: /metrics
+{{- end }}

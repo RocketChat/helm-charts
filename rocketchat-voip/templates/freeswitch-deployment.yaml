@@ -68,12 +68,18 @@ spec:
           value: "{{ .Values.freeswitch.rtpPortRangeEnd }}"
         - name: INTERNAL_INBOUND_MEDIA
           value: "{{ tpl .Values.freeswitch.internalInboundMedia . }}"
-        - name: INTERNAL_OUTBOUND_TO_INTERNAL
+        - name: INTERNAL_OUTBOUND_TO_INTERNAL_MEDIA
           value: "{{ tpl .Values.freeswitch.internalOutboundToInternal . }}"
         - name: EXTERNAL_INBOUND_MEDIA
           value: "{{ tpl .Values.freeswitch.externalInboundMedia . }}"
         - name: EXTENSIONS
           value: "{{ tpl .Values.freeswitch.extensions . }}"
+        - name: USE_LEGACY_ARCH
+          value: "{{ .Values.useLegacyArch }}"
+        {{- if not .Values.useLegacyArch }}
+        - name: DRACHTIO_DOMAIN
+          value: "{{ include "rocketchat-voip.fullname" . }}-drachtio"
+        {{- end }}
         ports:
         - containerPort: 8021
           protocol: TCP
@@ -103,6 +109,8 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         {{- with .Values.volumeMounts }}
         volumeMounts:
           {{- toYaml . | nindent 10 }}
@@ -116,7 +124,36 @@ spec:
             name: config
             subPath: extension_list.txt
         {{- end }}
+      {{- if .Values.freeswitch.monitoring.prometheus.enabled }}
+      - name: prometheus-freeswitch-exporter
+        image: "{{ .Values.freeswitch.monitoring.prometheus.exporter.image }}:{{ .Values.freeswitch.monitoring.prometheus.exporter.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - /freeswitch_exporter --freeswitch.password="${FREESWITCH_PASSWORD}"
+        env:
+          - name: FREESWITCH_HOST
+            value: "127.0.0.1"
+          - name: FREESWITCH_PORT
+            value: "8021"
+          - name: FREESWITCH_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: freeswitch-passwords
+                key: freeswitch_password
+        ports:
+          - name: prometheus
+            containerPort: {{ .Values.freeswitch.monitoring.prometheus.exporter.port }}
+            protocol: TCP
+        resources:
+          {{- toYaml .Values.freeswitch.monitoring.prometheus.exporter.resources | nindent 10 }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      {{- end }}
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- with .Values.volumes }}
       volumes:

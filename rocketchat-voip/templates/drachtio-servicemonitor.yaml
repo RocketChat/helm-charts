@@ -1,0 +1,18 @@
+{{- if and (not .Values.useLegacyArch) .Values.drachtio.config.monitoring.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "rocketchat-voip.fullname" . }}-drachtio
+  labels:
+    {{- include "rocketchat-voip.labels" . | nindent 4 }}
+    app.kubernetes.io/component: drachtio
+spec:
+  selector:
+    matchLabels:
+      {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: drachtio
+  endpoints:
+  - port: prometheus
+    interval: 30s
+    path: /metrics
+{{- end }}

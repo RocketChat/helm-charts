@@ -5,11 +5,66 @@
 # RESERVED FOR FUTURE USE
 provider: freeswitch
 
+# Architecture configuration - set to true for legacy architecture
+useLegacyArch: false
+
+drachtio:
+  image:
+    name: drachtio/drachtio-server
+    tag: latest
+    pullPolicy: IfNotPresent
+  adminPort: 9022
+  sipPort: 5060
+  secret: "SECRETPASSWORD"
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 1000m
+    limits:
+      memory: 512Mi
+      cpu: 1000m
+  config:
+    # Drachtio server configuration
+    logging:
+      level: info
+      sofia_level: 3
+    sip:
+      contacts:
+        - "sip:*;transport=udp"
+      udpMtu: 8192
+      spammers:
+        action: "reject"
+        tcpAction: "discard"
+        userAgents:
+          - "sip-cli"
+          - "sipcli"
+          - "friendly-scanner"
+        toHeaders:
+          - "sipvicious"
+    monitoring:
+      prometheus:
+        enabled: true
+        port: 8088
+        address: "127.0.0.1"
+    cdrs: false
+
 freeswitch:
   externalAddressRtp: rtp.test.rocket.chat
   externalAddressWebsocket: voip.test.rocket.chat
   freeswitchPassword: "defaultFreeswitchPassword"
   extensionPassword: "defaultExtensionPassword"
+  monitoring:
+    prometheus:
+      enabled: true
+      exporter:
+        image: ghcr.io/rocketchat/freeswitch_exporter
+        tag: latest
+        port: 9282
+        resources:
+          requests:
+            memory: 128Mi
+          limits:
+            memory: 256Mi
   # Must be a string, because «wrong type for value; expected string; got bool» type of hubris
   debug_mode: "false"
   wssPort: "443" # probably shouldn't change this as it's pretty much hardcoded everywhere else.
@@ -20,6 +75,8 @@ freeswitch:
   rtpServiceType: "nlb" # Options: "nlb", "NodePort"
   serviceAnnotations: {}
   rtpServiceAnnotations: {}
+    # Example: To use specific EIP allocations for AWS NLB, uncomment and configure:
+    # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxx,eipalloc-yyyy"
   ingressController: traefik # Options: traefik, generic. Probably at the wrong place tbh, but I thought leaving it in ingress.ingressClass was even worse
   # The list of extensions, here reflecting the default behaviour. 
   # NOTE: we don't usually test arrays as value to this variable on 
@@ -112,8 +169,11 @@ livenessProbe:
     command:
       - fs_cli
       - -x status | grep -q ^UP
+  failureThreshold: 3
   initialDelaySeconds: 5
   periodSeconds: 5
+  successThreshold: 1
+  timeoutSeconds: 1
 
 readinessProbe: {}
 
