@@ -13,5 +13,7 @@ spec:
       {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
   endpoints:
   - port: prometheus-metrics
+    interval: 30s
+    path: /metrics
 {{- end }}
 {{- end }}

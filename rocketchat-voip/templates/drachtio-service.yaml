@@ -10,9 +10,9 @@ metadata:
     {{- with .Values.freeswitch.serviceAnnotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
-    {{- if and .Values.drachtio.monitoring.prometheus.enabled (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+    {{- if and .Values.drachtio.config.monitoring.prometheus.enabled (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
     prometheus.io/scrape: "true"
-    prometheus.io/port: "{{ .Values.drachtio.monitoring.prometheus.exporter.port }}"
+    prometheus.io/port: "{{ .Values.drachtio.config.monitoring.prometheus.port }}"
     prometheus.io/path: "/metrics"
     {{- end }}
 spec:

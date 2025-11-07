@@ -75,7 +75,7 @@ freeswitch:
   wssPort: "443" # probably shouldn't change this as it's pretty much hardcoded everywhere else.
   # Obs this is limited to 49 ports for the AWS NLB
   rtpPortRangeStart: 20000
-  rtpPortRangeEnd: 20047
+  rtpPortRangeEnd: 20098
   rtpServiceEnabled: true
   rtpServiceType: "nlb" # Options: "nlb", "NodePort"
   serviceAnnotations: {}

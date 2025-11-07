@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "rocketchat-voip.fullname" . }}
+  name: {{ include "rocketchat-voip.fullname" . }}-freeswitch
   labels:
     {{- include "rocketchat-voip.labels" . | nindent 4 }}
 spec:
@@ -38,7 +38,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-      - name: {{ .Chart.Name }}
+      - name: {{ .Chart.Name }}-freeswitch
         {{- with .Values.securityContext }}
         securityContext:
           {{- toYaml . | nindent 12 }}
