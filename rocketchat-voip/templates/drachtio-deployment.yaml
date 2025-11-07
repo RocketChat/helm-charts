@@ -61,7 +61,7 @@ spec:
       volumes:
         - name: drachtio-config
           secret:
-            secretName: {{ include "rocketchat-voip.fullname" . }}-drachtio-config
+            secretName: {{ .Values.drachtio.existingSecret | default (printf "%s-drachtio-config" (include "rocketchat-voip.fullname" .)) }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
