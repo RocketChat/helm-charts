@@ -153,6 +153,7 @@ spec:
       {{- end }}
       dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- with .Values.volumes }}
       volumes:
