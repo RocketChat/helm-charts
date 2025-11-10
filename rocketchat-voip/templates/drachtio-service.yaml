@@ -6,10 +6,15 @@ metadata:
   labels:
     {{- include "rocketchat-voip.labels" . | nindent 4 }}
     app.kubernetes.io/component: drachtio
-  {{- with .Values.freeswitch.serviceAnnotations }}
   annotations:
+    {{- with .Values.freeswitch.serviceAnnotations }}
     {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- end }}
+    {{- if and .Values.drachtio.config.monitoring.prometheus.enabled (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.drachtio.config.monitoring.prometheus.port }}"
+    prometheus.io/path: "/metrics"
+    {{- end }}
 spec:
   type: ClusterIP
   clusterIP: None
@@ -23,7 +28,7 @@ spec:
       targetPort: {{ .Values.drachtio.sipPort }}
       protocol: UDP
     {{- if .Values.drachtio.config.monitoring.prometheus.enabled }}
-    - name: prometheus
+    - name: prometheus-metrics
       port: {{ .Values.drachtio.config.monitoring.prometheus.port }}
       targetPort: {{ .Values.drachtio.config.monitoring.prometheus.port }}
       protocol: TCP
