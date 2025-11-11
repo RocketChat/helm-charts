@@ -389,6 +389,11 @@ microservices:
     tolerations: []
 
   streamHub:
+    # IMPORTANT: Stream Hub is disabled by default as of Rocket.Chat 7.7.3
+    # For versions < 7.7.3, it will be automatically enabled unless explicitly disabled here
+    # After version 8.0.0, this service will be removed completely
+    # Note: When enabled, DB_WATCHERS=true is automatically set on all services
+    enabled: false
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
