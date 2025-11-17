@@ -68,12 +68,12 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
-              key: mongo-uri
+              key: {{ .Values.existingMongodbSecretKey }}
         - name: MONGO_OPLOG_URL
           valueFrom:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
+              key: {{ .Values.existingMongodbOplogSecretKey }}
         {{- else }}
         - name: MONGO_URL
           valueFrom:

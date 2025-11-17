@@ -53,7 +53,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
-              key: mongo-uri
+              key: {{ .Values.existingMongodbSecretKey }}
         {{- else }}
         - name: MONGO_URL
           valueFrom:
