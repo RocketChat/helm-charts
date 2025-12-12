@@ -207,14 +207,17 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{/* 
 Check if streamHub should be enabled.
 Logic:
-1. If explicitly set (.Values.microservices.streamHub.enabled), use that value
-2. For versions < 7.7.3, enable by default
-3. For versions >= 7.7.3, disable by default
+1. For versions >= 8.0.0, always disable (stream hub removed)
+2. If explicitly set (.Values.microservices.streamHub.enabled), use that value
+3. For versions < 7.7.3, enable by default
+4. For versions >= 7.7.3 and < 8.0.0, disable by default
 */}}
 {{- define "rocketchat.streamHub.enabled" -}}
 {{- $version := .Values.image.tag | default .Chart.AppVersion -}}
 {{- $explicitlySet := hasKey .Values.microservices.streamHub "enabled" -}}
-{{- if $explicitlySet -}}
+{{- if semverCompare ">=8.0.0" $version -}}
+{{- print "false" -}}
+{{- else if $explicitlySet -}}
 {{- .Values.microservices.streamHub.enabled -}}
 {{- else -}}
 {{- if semverCompare "<7.7.3" $version -}}
