@@ -1,0 +1,34 @@
+{{- if .Values.freeswitch.rtpServiceEnabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ include "rocketchat-voip.fullname" . }}-rtp"
+  annotations:
+    {{- with .Values.freeswitch.rtpServiceAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if eq .Values.freeswitch.rtpServiceType "nlb" }}
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    {{- end }}
+  labels:
+    {{- include "rocketchat-voip.labels" . | nindent 4 }}
+spec:
+  type: {{- if eq .Values.freeswitch.rtpServiceType "nlb" }} LoadBalancer {{- else }} NodePort {{- end }}
+  selector:
+    {{- include "rocketchat-voip.selectorLabels" . | nindent 4 }}
+  externalTrafficPolicy: Local
+  ports:
+    {{- $start := .Values.freeswitch.rtpPortRangeStart | int }}
+    {{- $end := .Values.freeswitch.rtpPortRangeEnd | int }}
+    {{- $evenStart := $start }}
+    {{- if mod $start 2 }}{{- $evenStart = add $start 1 | int }}{{- end }}
+    {{- range $port := untilStep $evenStart $end 2 }}
+    - name: rtp-port-{{ $port }}
+      port: {{ $port }}
+      protocol: UDP
+      targetPort: {{ $port }}
+      {{- if eq $.Values.freeswitch.rtpServiceType "NodePort" }}
+      nodePort: {{$port}}
+      {{- end }}
+    {{- end }}
+{{- end }}

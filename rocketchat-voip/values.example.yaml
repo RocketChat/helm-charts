@@ -1,0 +1,54 @@
+# Architecture configuration - set to true for legacy architecture
+# When useLegacyArch is true, drachtio is disabled and USE_LEGACY_ARCH is set on freeswitch
+# When useLegacyArch is false (default), drachtio is enabled for new architecture
+useLegacyArch: false
+
+# Drachtio configuration (SIP server framework for new architecture)
+# Automatically deployed when useLegacyArch: false (default)
+# Automatically disabled when useLegacyArch: true
+drachtio:
+  secret: "changeme!!!"  # Change this to a secure password
+  
+  # To use an existing secret containing drachtio configuration instead of auto-generated one:
+  # existingSecret: "my-drachtio-config-secret"  # Should contain 'drachtio.conf.xml' key
+  
+  # Uncomment and modify the following if you need custom drachtio config
+  # resources:
+  #   requests:
+  #     memory: 256Mi
+  #   limits:
+  #     memory: 512Mi
+
+freeswitch:
+  externalAddressRtp: rtp.chat.foobar.org
+  externalAddressWebsocket: voip.chat.foobar.org
+  # The password used by Rocket.Chat to talk with FreeSWITCH's API 
+  freeswitchPassword: "changeme!!!"
+  # Default password used to authenticate extensions
+  extensionPassword: "changeme!!!"
+  # Example: To use specific EIP allocations for AWS NLB
+  # rtpServiceAnnotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxx,eipalloc-yyyy"
+
+# Input here a list of extensions you want to use
+extensionsFile: 
+  listOfExtensions: |
+    2112
+    8012 8022 8082
+    6996
+    7770
+    6500 9653
+
+image:
+  # We're using «stable» by default, you probably don't want 
+  # to change this. It exists only for clarity. 
+  tag: "stable"
+
+# Adjust those numbers if you're hitting any limits. If not, 
+# leave them as they are. You probably can get away with less, 
+# albeit not recommended. 
+resources:
+  requests:
+    memory: 4Gi
+  limits:
+    memory: 8Gi

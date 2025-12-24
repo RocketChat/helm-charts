@@ -1,0 +1,62 @@
+{{- if .Values.mongodb.enabled }}
+---
+{{/* {{ $config := lookup "v1" "ConfigMap" .Release.Namespace "rocketchat-mongodb-fix-clustermonitor-role-configmap" }} */}}
+{{/*   {{ if not $config }} */}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rocketchat-mongodb-fix-clustermonitor-role-configmap
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+data:
+  user_set_role_clusterMonitor.sh: |
+    #! /bin/bash
+
+    # #include <everything>
+    source /opt/bitnami/scripts/libmongodb.sh
+
+    error_and_abort() {
+      error "$@"
+      exit 1
+    }
+
+    main() {
+      # mongodb_wait_for_primary_node "$MONGODB_INITIAL_PRIMARY_HOST" "$MONGODB_INITIAL_PRIMARY_PORT_NUMBER" "$MONGODB_INITIAL_PRIMARY_ROOT_USER" "$MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD"
+      # Shouldn't be looping over all dbs, but currently no way of knowing which db is for rocketchat
+      # and which might not be.
+      # Either way, having clusterMonitor role shouldn't hurt 
+      local databases=(${MONGODB_EXTRA_DATABASES/,/ })
+      local usernames+=(${MONGODB_EXTRA_USERNAMES/,/ })
+      # each array should be of the same length
+      local database username last=$((${#databases[@]}-1))
+      for idx in $(seq 0 $last); do
+        database=${databases[$idx]}
+        username=${usernames[$idx]}
+        info "attempting to add clusterMonitor role to user $username"
+        local cmd="
+            db.getSiblingDB('$database').grantRolesToUser(
+            '$username',
+            [
+                {
+                role: 'clusterMonitor',
+                db: 'admin'
+                }
+            ]
+            )
+        "
+        debug "Executing: ${cmd:5:-1}"
+        local out=$(mongodb_execute_print_output "$MONGODB_ROOT_USER" "$MONGODB_ROOT_PASSWORD" "admin" "" "" "--quiet" <<< "$cmd")
+        # local ok=$(perl -MJSON -0ne 'print decode_json($_)->{"ok"}' <<< "$out")
+        local ok=$(awk '/ok:/ { print $2 }' <<< ${out/,/})
+        { [[ -n $out ]] && ! ((ok)); } && error_and_abort "failed to add role clusterMonitor to user \"$username\"; Error: $out"
+        info "clusterMonitor role added to $username"
+      done
+    }
+
+    main
+  {{/* {{end}} */}}
+{{- end }}

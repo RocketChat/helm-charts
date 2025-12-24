@@ -1,0 +1,21 @@
+{{ if and .Values.mongodb.serviceMonitor.enabled .Values.mongodb.metrics.enabled (not .Values.mongodb.metrics.serviceMonitor.enabled) (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-mongodb
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  endpoints:
+  - interval: 30s
+    port: http-metrics
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  jobLabel: rocketchat-mongodb
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: mongodb
+{{ end }}

@@ -30,7 +30,19 @@ spec:
         {{- if .Values.podLabels }}
           {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
+      annotations:
+        {{ include "rocketchat.annotations" (dict "name" "account" "context" $) | indent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "account" "context" $) | indent 8 }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "account" "context" $) | indent 8 }}
+      affinity:
+        {{ include "rocketchat.nodeAffinity" (dict "name" "account" "context" $) | indent 8 }}
       containers:
       - name: account-service
         image: "{{ .Values.microservices.account.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -48,8 +60,7 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
         {{- end }}
-        - name: TRANSPORTER
-          value: nats://{{ .Release.Name }}-nats:4222
+        {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
@@ -58,12 +69,24 @@ spec:
           value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
+        {{- if .Values.prometheusScraping.enabled }}
         - name: MS_METRICS
-          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
-        volumeMounts: 
+          value: "true"
+        - name: MS_METRICS_PORT
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
+        {{- end }}
+        ports:
+        {{- if .Values.prometheusScraping.enabled }}
+        - name: ms-metrics
+          containerPort: {{ .Values.prometheusScraping.msPort }}
+        {{- end }}
+        volumeMounts:
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
         {{- end }}   
+        securityContext:
+          {{- toYaml .Values.microservices.account.securityContext | nindent 10 }}
+        resources: {{- toYaml .Values.microservices.account.resources | nindent 10 }}
       volumes:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
@@ -74,3 +97,5 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
 {{- end }}
+
+# vi: ts=8 et sw=2 smarttab

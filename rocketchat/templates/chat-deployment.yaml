@@ -29,28 +29,33 @@ spec:
         {{- if .Values.podLabels }}
 {{ toYaml .Values.podLabels | indent 8 }}
         {{- end }}
-
-      annotations:
+      annotations:  
+          {{ include "rocketchat.annotations" (dict "name" "meteor" "context" $) | indent 8 }}
         checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
-        {{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | indent 8 }}
-        {{- end }}
-
 
     spec:
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
-      {{- if .Values.securityContext.enabled }}
+      {{- with .Values.securityContext }}
       securityContext:
-        fsGroup: {{ .Values.securityContext.fsGroup }}
-        runAsUser: {{ .Values.securityContext.runAsUser }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" . }}
+      {{- if .Values.extraInitContainers }}
+      initContainers:
+        {{- toYaml .Values.extraInitContainers | nindent 8 }}
       {{- end }}
       containers:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.extraSecret }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.extraSecret }}
+        {{- end }}
         env:
         - name: DEPLOY_PLATFORM
           value: helm-chart
@@ -119,11 +124,16 @@ spec:
           value: "true"
         - name: OVERWRITE_SETTING_Prometheus_Port
           value: "{{ .Values.prometheusScraping.port }}"
+        {{- if and .Values.prometheusScraping.enabled .Values.microservices.enabled }}
+        - name: MS_METRICS
+          value: "true"
+        - name: MS_METRICS_PORT
+          value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
+        {{- end }}
         {{- end }}
         # Environment variables for microservices option
+        {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         {{- if .Values.microservices.enabled }}
-        - name: TRANSPORTER
-          value: nats://{{ .Release.Name }}-nats:4222
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
@@ -132,23 +142,69 @@ spec:
           value: {{ .Values.microservices.heartbeatTimeout | quote }}
         - name: RETRY_ENABLED
           value: 'yes'
-        - name: MS_METRICS
-          value: {{ .Values.prometheusScraping.enabled | default "false" | quote }}
-        {{- end}} # end of microservices envvar. options
-{{- with .Values.extraEnv }}
-{{ tpl . $ | indent 8 }}
-{{- end }}
+        {{- end }} # end of microservices envvar. options
+        {{- with .Values.extraEnv }}
+          {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.federation.enabled }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
+          value: {{ .Values.host }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_enabled
+          value: "true"
+        - name: OVERWRITE_SETTING_Federation_Matrix_serve_well_known
+          {{- if not .Values.ingress.federation.serveWellKnown }}
+          value: "true"
+          {{- else }}
+          value: "false"
+          {{- end }}
+        - name: OVERWRITE_SETTING_Federation_Matrix_id
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: appservice_id
+        - name: OVERWRITE_SETTING_Federation_Matrix_hs_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: hs_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_as_token
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: as_token
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_url
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "rocketchat.fullname" . }}-synapse
+              key: bridge_url
+        - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_url
+         {{- if .Values.ingress.federation.serveWellKnown }}
+          value: http://{{ template "rocketchat.fullname" . }}-synapse:8008
+          {{- else }}
+          value: https://{{ .Values.federation.host }}
+          {{- end }} 
+        - name: OVERWRITE_SETTING_Federation_Matrix_bridge_localpart
+          value: "rocket.cat"
+        {{end}}
+        {{- with .Values.containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 3000
         {{- if .Values.prometheusScraping.enabled }}
         - name: metrics
           containerPort: {{ .Values.prometheusScraping.port }}
-        {{- end}}
+        {{- if .Values.microservices.enabled }}
+        - name: ms-metrics
+          containerPort: {{ .Values.prometheusScraping.msPort }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /api/info
+            path: {{ .Values.livenessProbe.path }}
             port: http
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
@@ -159,7 +215,7 @@ spec:
         {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: /api/info
+            path: {{ .Values.readinessProbe.path }}
             port: http
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
@@ -190,10 +246,14 @@ spec:
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
       {{- end }}
+      nodeSelector:
+        {{ include "rocketchat.nodeSelector" (dict "name" "meteor" "context" $) | indent 8 }} 
+      tolerations:
+        {{ include "rocketchat.tolerations" (dict "name" "meteor" "context" $) | indent 8 }}
 {{- if or .Values.podAntiAffinity .Values.affinity }}
       affinity:
 {{- if .Values.affinity }}
-{{ toYaml .Values.affinity | indent 8 }}
+        {{ include "rocketchat.nodeAffinity" (dict "name" "meteor"  "context" $) | indent 10 }}
 {{- end }}
 {{- if eq .Values.podAntiAffinity "hard" }}
         podAntiAffinity:

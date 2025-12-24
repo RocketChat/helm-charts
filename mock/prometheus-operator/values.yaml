@@ -1,0 +1,63 @@
+# we actually just need the crds installed
+global:
+  rbac:
+    create: true
+
+crds:
+  enabled: true
+
+defaultRules:
+  create: false
+
+windowsMonitoring:
+  enabled: false
+
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false
+
+kubernetesServiceMonitors:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+  
+kubelet:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: false
+  
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+prometheus:
+  enabled: false
+
+# the operator
+prometheusOperator:
+  enabled: true
+
+cleanPrometheusOperatorObjectNames: false
+
+extraManifests: null

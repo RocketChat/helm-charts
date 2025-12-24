@@ -1,0 +1,22 @@
+apiVersion: v2
+name: monitoring
+description: Wrap recommended monitoring stack with sane defaults for deploying along with rocketchat
+type: application
+
+# Prometheus operator version
+appVersion: 0.83.0
+
+# Chart version
+version: 0.0.9
+
+dependencies:
+- name: kube-prometheus-stack
+  repository: https://prometheus-community.github.io/helm-charts
+  version: 75.9.0
+  alias: operator
+  condition: operator.enabled
+
+- name: grafana-operator
+  repository: oci://ghcr.io/grafana/helm-charts
+  version: v5.18.0
+  alias: grafana

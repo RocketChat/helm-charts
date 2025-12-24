@@ -1,16 +1,20 @@
 apiVersion: v2
 name: rocketchat
-version: 5.1.0
-appVersion: 5.1.0
+version: 6.27.1
+appVersion: 7.11.0
 dependencies:
   - name: mongodb
     repository: https://charts.bitnami.com/bitnami
-    version: 10.x.x
+    version: 13.x.x
     condition: mongodb.enabled
+  - name: postgresql
+    repository: https://charts.bitnami.com/bitnami
+    version: 15.x.x
+    condition: postgresql.enabled
   - name: nats
     repository: https://nats-io.github.io/k8s/helm/charts
     version: 0.15.x
-    condition: microservices.enabled
+    condition: nats.enabled, microservices.enabled
 description: Prepare to take off with the ultimate chat platform, experience the next level of team communications
 keywords:
   - chat

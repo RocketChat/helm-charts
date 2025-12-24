@@ -1,0 +1,39 @@
+---
+{{- $retentionGb :=
+    index
+      (regexSplit "G+" (printf "%v" $.Values.operator.prometheus.prometheusSpec.retentionSize) -1)
+      0
+-}}
+{{- $retentionStorage :=
+  index
+    (regexSplit "G+" (printf "%v" $.Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage) -1)
+    0
+-}}
+{{/* GB is base10 Gi is base2, this results in Gi being slightly around 7% */}}
+{{/* But even creating both with GB, giving extra expace to prometheus would avoid it not loading because of no-space-on-device */}}
+{{/* 15% is safe for both */}}
+
+
+{{- if lt
+  (float64 (mul $retentionStorage 1.15))
+  (float64 $retentionGb)
+-}}
+  {{- fail (printf
+    "\n%s=%s should be at least 15%% higher than %s=%s"
+    ".Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage"
+    .Values.operator.prometheus.prometheusSpec.storageSpec.volumeClaimTemplate.spec.resources.requests.storage
+    ".Values.operator.prometheus.prometheusSpec.retentionSize"
+    .Values.operator.prometheus.prometheusSpec.retentionSize
+    ) -}}
+{{- end -}}
+
+
+{{- if and .Values.operator.grafana.enabled .Values.grafana.deploy.enabled -}}
+  {{- fail (printf
+    "\n%s=%s and %s=%s are both enabled, please choose one"
+    ".Values.operator.grafana.enabled"
+    .Values.operator.grafana.enabled
+    ".Values.grafana.deploy.enabled"
+    .Values.grafana.deploy.enabled
+    ) -}}
+{{- end -}}

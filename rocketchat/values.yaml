@@ -1,3 +1,12 @@
+## common configuration across all deployments
+global:
+  # Tolerations for pod assignment
+  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
+  annotations: {}
+  nodeSelector: {}
+  affinity: {}
+
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
 ##
@@ -28,6 +37,10 @@ extraEnv:
   # - name: MONGO_OPLOG_URL
   #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
+# Extra secret for Rocket.Chat, uncomment to use
+# Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
+# extraSecret: "some-secret"
+
 # Extra volumes for Rocket.Chat...
 extraVolumes:
   # - name: etc-certs
@@ -47,6 +60,12 @@ extraVolumeMounts:
   # - mountPath: /usr/share/ca-certificates
   #   name: usr-certs
   #   readOnly: true
+
+# -- Containers, which are run before the app containers are started.
+extraInitContainers: []
+  # - name: init-myservice
+  #   image: busybox
+  #   command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
 
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
@@ -92,14 +111,37 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 ### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
 ##
 mongodb:
+  image:
+    repository: bitnamilegacy/mongodb
+  tls:
+    image:
+      repository: bitnamilegacy/nginx
+  externalAccess:
+    autoDiscovery:
+      image:
+        registry: docker.io
+        repository: bitnamilegacy/kubectl
+  dnsCheck:
+    image:
+      repository: bitnamilegacy/os-shell
+  volumePermissions:
+    enabled: true
+    image:
+      repository: bitnamilegacy/os-shell
+
   ## Enable or disable MongoDB dependency completely.
   enabled: true
+  serviceMonitor:
+    enabled: true
+  initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:
     # rootPassword:
-    username: rocketchat
-    # password:
-    database: rocketchat
+    usernames:
+      - rocketchat
+    # passwords:
+    databases:
+      - rocketchat
 
   architecture: replicaset
   replicaCount: 1
@@ -109,6 +151,13 @@ mongodb:
       minAvailable: 0
   pdb:
     minAvailable: 0
+
+  metrics:
+    enabled: true
+    image:
+      repository: bitnamilegacy/mongodb-exporter
+    serviceMonitor:
+      enabled: false # default to false and use ours that checks for the crd
 
     # key:
 
@@ -125,7 +174,6 @@ mongodb:
     accessMode: ReadWriteOnce
     size: 8Gi
 
-  volumePermissions: { enabled: true }
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -153,9 +201,11 @@ persistence:
 #     cpu: 300m
 
 securityContext:
-  enabled: true
   runAsUser: 999
   fsGroup: 999
+
+containerSecurityContext:
+  runAsUser: 999
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
@@ -175,15 +225,17 @@ serviceAccount:
 ingress:
   enabled: false
   pathType: Prefix
-  # ingressClassName: "nxinx"
+  # ingressClassName: "nginx"
   annotations:
     {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
-  tls: {}
+  tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+  federation:
+    serveWellKnown: false
 
 service:
   annotations: {}
@@ -219,26 +271,45 @@ podAnnotations:
 
 ## Optional Prometheus scraping Settings
 prometheusScraping:
-  enabled: false
+  enabled: true
   port: 9100 # Avoid using 9458: conflicts with Moleculer Exporter
+  msPort: 9458
 
+# ServiceMonitor: Deprecated in favor of podMonitor
 serviceMonitor:
   ## serviceMonitor.enabled Create ServiceMonitor resource(s) for scraping metrics using PrometheusOperator
   ## prometheusScraping.enabled should be also enabled
   ##
   enabled: false
-  ## metrics.serviceMonitor.interval The interval at which metrics should be scraped
+
+  # deprecated
+  #interval: 30s
+
+  # deprecated
+  #port: metrics
+
+  ## metrics.serviceMonitor.port The port names at which container exposes Prometheus metrics
   ##
+  ports:
+    - metrics
+  ## metrics.serviceMonitor.intervals The intervals at which metrics should be scraped
+  ##
+  intervals:
+    - 30s
+
+podMonitor:
+  ## podMonitor.enabled Create podMonitor resource(s) for scraping metrics using PrometheusOperator
+  ## prometheusScraping.enabled should be also enabled
+  enabled: true
+  # podmonitor interval
   interval: 30s
-  ## metrics.serviceMonitor.port The port name at which container exposes Prometheus metrics
-  ##
-  port: metrics
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##
 livenessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 60
   periodSeconds: 15
   timeoutSeconds: 5
@@ -247,6 +318,7 @@ livenessProbe:
 
 readinessProbe:
   enabled: true
+  path: /health
   initialDelaySeconds: 10
   periodSeconds: 15
   timeoutSeconds: 5
@@ -264,7 +336,7 @@ podDisruptionBudget:
 ## Deploy as microservices?
 # Monolithic architecture, by default
 microservices:
-  enabled: false
+  enabled: true
 
   logLevel: warn
 
@@ -277,28 +349,54 @@ microservices:
     image:
       repository: rocketchat/presence-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   ddpStreamer:
     replicas: 1
     image:
       repository: rocketchat/ddp-streamer-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   account:
     replicas: 1
     image:
       repository: rocketchat/account-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   authorization:
     replicas: 1
     image:
       repository: rocketchat/authorization-service
       pullPolicy: IfNotPresent
+    securityContext: {}
+    resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
+
   streamHub:
-    replicas: 1
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
-  nats:
-    replicas: 1
+    securityContext: {}
+    resources: {}
+    # Tolerations for pod assignment
+    # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+    tolerations: []
 
   ## Parameters for each Kubernetes service
   # NOTE: reserved for future usage still
@@ -310,5 +408,66 @@ microservices:
   authorizationService:
 
 nats:
+  # Helm docs: https://helm.sh/docs/topics/charts/#tags-and-condition-resolution
+  #
+  # IMPORTANT: Do not set nats.enabled here unless you want to override the default behavior.
+  # By default, nats.enabled is nil and its deployment is determined by microservices.enabled:
+  #   - microservices.enabled: true, nats.enabled: nil        = NATS is enabled and deployed internally, this is the default behavior
+  #   - microservices.enabled: true, nats.enabled: false      = NATS is NOT deployed (use external NATS)
+  #   - microservices.enabled: false, nats.enabled: true      = Monolith RC with NATS deployed
+  #   - microservices.enabled: false, nats.enabled: nil/false = Monolith RC without NATS
+  #
+  # To deploy NATS, uncomment and set enabled: true below. To use an external NATS, set enabled: false.
+  # enabled: true
+
+  # For using an external NATS server, uncomment and set existingSecret below with the name of a Kubernetes Secret containing the connection string
+  # existingSecret:
+  #   name: nats-secret
+  #   key: connectionString
   nats:
     image: nats:2.4-alpine
+  podMonitor:
+    enabled: true
+  cluster:
+    enabled: true
+    replicas: 2
+  exporter:
+    enabled: true
+    serviceMonitor:
+      enabled: false
+federation:
+  # host:
+  image:
+    repository: matrixdotorg/synapse
+    registry: docker.io
+    tag: v1.84.1
+  enabled: false
+  persistence:
+    enabled: false
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+postgresql:
+  enabled: false
+  auth:
+    username: rocketchat
+    password: rocketchat
+    database: rocketchat
+  primary:
+    extraEnvVars:
+      - name: POSTGRES_INITDB_ARGS
+        value: "--lc-collate=C --lc-ctype=C"
+
+# Tolerations for pod assignment
+# Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+tolerations: []
+
+hooks:
+  preUpgrade:
+    podAnnotations: {}
+    podLabels: {}
+  # nodeSelector: {}
+  # affinity: {}

@@ -1,0 +1,65 @@
+# It exists because we need to skip TLS verification
+# for the freeswitch server, as it uses a self-signed certificate, 
+# and we already have TLS cert. on the edge. 
+{{- if eq .Values.freeswitch.ingressController "traefik" }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: ServersTransport
+metadata:
+  name: freeswitch-skip-tls-verify
+spec:
+  insecureSkipVerify: true
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    {{- with .Values.freeswitch.serviceAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- if eq .Values.freeswitch.ingressController "traefik" }}
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+    traefik.ingress.kubernetes.io/service.serverstransport: {{ .Release.Namespace }}-freeswitch-skip-tls-verify@kubernetescrd
+    {{- end }}
+    {{- if and .Values.freeswitch.monitoring.prometheus.enabled (not .Values.useLegacyArch) (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.freeswitch.monitoring.prometheus.exporter.port }}"
+    prometheus.io/path: "/metrics"
+    {{- end }}
+  name: {{ include "rocketchat-voip.fullname" . }}-freeswitch
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "rocketchat-voip.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: ssh
+    targetPort: 22
+    port: 22
+    protocol: TCP
+  - name: tcp-socket
+    targetPort: 8021
+    port: 8021
+    protocol: TCP
+  - name: websocket
+    targetPort: 443
+    port: 443
+    protocol: TCP
+  - name: sip
+    targetPort: 5060
+    port: 5060
+    protocol: UDP
+  - name: external-sip
+    targetPort: 5080
+    port: 5080
+    protocol: UDP
+  - name: external-sip-tls
+    targetPort: 5061
+    port: 5061
+    protocol: UDP
+  {{- if .Values.freeswitch.monitoring.prometheus.enabled }}
+  - name: prometheus-metrics
+    targetPort: {{ .Values.freeswitch.monitoring.prometheus.exporter.port }}
+    port: {{ .Values.freeswitch.monitoring.prometheus.exporter.port }}
+    protocol: TCP
+  {{- end }}

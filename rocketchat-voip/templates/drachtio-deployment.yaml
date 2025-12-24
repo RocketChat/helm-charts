@@ -1,0 +1,77 @@
+{{- if not .Values.useLegacyArch }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rocketchat-voip.fullname" . }}-drachtio
+  labels:
+    {{- include "rocketchat-voip.labels" . | nindent 4 }}
+    app.kubernetes.io/component: drachtio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: drachtio
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        {{- include "rocketchat-voip.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: drachtio
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rocketchat-voip.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: drachtio
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.drachtio.image.name }}:{{ .Values.drachtio.image.tag }}"
+          imagePullPolicy: {{ .Values.drachtio.image.pullPolicy }}
+          ports:
+            - name: admin
+              containerPort: {{ .Values.drachtio.adminPort }}
+              protocol: TCP
+            - name: sip-udp
+              containerPort: {{ .Values.drachtio.sipPort }}
+              protocol: UDP
+            {{- if .Values.drachtio.config.monitoring.prometheus.enabled }}
+            - name: prometheus
+              containerPort: {{ .Values.drachtio.config.monitoring.prometheus.port }}
+              protocol: TCP
+            {{- end }}
+          volumeMounts:
+            - name: drachtio-config
+              mountPath: /etc/drachtio.conf.xml
+              subPath: drachtio.conf.xml
+          resources:
+            {{- toYaml .Values.drachtio.resources | nindent 12 }}
+      volumes:
+        - name: drachtio-config
+          secret:
+            secretName: {{ .Values.drachtio.existingSecret | default (printf "%s-drachtio-config" (include "rocketchat-voip.fullname" .)) }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
