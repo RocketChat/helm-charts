@@ -255,6 +255,7 @@ service:
 
   ## Optional when LoadBalancer specified ServiceType.
   loadBalancerIP: ""
+  loadBalancerClass: ""
 
 ## Optional custom labels for the deployment resource.
 deploymentLabels: {}
