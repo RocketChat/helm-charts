@@ -211,6 +211,6 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- if (hasKey .Values.microservices.streamHub "enabled") -}}
 {{- .Values.microservices.streamHub.enabled -}}
 {{- else -}}
-false
+true
 {{- end -}}
 {{- end -}}
