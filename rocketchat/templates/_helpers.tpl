@@ -204,26 +204,13 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
 
-{{/* 
-Check if streamHub should be enabled.
-Logic:
-1. For versions >= 8.0.0, always disable (stream hub removed)
-2. If explicitly set (.Values.microservices.streamHub.enabled), use that value
-3. For versions < 7.7.3, enable by default
-4. For versions >= 7.7.3 and < 8.0.0, disable by default
+{{/* This is needed to avoid breaking when people use --reuse-values
+    and previously didn't had the path microservices.streamHub.enabled.
 */}}
 {{- define "rocketchat.streamHub.enabled" -}}
-{{- $version := .Values.image.tag | default .Chart.AppVersion -}}
-{{- $explicitlySet := hasKey .Values.microservices.streamHub "enabled" -}}
-{{- if semverCompare ">=8.0.0" $version -}}
-{{- print "false" -}}
-{{- else if $explicitlySet -}}
+{{- if (hasKey .Values.microservices.streamHub "enabled") -}}
 {{- .Values.microservices.streamHub.enabled -}}
 {{- else -}}
-{{- if semverCompare "<7.7.3" $version -}}
-{{- print "true" -}}
-{{- else -}}
-{{- print "false" -}}
-{{- end -}}
+false
 {{- end -}}
 {{- end -}}

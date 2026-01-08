@@ -1,4 +1,9 @@
 {{- if and .Values.microservices.enabled (eq (include "rocketchat.streamHub.enabled" .) "true") }}
+{{- if semverCompare ">=8.0.0" (.Values.image.tag | default .Chart.AppVersion) }}
+{{- fail "Stream Hub microservice is only supported in Rocket.Chat versions prior to 8.0.0" -}}
+{{- end }}
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
