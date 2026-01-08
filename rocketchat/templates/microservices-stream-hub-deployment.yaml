@@ -4,6 +4,8 @@
 {{- end }}
 
 
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -114,6 +116,10 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+
+{{- else -}}
+{{- if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) }}
+{{- fail "Stream Hub microservice is required when running Rocket.Chat versions prior to 7.7.0, please set microservices.streamHub.enabled to true." -}}
 {{- end }}
 
 {{/* vi: ts=8 et sw=2 smarttab */}}
