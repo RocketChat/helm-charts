@@ -121,5 +121,6 @@ spec:
 {{- if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) }}
 {{- fail "Stream Hub microservice is required when running Rocket.Chat versions prior to 7.7.0, please set microservices.streamHub.enabled to true." -}}
 {{- end }}
+{{- end }}
 
 {{/* vi: ts=8 et sw=2 smarttab */}}
