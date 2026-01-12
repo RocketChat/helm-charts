@@ -107,7 +107,6 @@ setup_file() {
     "mongodb-metrics" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer" \
     "rocketchat" \
@@ -131,7 +130,6 @@ setup_file() {
     "rocketchat" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -151,7 +149,6 @@ setup_file() {
     "nats-box" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -171,7 +168,6 @@ setup_file() {
     "mongodb-metrics http-metrics 9216" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
-    "stream-hub metrics 9458" \
     "account metrics 9458" \
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
