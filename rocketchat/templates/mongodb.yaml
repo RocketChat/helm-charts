@@ -44,6 +44,22 @@ spec:
 {{- if .Values.mongodb.metrics.enabled }}
   prometheus:
     port: 9216
+	username: {{ .Values.mongodb.metrics.auth.username }}
+	passwordSecretRef:
+	  name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+	  key: password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+data:
+  username: {{ .Values.mongodb.metrics.auth.username | b64enc | quote }}
+  password: {{ .Values.mongodb.metrics.auth.password| b64enc | quote }}
+---
+
 {{- end }}
 
 {{- range .Values.mongodb.auth.usernames }}

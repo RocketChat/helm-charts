@@ -10,6 +10,13 @@ spec:
   endpoints:
   - interval: 30s
     port: 9216
+	basicAuth:
+	  username:
+	    name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+		key: username
+	  password:
+	    name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+		key: password
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
