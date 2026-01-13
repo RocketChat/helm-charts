@@ -23,6 +23,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s-headless" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "rocketchat.mongodb.name" -}}
+{{- printf "%s-%s" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -67,32 +71,27 @@ Usage:
     {{- end }}
 {{- end -}}
 
-{{/*Generate the MONGO_URL*/}}
-{{- define "rocketchat.mongodb.url" }}
+{{/*Generate the MONGO_URL environment entry*/}}
+{{- define "rocketchat.mongodb.envVars" }}
     {{- if .Values.externalMongodbUrl }}
-        {{- print .Values.externalMongodbUrl }}
+- name: MONGO_URL
+  value: {{ .Values.externalMongodbUrl | quote }}
+    {{- else if .Values.existingMongodbSecret }}
+- name: MONGO_URL
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.existingMongodbSecret | quote }}
+      key: mongo-uri
     {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
-        {{- $password := required "passwords array must have at least one entry" (first .Values.mongodb.auth.passwords) }}
-        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs }}
-    {{- end }}
-{{- end }}
-
-{{/*Generate MONGO_OPLOG_URL*/}}
-{{- define "rocketchat.mongodb.oplogUrl" }}
-    {{- if .Values.externalMongodbOplogUrl }}
-        {{- print .Values.externalMongodbOplogUrl }}
-    {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := .Values.mongodb.auth.rootUser }}
-        {{- $password := required "root password must be provided" .Values.mongodb.auth.rootPassword }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
+        {{- $clusterName := include "rocketchat.mongodb.name" . }}
+        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.databases) }}
+        {{- $user := required "users array must have at least one entry" (first .Values.mongodb.users) }}
+        {{- $secretName := printf "%s-%s-%s" $clusterName $database $user }}
+- name: MONGO_URL
+  valueFrom:
+    secretKeyRef:
+      name: {{ quote $secretName }}
+      key: "connectionString.standard"
     {{- end }}
 {{- end }}
 
@@ -203,3 +202,20 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}}
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
+
+{{- define "checkAcknowledgeUpgrade" -}}
+	{{- if not (typeIsLike "int" .Values.upgradeAcknowledgedAt) -}}
+		{{- fail "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%s) to set on the cli while upgrading" -}}
+	{{- end -}}
+		{{- $tenMinutes := mul 10 * 60 -}}
+		{{- $current := now | unixEpoch -}}
+		{{- if gt (sub $current .Values.upgradeAcknowledgedAt) $tenMinutes -}}
+			{{- false -}}
+		{{- else -}}
+			{{- true -}}
+		{{- end -}}
+{{- end -}}
+
+{{- define "needsMongodb" -}}
+{{- or (or (empty .Values.existingMongodbSecret) .Values.externalMongodbUrl) .Values.mongodb.enabled -}}
+{{- end -}}

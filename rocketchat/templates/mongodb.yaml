@@ -1,0 +1,66 @@
+{{- $failMessage := 
+This upgrade is a breaking change. Since version 10.x.x of Rocket.Chat helm chart, we are no longer responsible for MongoDB deployment and management.
+
+A Tl;Dr; of how to proceed -
+
+1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this apiVersion: v1
+2. This chart CAN deploy a barebone replicaset, for that, keep `mongodb.enabled` to true, but first deploy the official mongodb kubernetes operator github.com/mongodb/mongodb-kubernetes. You can modify the mongodb.com/v1/MongoDB resource later however you want.
+
+More on this read our official docs.
+-}}
+{{- if (include "needsMongodb" .) -}}
+{{- if not (include "checkAcknowledgeUpgrade" .) -}}
+{{- fail (cat "Upgrade was not acknowldeged within the last 10 minutes.
+
+" $failMessage) -}}
+{{- else -}}
+{{- if not .Capabilities.ApiVersions.Has "mongodbcommunity.mongodb.com/v1/MongoDBCommunity" -}}
+{{- fail (cat "Mongodb controller not found, must install that before upgrading if mongodb is to be deployed.
+
+" $failMessage) -}}
+{{- else -}}
+{{- $existingCluster := (lookup "mongodbcommunity.mongodb.com/v1" "MongoDBCommunity" .Release.Namespace (include "rocketchat.mongodb.name" .)) -}}
+{{- if empty $existingCluster -}}
+{{-/*only time we create a cluster, we only verify if there is an existing but let users freely modify the created resource*/}}
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: {{ include "rocketchat.mongodb.name" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  members: {{ .Values.mongodb.replicaCount }}
+  type: ReplicaSet
+  version: {{ .Values.mongodb.version }}
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+{{- range $index, $user := .Values.mongodb.users }}
+    - name: {{ $user }}
+      db: {{ index $.Values.mongodb.databases $index }}
+      passwordSecretRef:
+        name: {{ $user }}-password
+      roles:
+        - name: readWrite
+          db: {{ index $.Values.mongodb.databases $index }}
+      scramCredentialsSecretName: {{ $user }}-scram
+{{- end }}
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+
+{{- range .Values.mongodb.users }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ . }}-password
+  namespace: {{ $.Release.Namespace }}
+type: Opaque
+data:
+  password: {{ index $.Values.mongodb.passwords . | b64enc | quote }}
+{{- end }}
+
+{{- else -}}
+{{- end -}}
+{{- end -}}

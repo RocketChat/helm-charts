@@ -111,29 +111,8 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 ### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
 ##
 mongodb:
-  image:
-    repository: bitnamilegacy/mongodb
-  tls:
-    image:
-      repository: bitnamilegacy/nginx
-  externalAccess:
-    autoDiscovery:
-      image:
-        registry: docker.io
-        repository: bitnamilegacy/kubectl
-  dnsCheck:
-    image:
-      repository: bitnamilegacy/os-shell
-  volumePermissions:
-    enabled: true
-    image:
-      repository: bitnamilegacy/os-shell
-
   ## Enable or disable MongoDB dependency completely.
   enabled: true
-  serviceMonitor:
-    enabled: true
-  initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:
     # rootPassword:
@@ -147,10 +126,6 @@ mongodb:
   replicaCount: 1
   arbiter:
     enabled: false
-    pdb:
-      minAvailable: 0
-  pdb:
-    minAvailable: 0
 
   metrics:
     enabled: true
@@ -471,3 +446,5 @@ hooks:
     podLabels: {}
   # nodeSelector: {}
   # affinity: {}
+
+upgradeAcknowledgedAt: 0 # date +%s

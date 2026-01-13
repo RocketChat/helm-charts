@@ -3,10 +3,6 @@ name: rocketchat
 version: 6.27.1
 appVersion: 7.11.0
 dependencies:
-  - name: mongodb
-    repository: https://charts.bitnami.com/bitnami
-    version: 13.x.x
-    condition: mongodb.enabled
   - name: postgresql
     repository: https://charts.bitnami.com/bitnami
     version: 15.x.x
@@ -29,7 +25,6 @@ home: https://rocket.chat/
 icon: https://raw.githubusercontent.com/RocketChat/Rocket.Chat.Artwork/master/Logos/icon.svg
 sources:
   - https://github.com/RocketChat/Docker.Official.Image/
-engine: gotpl
 maintainers:
   - email: cloud@rocket.chat
     name: RocketChat
