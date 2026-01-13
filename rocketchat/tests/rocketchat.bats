@@ -70,11 +70,6 @@ setup_file() {
 }
 
 # bats test_tags=pre
-@test "verify chart --dry-run" {
-  helm_dry_run
-}
-
-# bats test_tags=pre,deploy
 @test "verify packaging chart" {
   [[ -f "$ROCKETCHAT_CHART_ARCHIVE" ]] &&
     skip "chart package already exists"
@@ -88,18 +83,24 @@ setup_file() {
   assert [ -f "$ROCKETCHAT_CHART_ARCHIVE" ]
 }
 
+# bats test_tags=pre,deploy
+@test "verify install mongodb operator" {
+	kubectl get deployments -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb-kubernetes-operator" && skip "operator already installed"
+	
+	setup_mongodb_operator
+}
+
+
+# bats test_tags=pre,deploy
+@test "verify chart --dry-run" {
+  helm_dry_run
+}
+
 # bats test_tags=deploy
 @test "install latest published version" {
   helm ls | grep -q rocketchat-0.0.0 &&
     skip "upgrade already installed"
   helm_install_latest_published_version
-}
-
-# bats test_tags=deploy,microservices
-@test "verify install mongodb operator" {
-	kubectl get deployments -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb-kubernetes-operator" && skip "operator already installed"
-	
-	setup_mongodb_operator
 }
 
 # bats test_tags=deploy,microservices
