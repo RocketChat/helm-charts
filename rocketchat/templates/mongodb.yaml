@@ -10,18 +10,26 @@ More on this read our official docs.
 -}}
 {{- if (include "needsMongodb" .) -}}
 {{- if not (include "checkAcknowledgeUpgrade" .) -}}
-{{- fail (cat "Upgrade was not acknowldeged within the last 10 minutes.
+{{- cat "Upgrade was not acknowldeged within the last 10 minutes.
 
-" $failMessage) -}}
+" $failMessage | fail -}}
 {{- else -}}
 {{- if not .Capabilities.ApiVersions.Has "mongodbcommunity.mongodb.com/v1/MongoDBCommunity" -}}
-{{- fail (cat "Mongodb controller not found, must install that before upgrading if mongodb is to be deployed.
+{{- cat "Mongodb controller not found, must install that before upgrading if mongodb is to be deployed.
 
-" $failMessage) -}}
+" $failMessage | fail -}}
 {{- else -}}
 {{- $existingCluster := (lookup "mongodbcommunity.mongodb.com/v1" "MongoDBCommunity" .Release.Namespace (include "rocketchat.mongodb.name" .)) -}}
 {{- if empty $existingCluster -}}
 {{-/*only time we create a cluster, we only verify if there is an existing but let users freely modify the created resource*/}}
+{{- range $index, $user := .Values.mongodb.auth.users }}
+  {{- if not (index $.Values.mongodb.auth.passwords $user) }}
+    {{- fail (printf "Password not found for user '%s' in mongodb.auth.passwords" $user) }}
+  {{- end }}
+  {{- if not (index $.Values.mongodb.auth.databases $index) }}
+    {{- fail (printf "Database not found at index %d for user '%s' in mongodb.auth.databases" $index $user) }}
+  {{- end }}
+{{- end }}
 ---
 apiVersion: mongodbcommunity.mongodb.com/v1
 kind: MongoDBCommunity
@@ -36,20 +44,24 @@ spec:
     authentication:
       modes: ["SCRAM"]
   users:
-{{- range $index, $user := .Values.mongodb.users }}
+{{- range $index, $user := .Values.mongodb.auth.users }}
     - name: {{ $user }}
-      db: {{ index $.Values.mongodb.databases $index }}
+      db: {{ index $.Values.mongodb.auth.databases $index }}
       passwordSecretRef:
         name: {{ $user }}-password
       roles:
         - name: readWrite
-          db: {{ index $.Values.mongodb.databases $index }}
+          db: {{ index $.Values.mongodb.auth.databases $index }}
       scramCredentialsSecretName: {{ $user }}-scram
 {{- end }}
   additionalMongodConfig:
     storage.wiredTiger.engineConfig.journalCompressor: zlib
+{{- if .Values.mongodb.metrics.enabled }}
+  prometheus:
+    port: 9216
+{{- end }}
 
-{{- range .Values.mongodb.users }}
+{{- range .Values.mongodb.auth.users }}
 ---
 apiVersion: v1
 kind: Secret
@@ -58,7 +70,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
 type: Opaque
 data:
-  password: {{ index $.Values.mongodb.passwords . | b64enc | quote }}
+  password: {{ index $.Values.mongodb.auth.passwords . | b64enc | quote }}
 {{- end }}
 
 {{- else -}}

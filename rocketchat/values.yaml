@@ -118,36 +118,17 @@ mongodb:
     # rootPassword:
     usernames:
       - rocketchat
-    # passwords:
+    passwords: []
     databases:
       - rocketchat
 
-  architecture: replicaset
   replicaCount: 1
   arbiter:
     enabled: false
 
   metrics:
     enabled: true
-    image:
-      repository: bitnamilegacy/mongodb-exporter
-    serviceMonitor:
-      enabled: false # default to false and use ours that checks for the crd
 
-    # key:
-
-  persistence:
-    enabled: true
-    ## mongodb data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-    accessMode: ReadWriteOnce
-    size: 8Gi
 
 
 ## Enable persistence using Persistent Volume Claims

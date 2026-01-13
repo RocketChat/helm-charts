@@ -84,8 +84,8 @@ Usage:
       key: mongo-uri
     {{- else }}
         {{- $clusterName := include "rocketchat.mongodb.name" . }}
-        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.databases) }}
-        {{- $user := required "users array must have at least one entry" (first .Values.mongodb.users) }}
+        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
+        {{- $user := required "users array must have at least one entry" (first .Values.mongodb.auth.users) }}
         {{- $secretName := printf "%s-%s-%s" $clusterName $database $user }}
 - name: MONGO_URL
   valueFrom:
