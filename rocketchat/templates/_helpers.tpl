@@ -225,7 +225,7 @@ This upgrade is a breaking change. Since version 10.x.x of Rocket.Chat helm char
 
 A Tl;Dr; of how to proceed -
 
-1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this apiVersion: v1
+1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this chart.
 2. This chart CAN deploy a barebone replicaset, for that, keep `mongodb.enabled` to true, but first deploy the official mongodb kubernetes operator github.com/mongodb/mongodb-kubernetes. You can modify the mongodb.com/v1/MongoDB resource later however you want.
 
 More on this read our official docs.
