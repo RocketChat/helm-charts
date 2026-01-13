@@ -1,27 +1,12 @@
-{{- $failMessage := "
-This upgrade is a breaking change. Since version 10.x.x of Rocket.Chat helm chart, we are no longer responsible for MongoDB deployment and management.
-
-A Tl;Dr; of how to proceed -
-
-1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this apiVersion: v1
-2. This chart CAN deploy a barebone replicaset, for that, keep `mongodb.enabled` to true, but first deploy the official mongodb kubernetes operator github.com/mongodb/mongodb-kubernetes. You can modify the mongodb.com/v1/MongoDB resource later however you want.
-
-More on this read our official docs."
--}}
+{{- $failMessage := include "v10_breakingMigrationFailMessage" . -}}
 {{- if (include "needsMongodb" .) -}}
-{{- if not (include "checkAcknowledgeUpgrade" .) -}}
-{{- cat "Upgrade was not acknowldeged within the last 10 minutes.
-
-" $failMessage | fail -}}
-{{- else -}}
-{{- if not .Capabilities.ApiVersions.Has "mongodbcommunity.mongodb.com/v1/MongoDBCommunity" -}}
-{{- cat "Mongodb controller not found, must install that before upgrading if mongodb is to be deployed.
-
-" $failMessage | fail -}}
+{{- template "checkAcknowledgeUpgrade" . -}}
+{{- if .Capabilities.APIVersions.Has "mongodbcommunity.mongodb.com/v1/MongoDBCommunity" | not -}}
+{{- cat "Mongodb controller not found, must install that before upgrading if mongodb is to be deployed." $failMessage | fail -}}
 {{- else -}}
 {{- $existingCluster := (lookup "mongodbcommunity.mongodb.com/v1" "MongoDBCommunity" .Release.Namespace (include "rocketchat.mongodb.name" .)) -}}
 {{- if empty $existingCluster -}}
-{{-/*only time we create a cluster, we only verify if there is an existing but let users freely modify the created resource*/}}
+{{/*only time we create a cluster, we only verify if there is an existing but let users freely modify the created resource*/}}
 {{- range $index, $user := .Values.mongodb.auth.users }}
   {{- if not (index $.Values.mongodb.auth.passwords $user) }}
     {{- fail (printf "Password not found for user '%s' in mongodb.auth.passwords" $user) }}
@@ -44,7 +29,7 @@ spec:
     authentication:
       modes: ["SCRAM"]
   users:
-{{- range $index, $user := .Values.mongodb.auth.users }}
+{{- range $index, $user := .Values.mongodb.auth.usernames }}
     - name: {{ $user }}
       db: {{ index $.Values.mongodb.auth.databases $index }}
       passwordSecretRef:
@@ -61,7 +46,7 @@ spec:
     port: 9216
 {{- end }}
 
-{{- range .Values.mongodb.auth.users }}
+{{- range .Values.mongodb.auth.usernames }}
 ---
 apiVersion: v1
 kind: Secret
@@ -74,5 +59,6 @@ data:
 {{- end }}
 
 {{- else -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}

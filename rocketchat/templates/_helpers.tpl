@@ -85,7 +85,7 @@ Usage:
     {{- else }}
         {{- $clusterName := include "rocketchat.mongodb.name" . }}
         {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
-        {{- $user := required "users array must have at least one entry" (first .Values.mongodb.auth.users) }}
+        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
         {{- $secretName := printf "%s-%s-%s" $clusterName $database $user }}
 - name: MONGO_URL
   valueFrom:
@@ -207,15 +207,25 @@ One of the following must be true to set the TRANSPORTER environment variable:
 	{{- if not (typeIsLike "int" .Values.upgradeAcknowledgedAt) -}}
 		{{- fail "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%s) to set on the cli while upgrading" -}}
 	{{- end -}}
-		{{- $tenMinutes := mul 10 * 60 -}}
+		{{- $tenMinutes := mul 10 60 -}}
 		{{- $current := now | unixEpoch -}}
 		{{- if gt (sub $current .Values.upgradeAcknowledgedAt) $tenMinutes -}}
-			{{- false -}}
-		{{- else -}}
-			{{- true -}}
+			{{- include "v10_breakingMigrationFailMessage" . | cat "Upgrade was not acknowldeged within the last 10 minutes." | fail -}}
 		{{- end -}}
 {{- end -}}
 
 {{- define "needsMongodb" -}}
 {{- or (or (empty .Values.existingMongodbSecret) .Values.externalMongodbUrl) .Values.mongodb.enabled -}}
+{{- end -}}
+
+{{- define "v10_breakingMigrationFailMessage" -}}
+This upgrade is a breaking change. Since version 10.x.x of Rocket.Chat helm chart, we are no longer responsible for MongoDB deployment and management.
+
+A Tl;Dr; of how to proceed -
+
+1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this apiVersion: v1
+2. This chart CAN deploy a barebone replicaset, for that, keep `mongodb.enabled` to true, but first deploy the official mongodb kubernetes operator github.com/mongodb/mongodb-kubernetes. You can modify the mongodb.com/v1/MongoDB resource later however you want.
+
+More on this read our official docs.
+
 {{- end -}}
