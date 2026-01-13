@@ -74,6 +74,7 @@ cluster.run() {
       --kubeconfig-switch-context=false \
       --kubeconfig-update-default=false \
       --no-lb \
+	  --runtime-ulimit "nofile=1048576:1048576" \
       "${PROJECT_NAME}" || cluster_exists="true"
 
     if [[ "${IGNORE_CLEANUP:-}" == "true" && "${cluster_exists}" == "true" ]]; then

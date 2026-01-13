@@ -17,6 +17,8 @@ microservices:
 
 nats:
   enabled: true
+  reloader:
+    enabled: false
 
 host: "${ROCKETCHAT_HOST}"
 image:

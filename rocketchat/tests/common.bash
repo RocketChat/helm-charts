@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2312
 
+setup_mongodb_operator() {
+	kubectl apply -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
+	helm repo add mongodb https://mongodb.github.io/helm-charts
+	helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
+	--namespace ${DETIK_CLIENT_NAMESPACE} \
+	--create-namespace \
+	--wait \
+	--wait-for-jobs \
+	--timeout=5m
+}
+
 helm_dry_run() {
   run_and_assert_success helm install \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
@@ -38,9 +49,12 @@ helm_upgrade_to_local_chart() {
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
     --values "${VALUES}" \
     "${ROCKETCHAT_CHART_DIR}" \
+	--set=upgradeAcknowledgedAt=$(date +%s) \
     --wait \
     --wait-for-jobs \
     --timeout 5m
+  
+  sleep 30s
 }
 
 skip_on_mock_server() {

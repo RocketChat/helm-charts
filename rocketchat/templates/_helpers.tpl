@@ -205,8 +205,8 @@ One of the following must be true to set the TRANSPORTER environment variable:
 
 {{- define "checkAcknowledgeUpgrade" -}}
 	{{- if .Release.IsUpgrade -}}
-		{{- if not (typeIsLike "int" .Values.upgradeAcknowledgedAt) -}}
-			{{- fail "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%s) to set on the cli while upgrading" -}}
+		{{- if not (typeIsLike "int64" .Values.upgradeAcknowledgedAt) -}}
+			{{- typeOf .Values.upgradeAcknowledgedAt | printf "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%%s) to set on the cli while upgrading, got %s" | fail -}}
 		{{- end -}}
 			{{- $tenMinutes := mul 10 60 -}}
 			{{- $current := now | unixEpoch -}}

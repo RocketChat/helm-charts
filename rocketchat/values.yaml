@@ -134,7 +134,7 @@ mongodb:
       username: mongodb-metrics
       password: ""
     serviceMonitor:
-      enabled: true
+      enabled: false
 
   serviceMonitor:
     enabled: true

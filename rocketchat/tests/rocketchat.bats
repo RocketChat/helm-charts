@@ -96,6 +96,13 @@ setup_file() {
 }
 
 # bats test_tags=deploy,microservices
+@test "verify install mongodb operator" {
+	kubectl get deployments -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb-kubernetes-operator" && skip "operator already installed"
+	
+	setup_mongodb_operator
+}
+
+# bats test_tags=deploy,microservices
 @test "verify upgrade to local chart" {
   helm_upgrade_to_local_chart
 }
@@ -103,7 +110,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all services are up for microservices" {
   test_services \
-    "mongodb" \
+    "mongodb-svc" \
     "presence" \
     "authorization" \
     "stream-hub" \
@@ -116,7 +123,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all services are up for monolith" {
   test_services \
-    "mongodb" \
+    "mongodb-svc" \
     "rocketchat" \
     "rocketchat-bridge" \
     "rocketchat-synapse"
@@ -165,7 +172,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all endpointslices microservices' configs" {
   test_endpoint_slice \
-    "mongodb mongodb 27017" \
+    "mongodb-svc mongodb,prometheus 27017,9216" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
     "stream-hub metrics 9458" \
@@ -180,7 +187,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all endpointslices' configs for monolith" {
   test_endpoint_slice \
-    "mongodb mongodb,prometheus 27017,9216" \
+    "mongodb-svc mongodb,prometheus 27017,9216" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-bridge http 3300" \
     "rocketchat-synapse http 8008"
