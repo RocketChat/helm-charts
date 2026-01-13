@@ -2,14 +2,19 @@
 # shellcheck disable=SC2312
 
 setup_mongodb_operator() {
-	kubectl apply -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
-	helm repo add mongodb https://mongodb.github.io/helm-charts
-	helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
+	run_and_assert_success kubectl apply -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
+	run_and_assert_success helm repo add mongodb https://mongodb.github.io/helm-charts
+	run_and_assert_success helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
 	--namespace ${DETIK_CLIENT_NAMESPACE} \
 	--create-namespace \
 	--wait \
 	--wait-for-jobs \
 	--timeout=5m
+}
+
+remove_mongodb_operator() {
+	run_and_assert_success kubectl delete -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
+	run_and_assert_success helm uninstall mongodb-kubernetes-operator -n "${DETIK_CLIENT_NAMESPACE}" --wait --timeout 5m
 }
 
 helm_dry_run() {

@@ -98,7 +98,7 @@ setup_file() {
 
 # bats test_tags=deploy
 @test "install latest published version" {
-  helm ls | grep -q rocketchat-0.0.0 &&
+  helm ls -n "${DETIK_CLIENT_NAMESPACE}" | grep -q rocketchat-0.0.0 &&
     skip "upgrade already installed"
   helm_install_latest_published_version
 }
@@ -306,6 +306,8 @@ setup_file() {
     -n "$DETIK_CLIENT_NAMESPACE" \
     --wait \
     --timeout 5m
+
+  remove_mongodb_operator
 
   run_and_assert_success kubectl delete namespace "$DETIK_CLIENT_NAMESPACE"
   run_and_assert_success kubectl delete crd alertmanagerconfigs.monitoring.coreos.com

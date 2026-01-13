@@ -68,6 +68,8 @@ cluster.run() {
   local cluster_exists="false"
   # shellcheck disable=SC2329
   function create() {
+	  # to be able to rerun quickly
+	k3d registry ls | grep -q k3d-registry.localhost || k3d registry create registry.localhost --port 8065
     k3d cluster create \
       --api-port "${PORT}" \
       --image rancher/k3s:v1.33.2-k3s1 \
@@ -75,6 +77,7 @@ cluster.run() {
       --kubeconfig-update-default=false \
       --no-lb \
 	  --runtime-ulimit "nofile=1048576:1048576" \
+	  --registry-use k3d-registry.localhost:8065 \
       "${PROJECT_NAME}" || cluster_exists="true"
 
     if [[ "${IGNORE_CLEANUP:-}" == "true" && "${cluster_exists}" == "true" ]]; then
