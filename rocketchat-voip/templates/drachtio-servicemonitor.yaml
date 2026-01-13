@@ -1,4 +1,5 @@
-{{- if and (not .Values.useLegacyArch) .Values.drachtio.config.monitoring.prometheus.enabled }}
+{{- if and .Values.drachtio.config.monitoring.prometheus.enabled (not .Values.useLegacyArch) }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -12,7 +13,8 @@ spec:
       {{- include "rocketchat-voip.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: drachtio
   endpoints:
-  - port: prometheus
+  - port: prometheus-metrics
     interval: 30s
     path: /metrics
+{{- end }}
 {{- end }}

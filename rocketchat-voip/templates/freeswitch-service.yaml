@@ -21,9 +21,15 @@ metadata:
     traefik.ingress.kubernetes.io/service.serversscheme: https
     traefik.ingress.kubernetes.io/service.serverstransport: {{ .Release.Namespace }}-freeswitch-skip-tls-verify@kubernetescrd
     {{- end }}
-  name: {{ include "rocketchat-voip.fullname" . }}
+    {{- if and .Values.freeswitch.monitoring.prometheus.enabled (not .Values.useLegacyArch) (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.freeswitch.monitoring.prometheus.exporter.port }}"
+    prometheus.io/path: "/metrics"
+    {{- end }}
+  name: {{ include "rocketchat-voip.fullname" . }}-freeswitch
 spec:
   type: ClusterIP
+  clusterIP: None
   selector:
     {{- include "rocketchat-voip.selectorLabels" . | nindent 4 }}
   ports:

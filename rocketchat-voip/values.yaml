@@ -16,6 +16,9 @@ drachtio:
   adminPort: 9022
   sipPort: 5060
   secret: "SECRETPASSWORD"
+  # Use an existing secret for drachtio configuration instead of creating one
+  # The secret should contain a key 'drachtio.conf.xml' with the complete drachtio configuration
+  existingSecret: ""
   resources:
     requests:
       memory: 256Mi
@@ -63,14 +66,16 @@ freeswitch:
         resources:
           requests:
             memory: 128Mi
+            cpu: 100m
           limits:
             memory: 256Mi
+            cpu: 500m
   # Must be a string, because «wrong type for value; expected string; got bool» type of hubris
   debug_mode: "false"
   wssPort: "443" # probably shouldn't change this as it's pretty much hardcoded everywhere else.
   # Obs this is limited to 49 ports for the AWS NLB
   rtpPortRangeStart: 20000
-  rtpPortRangeEnd: 20047
+  rtpPortRangeEnd: 20098
   rtpServiceEnabled: true
   rtpServiceType: "nlb" # Options: "nlb", "NodePort"
   serviceAnnotations: {}
