@@ -203,3 +203,17 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}}
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
+
+{{/* This is needed to avoid breaking when people use --reuse-values
+    and previously didn't had the path microservices.streamHub.enabled,
+    but always true to version bellow 7.7
+*/}}
+{{- define "rocketchat.streamHub.enabled" -}}
+{{- if (hasKey .Values.microservices.streamHub "enabled") -}}
+{{- .Values.microservices.streamHub.enabled -}}
+{{- else if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) -}}
+true
+{{- else -}}
+true
+{{- end -}}
+{{- end -}}

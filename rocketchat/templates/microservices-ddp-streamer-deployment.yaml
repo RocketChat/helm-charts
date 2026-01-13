@@ -61,6 +61,10 @@ spec:
               key: mongo-uri
         {{- end }}
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
+        {{- if eq (include "rocketchat.streamHub.enabled" .) "true" }}
+        - name: DB_WATCHERS
+          value: "true"
+        {{- end }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: PORT

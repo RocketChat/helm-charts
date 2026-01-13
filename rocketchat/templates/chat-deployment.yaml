@@ -134,6 +134,10 @@ spec:
         # Environment variables for microservices option
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         {{- if .Values.microservices.enabled }}
+        {{- if eq (include "rocketchat.streamHub.enabled" .) "true" }}
+        - name: DB_WATCHERS
+          value: "true"
+        {{- end }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL

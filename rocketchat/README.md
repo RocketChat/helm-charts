@@ -122,6 +122,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `global.affinity`                      | common affinity for all pods (rocket.chat and all microservices) | {}  |
 | `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
+| `microservices.streamHub.enabled`      | Enable the Stream Hub microservice. **DEPRECATED**: Disabled by default for versions >= 7.7.3. Cannot be enabled for versions >= 8.0.0 (completely removed). For versions < 7.7.3, enabled by default unless explicitly disabled. When enabled, automatically sets `DB_WATCHERS=true` on all services. | `false` (auto-enabled for < 7.7.3) |
 | `microservices.presence.replicas`      | Number of replicas to run for the presence service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
 | `microservices.ddpStreamer.replicas`   | Number of replicas to run for the ddpStreamer service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.account.replicas`      | Number of replicas to run for the account service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
@@ -216,6 +217,27 @@ nats:
     name: "my-nats-secret"
     key: "nats-url"
 ```
+
+### Stream Hub Microservice Deprecation
+
+> **IMPORTANT**: As of Rocket.Chat version 7.7.3, the Stream Hub microservice is deprecated and disabled by default. As of version 8.0.0, it has been completely removed.
+
+The Stream Hub microservice (`microservices.streamHub`) is being phased out:
+
+- **Versions < 7.7.3**: Stream Hub is automatically enabled when using microservices architecture (unless explicitly disabled)
+- **Versions >= 7.7.3 and < 8.0.0**: Stream Hub is disabled by default and should not be used for new deployments
+- **Versions >= 8.0.0**: Stream Hub is completely removed and cannot be enabled (will always be disabled regardless of configuration)
+
+If you need to enable Stream Hub for older versions (< 8.0.0) or backward compatibility, set:
+
+```yaml
+microservices:
+  enabled: true
+  streamHub:
+    enabled: true
+```
+
+**Note**: When Stream Hub is enabled, the `DB_WATCHERS=true` environment variable is automatically set on all Rocket.Chat services to support database change stream watching.
 
 ### Database Setup
 
