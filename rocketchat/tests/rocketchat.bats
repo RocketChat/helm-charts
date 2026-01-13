@@ -87,7 +87,7 @@ setup_file() {
 @test "verify install mongodb operator" {
 	kubectl get deployments -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb-kubernetes-operator" && skip "operator already installed"
 	
-	setup_mongodb_operator
+	install_mongodb_operator
 }
 
 
@@ -307,7 +307,7 @@ setup_file() {
     --wait \
     --timeout 5m
 
-  remove_mongodb_operator
+  uninstall_mongodb_operator
 
   run_and_assert_success kubectl delete namespace "$DETIK_CLIENT_NAMESPACE"
   run_and_assert_success kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
