@@ -103,8 +103,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all services are up for microservices" {
   test_services \
-    "mongodb-headless" \
-    "mongodb-metrics" \
+    "mongodb" \
     "presence" \
     "authorization" \
     "stream-hub" \
@@ -117,8 +116,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all services are up for monolith" {
   test_services \
-    "mongodb-headless" \
-    "mongodb-metrics" \
+    "mongodb" \
     "rocketchat" \
     "rocketchat-bridge" \
     "rocketchat-synapse"
@@ -167,8 +165,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all endpointslices microservices' configs" {
   test_endpoint_slice \
-    "mongodb-headless mongodb 27017" \
-    "mongodb-metrics http-metrics 9216" \
+    "mongodb mongodb 27017" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
     "stream-hub metrics 9458" \
@@ -183,7 +180,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all endpointslices' configs for monolith" {
   test_endpoint_slice \
-    "mongodb-headless mongodb 27017" \
+    "mongodb mongodb,prometheus 27017,9216" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-bridge http 3300" \
     "rocketchat-synapse http 8008"
@@ -236,8 +233,8 @@ setup_file() {
     "
 
   local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)" \
-    mongo_oplog_uri="$(printf "mongodb://root:root@%s-mongodb-headless:27017/local?replicaSet=rs0&authSource=admin" "$DEPLOYMENT_NAME" | base64)"
+    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)" \
+    mongo_oplog_uri="$(printf "mongodb://root:root@%s-mongodb:27017/local?replicaSet=rs0&authSource=admin" "$DEPLOYMENT_NAME" | base64)"
 
   run_and_assert_success verify "\
     '.data.mongo-uri' matches '^$mongo_uri\$' \

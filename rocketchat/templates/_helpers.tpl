@@ -204,14 +204,16 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
 
 {{- define "checkAcknowledgeUpgrade" -}}
-	{{- if not (typeIsLike "int" .Values.upgradeAcknowledgedAt) -}}
-		{{- fail "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%s) to set on the cli while upgrading" -}}
-	{{- end -}}
-		{{- $tenMinutes := mul 10 60 -}}
-		{{- $current := now | unixEpoch -}}
-		{{- if gt (sub $current .Values.upgradeAcknowledgedAt) $tenMinutes -}}
-			{{- include "v10_breakingMigrationFailMessage" . | cat "Upgrade was not acknowldeged within the last 10 minutes." | fail -}}
+	{{- if .Release.IsUpgrade -}}
+		{{- if not (typeIsLike "int" .Values.upgradeAcknowledgedAt) -}}
+			{{- fail "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%s) to set on the cli while upgrading" -}}
 		{{- end -}}
+			{{- $tenMinutes := mul 10 60 -}}
+			{{- $current := now | unixEpoch -}}
+			{{- if gt (sub $current .Values.upgradeAcknowledgedAt) $tenMinutes -}}
+				{{- include "v10_breakingMigrationFailMessage" . | cat "Upgrade was not acknowldeged within the last 10 minutes." | fail -}}
+			{{- end -}}
+	{{- end -}}
 {{- end -}}
 
 {{- define "needsMongodb" -}}

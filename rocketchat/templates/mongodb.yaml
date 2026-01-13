@@ -33,21 +33,21 @@ spec:
     - name: {{ $user }}
       db: {{ index $.Values.mongodb.auth.databases $index }}
       passwordSecretRef:
-        name: {{ $user }}-password
+        name: {{ include "rocketchat.mongodb.name" $ }}-{{ $user }}-password
       roles:
         - name: readWrite
           db: {{ index $.Values.mongodb.auth.databases $index }}
-      scramCredentialsSecretName: {{ $user }}-scram
+      scramCredentialsSecretName: {{ include "rocketchat.fullname" $ }}-{{ $user }}-scram
 {{- end }}
   additionalMongodConfig:
     storage.wiredTiger.engineConfig.journalCompressor: zlib
 {{- if .Values.mongodb.metrics.enabled }}
   prometheus:
     port: 9216
-	username: {{ .Values.mongodb.metrics.auth.username }}
-	passwordSecretRef:
-	  name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
-	  key: password
+    username: {{ .Values.mongodb.metrics.auth.username }}
+    passwordSecretRef:
+      name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+      key: password
 ---
 apiVersion: v1
 kind: Secret
@@ -62,16 +62,16 @@ data:
 
 {{- end }}
 
-{{- range .Values.mongodb.auth.usernames }}
+{{- range $index, $username := .Values.mongodb.auth.usernames }}
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ . }}-password
+  name: {{ include "rocketchat.mongodb.name" $ }}-{{ $username }}-password
   namespace: {{ $.Release.Namespace }}
 type: Opaque
 data:
-  password: {{ index $.Values.mongodb.auth.passwords . | b64enc | quote }}
+  password: {{ index $.Values.mongodb.auth.passwords $index | b64enc | quote }}
 {{- end }}
 
 {{- else -}}

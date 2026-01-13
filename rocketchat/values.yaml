@@ -113,6 +113,8 @@ externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replica
 mongodb:
   ## Enable or disable MongoDB dependency completely.
   enabled: true
+  
+  version: "8.0.0"
 
   auth:
     # rootPassword:
