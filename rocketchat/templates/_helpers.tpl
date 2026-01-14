@@ -221,13 +221,22 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}}
 
 {{- define "v10_breakingMigrationFailMessage" -}}
-This upgrade is a breaking change. Since version 10.x.x of Rocket.Chat helm chart, we are no longer responsible for MongoDB deployment and management.
+!! Export / Backup your Mongodb database !!
 
-A Tl;Dr; of how to proceed -
+Heads up! We’re updating how we handle databases.
 
-1. Back up all your data, deploy MongoDB yourself, restore and provide all the credentials to this chart.
-2. This chart CAN deploy a barebone replicaset, for that, keep `mongodb.enabled` to true, but first deploy the official mongodb kubernetes operator github.com/mongodb/mongodb-kubernetes. You can modify the mongodb.com/v1/MongoDB resource later however you want.
+With version 10.x.x this Helm chart changes how it interacts with MongoDB. Moving forward, the chart will no longer manage the database deployment directly, giving you more flexibility.
 
-More on this read our official docs.
+Your Migration Options:
+
+1. Self-Managed: Deploy MongoDB on your own infrastructure or utilize Mongodb Atlas if you wish. Once running, restore your data and update the chart with your new connection details and set mongodb.enabled to false.
+
+2. Chart-Assisted Deployment: This chart can still help you deploy a replica set. To do this, leave mongodb.enabled as true, but please ensure you install the official MongoDB Kubernetes Operator - https://github.com/mongodb/mongodb-kubernetes first.  
+
+!! Backup your mongodb database before proceeding with either path.  Failing to do so will result in data loss !!
+
+Need more details? Check out the full migration guide in our official docs: https://go.rocket.chat/i/helm-database-migration
+
+To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%%s)` on the cli while upgrading.
 
 {{- end -}}
