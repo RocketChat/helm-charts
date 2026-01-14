@@ -237,6 +237,6 @@ Your Migration Options:
 
 Need more details? Check out the full migration guide in our official docs: https://go.rocket.chat/i/helm-database-migration
 
-To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%%s)` on the cli while upgrading.
+To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%s)` on the cli while upgrading.
 
 {{- end -}}
