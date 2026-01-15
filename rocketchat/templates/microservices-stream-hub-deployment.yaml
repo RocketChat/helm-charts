@@ -61,22 +61,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         - name: DB_WATCHERS

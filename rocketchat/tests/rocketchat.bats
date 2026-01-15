@@ -232,16 +232,10 @@ setup_file() {
     "
 
   local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)" \
-    mongo_oplog_uri="$(printf "mongodb://root:root@%s-mongodb-headless:27017/local?replicaSet=rs0&authSource=admin" "$DEPLOYMENT_NAME" | base64)"
+    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)"
 
   run_and_assert_success verify "\
     '.data.mongo-uri' matches '^$mongo_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongo-oplog-uri' matches '^$mongo_oplog_uri\$' \
     for secret named '${DEPLOYMENT_NAME}-rocketchat' \
     "
 }

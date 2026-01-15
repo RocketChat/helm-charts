@@ -82,20 +82,6 @@ Usage:
     {{- end }}
 {{- end }}
 
-{{/*Generate MONGO_OPLOG_URL*/}}
-{{- define "rocketchat.mongodb.oplogUrl" }}
-    {{- if .Values.externalMongodbOplogUrl }}
-        {{- print .Values.externalMongodbOplogUrl }}
-    {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := .Values.mongodb.auth.rootUser }}
-        {{- $password := required "root password must be provided" .Values.mongodb.auth.rootPassword }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
-    {{- end }}
-{{- end }}
-
 {{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}
 
 {{/* Get correct tolerations */}}
