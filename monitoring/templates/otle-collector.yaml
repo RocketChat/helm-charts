@@ -1,0 +1,138 @@
+{{- if and .Values.opentelemetryOperator.enabled .Values.opentelemetryOperator.collector.enabled -}}
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: "{{ .Release.Name }}-otel-collector-daemonset"
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  mode: daemonset
+
+  serviceAccount: "{{ .Release.Name }}-otel-collector"
+
+  image: otel/opentelemetry-collector-contrib:0.137.0
+  # endpoint: ""
+  # Presets automatically configure the receiver and volumes for you
+  env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  config:
+    receivers:
+      filelog:
+        include:
+          - /var/log/pods/*/*/*.log
+        include_file_name: false
+        include_file_path: true
+        start_at: end
+        operators:
+          - type: container
+          - type: add
+            field: resource["agent"]
+            value: otel
+          - type: add
+            field: resource["agent_node"]
+            value: "${env:NODE_NAME}"
+          - type: add
+            field: resource["job"]
+            value: logs
+
+    exporters:
+      otlphttp:
+        endpoint: "http://{{ .Release.Name }}-loki-gateway.{{ .Release.Namespace }}.svc.cluster.local/otlp"
+
+    processors:
+      k8sattributes:
+        auth_type: "serviceAccount"
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: k8s.pod.name
+              - from: resource_attribute
+                name: k8s.namespace.name
+        extract:
+          metadata: # extracted from the pod
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.pod.ip
+            - k8s.replicaset.name
+            - k8s.deployment.name
+            - k8s.daemonset.name
+            - k8s.statefulset.name
+            - k8s.cronjob.name
+            - k8s.job.name
+            - k8s.node.name
+            - service.name
+            - k8s.container.name
+          labels:
+            - tag_name: app
+              key: app
+              from: pod
+
+    service:
+      pipelines:
+        logs:
+          receivers: [filelog]
+          processors: [k8sattributes]
+          exporters: [otlphttp]
+
+  volumes:
+    # logs
+    - name: varlogpods
+      hostPath:
+        path: /var/log/pods
+        type: Directory
+    - name: varlogcontainers
+      hostPath:
+        path: /var/log/containers
+        type: Directory
+    # system-metrics
+    - name: var-lib-kubelet
+      hostPath:
+        path: /var/lib/kubelet
+    - name: dev
+      hostPath:
+        path: /dev
+    - name: run-udev
+      hostPath:
+        path: /run/udev
+    - name: sys
+      hostPath:
+        path: /sys
+    - name: proc
+      hostPath:
+        path: /proc
+    - name: boot
+      hostPath:
+        path: /boot
+
+  volumeMounts:
+    # logs
+    - name: varlogpods
+      mountPath: /var/log/pods
+      readOnly: true
+    - name: varlogcontainers
+      mountPath: /var/log/containers
+      readOnly: true
+
+    # system metrics
+    - name: dev
+      mountPath: /hostfs/dev
+      readOnly: false
+    - name: sys
+      mountPath: /hostfs/sys
+      readOnly: true
+    - name: run-udev
+      mountPath: /hostfs/run/udev
+      readOnly: true
+    - name: proc
+      mountPath: /hostfs/proc
+      readOnly: true
+    - name: boot
+      mountPath: /hostfs/boot
+      readOnly: true
+    - name: var-lib-kubelet
+      mountPath: /hostfs/var/lib/kubelet
+      readOnly: true
+{{- end -}}

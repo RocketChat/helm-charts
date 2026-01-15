@@ -152,3 +152,131 @@ grafana:
         id: "17347"
         revision: latest
     extra: [] # If user wants to add extra dashboards, they can do so here
+
+
+
+loki:
+  enabled: true
+
+  monitoring:
+    selfMonitoring:
+      grafanaAgent:
+        installOperator: false
+  
+  deploymentMode: SingleBinary
+
+  singleBinary:
+    replicas: 1
+    persistence:
+      size: 50Gi
+    extraArgs:
+      - -config.expand-env=true
+
+
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    schemaConfig:
+      configs:
+        - from: "2024-04-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    compactor:
+      retention_enabled: true
+      compaction_interval: 10m
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 100
+      delete_request_store: filesystem
+    pattern_ingester:
+        enabled: true
+    limits_config:
+      allow_structured_metadata: true
+      volume_enabled: true
+      retention_period: 30d
+    distributor:
+      otlp_config:
+        default_resource_attributes_as_index_labels:
+          - job
+          - agent
+          - agent_node
+          - app
+          - service.name
+          - service.namespace
+          - service.instance.id
+          - deployment.environment
+          - deployment.environment.name
+          - cloud.region
+          - cloud.availability_zone
+          - k8s.cluster.name
+          - k8s.namespace.name
+          - k8s.pod.name
+          - k8s.container.name
+          - container.name
+          - k8s.replicaset.name
+          - k8s.deployment.name
+          - k8s.statefulset.name
+          - k8s.daemonset.name
+          - k8s.cronjob.name
+          - k8s.job.name
+          - k8s.event.reason
+          - k8s.event.action
+          - k8s.namespace.name
+
+
+    ruler:
+      enabled: true
+      enable_api: true
+
+        
+  # since we are running as single-binary, disable everything else
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  minio:
+    enabled: false
+  rollout_operator:
+    enabled: false
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomCompactor:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
+
+opentelemetryOperator:
+  enabled: true
+  collector:
+    enabled: true
+  manager:
+    image:
+      repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
+    collectorImage:
+      repository: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-k8s
+    serviceMonitor:
+      enabled: true
