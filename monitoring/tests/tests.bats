@@ -44,7 +44,7 @@ helm_common() {
     "${CHART_ARCHIVE}"
 }
 
-# bats test_tags=pre
+# bats test_tags=pre,deploy
 @test "deploy cert-manager" {
   helm install \
     cert-manager oci://quay.io/jetstack/charts/cert-manager \
