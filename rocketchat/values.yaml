@@ -106,28 +106,7 @@ existingMongodbSecret: ""
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
 externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 
-##
-## MongoDB chart configuration
-### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
-##
 mongodb:
-  ## Enable or disable MongoDB dependency completely.
-  enabled: true
-  
-  version: "8.0.0"
-
-  auth:
-    # rootPassword:
-    usernames:
-      - rocketchat
-    passwords: []
-    databases:
-      - rocketchat
-
-  replicaCount: 1
-  arbiter:
-    enabled: false
-
   metrics:
     enabled: true
     auth:
@@ -138,8 +117,6 @@ mongodb:
 
   serviceMonitor:
     enabled: true
-
-
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/

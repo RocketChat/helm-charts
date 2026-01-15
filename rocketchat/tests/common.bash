@@ -17,6 +17,22 @@ uninstall_mongodb_operator() {
 	run_and_assert_success helm uninstall mongodb-kubernetes-operator -n "${DETIK_CLIENT_NAMESPACE}" --wait --timeout 5m
 }
 
+install_mongodb_cluster() {
+	(
+		run_and_assert_success cd "$(git rev-parse --show-toplevel)" || exit 1
+		cat mock/manifests/mongodbcommunity.yaml | envsubst | run_and_assert_success kubectl apply -f - -n ${DETIK_CLIENT_NAMESPACE} || exit 1
+		
+		sleep 30s
+	)
+}
+
+uninstall_mongodb_cluster() {
+	(
+		run_and_assert_success cd "$(git rev-parse --show-toplevel)" || exit 1
+		cat mock/manifests/mongodbcommunity.yaml | envsubst | run_and_assert_success kubectl delete -f - -n ${DETIK_CLIENT_NAMESPACE} || exit 1
+	)
+}
+
 helm_dry_run() {
   run_and_assert_success helm install \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
@@ -24,6 +40,7 @@ helm_dry_run() {
     "${DEPLOYMENT_NAME}" \
     "${ROCKETCHAT_CHART_DIR}" \
     --values "${VALUES}" \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
     --dry-run=client
 }
 
@@ -37,6 +54,7 @@ helm_install_latest_published_version() {
     "rocketchat" \
     --wait \
     --wait-for-jobs \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
     --timeout 10m
 }
 
@@ -55,6 +73,7 @@ helm_upgrade_to_local_chart() {
     --values "${VALUES}" \
     "${ROCKETCHAT_CHART_DIR}" \
 	--set=upgradeAcknowledgedAt=$(date +%s) \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
     --wait \
     --wait-for-jobs \
     --timeout 5m

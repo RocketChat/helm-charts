@@ -1,13 +1,3 @@
-mongodb:
-  auth:
-    rootPassword: root
-    passwords:
-      - rocketchat
-    usernames:
-      - rocketchat
-    databases:
-      - rocketchat
-
 federation:
   enabled: true
   host: "synapse.${ROCKETCHAT_HOST}"
@@ -29,3 +19,4 @@ ingress:
   enabled: true
   federation:
     serveWellKnown: true
+    

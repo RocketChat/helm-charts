@@ -90,6 +90,13 @@ setup_file() {
 	install_mongodb_operator
 }
 
+# bats test_tags=pre,deploy
+@test "verify install mongodb cluster" {
+	kubectl get statefulsets -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb" && skip "cluster already installed"
+	
+	install_mongodb_cluster
+}
+
 
 # bats test_tags=pre,deploy
 @test "verify chart --dry-run" {
@@ -221,45 +228,8 @@ setup_file() {
 }
 
 # bats test_tags=assertion,microservices,monolith
-@test "verify secret resources and their values" {
-  skip_on_mock_server
-  export DETIK_CASE_INSENSITIVE_PROPERTIES="false"
-  # regex matching is must for strict verification
-  # otherwie base64 values won't match
-  local \
-    root_password="$(printf "root" | base64)" \
-    password="$(printf "rocketchat" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongodb-passwords' matches '^$password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongodb-root-password' matches '^$root_password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)" \
-    mongo_oplog_uri="$(printf "mongodb://root:root@%s-mongodb:27017/local?replicaSet=rs0&authSource=admin" "$DEPLOYMENT_NAME" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongo-uri' matches '^$mongo_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongo-oplog-uri' matches '^$mongo_oplog_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-}
-
-# bats test_tags=assertion,microservices,monolith
 @test "verify configmap resources exist" {
   skip_on_mock_server
-  run_and_assert_success verify \
-    "there is 1 configmap named '${DEPLOYMENT_NAME}-mongodb-fix-clustermonitor-role-configmap'"
 
   run_and_assert_success verify "\
     there is 1 configmap named '${DEPLOYMENT_NAME}-rocketchat-scripts'"
@@ -307,6 +277,7 @@ setup_file() {
     --wait \
     --timeout 5m
 
+  uninstall_mongodb_cluster
   uninstall_mongodb_operator
 
   run_and_assert_success kubectl delete namespace "$DETIK_CLIENT_NAMESPACE"

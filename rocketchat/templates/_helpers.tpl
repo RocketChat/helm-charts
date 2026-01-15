@@ -83,15 +83,7 @@ Usage:
       name: {{ .Values.existingMongodbSecret | quote }}
       key: mongo-uri
     {{- else }}
-        {{- $clusterName := include "rocketchat.mongodb.name" . }}
-        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
-        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
-        {{- $secretName := printf "%s-%s-%s" $clusterName $database $user }}
-- name: MONGO_URL
-  valueFrom:
-    secretKeyRef:
-      name: {{ quote $secretName }}
-      key: "connectionString.standard"
+        {{- fail "one of existingMongodbSecret and externalMongodbUrl is required" -}}
     {{- end }}
 {{- end }}
 
@@ -204,7 +196,7 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
 
 {{- define "checkAcknowledgeUpgrade" -}}
-	{{- if .Release.IsUpgrade -}}
+	{{- if or .Release.IsUpgrade (and (hasKey .Values "mongodb") (hasKey .Values.mongodb "enabled") .Values.mongodb.enabled) -}}
 		{{- if not (typeIsLike "int64" .Values.upgradeAcknowledgedAt) -}}
 			{{- typeOf .Values.upgradeAcknowledgedAt | printf "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%%s) to set on the cli while upgrading, got %s" | fail -}}
 		{{- end -}}
@@ -216,10 +208,6 @@ One of the following must be true to set the TRANSPORTER environment variable:
 	{{- end -}}
 {{- end -}}
 
-{{- define "needsMongodb" -}}
-{{- or (or (empty .Values.existingMongodbSecret) .Values.externalMongodbUrl) .Values.mongodb.enabled -}}
-{{- end -}}
-
 {{- define "v10_breakingMigrationFailMessage" -}}
 !! Export / Backup your Mongodb database !!
 
@@ -229,14 +217,11 @@ With version 10.x.x this Helm chart changes how it interacts with MongoDB. Movin
 
 Your Migration Options:
 
-1. Self-Managed: Deploy MongoDB on your own infrastructure or utilize Mongodb Atlas if you wish. Once running, restore your data and update the chart with your new connection details and set mongodb.enabled to false.
-
-2. Chart-Assisted Deployment: This chart can still help you deploy a replica set. To do this, leave mongodb.enabled as true, but please ensure you install the official MongoDB Kubernetes Operator - https://github.com/mongodb/mongodb-kubernetes first.  
+Deploy MongoDB on your own infrastructure or utilize Mongodb Atlas if you wish. Once running, restore your data and update the chart with your new connection details and set mongodb.enabled to false.
 
 !! Backup your mongodb database before proceeding with either path.  Failing to do so will result in data loss !!
 
 Need more details? Check out the full migration guide in our official docs: https://go.rocket.chat/i/helm-database-migration
 
 To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%s)` on the cli while upgrading.
-
 {{- end -}}

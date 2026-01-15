@@ -1,0 +1,82 @@
+# namespace through cli
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name:  mongodb-admin-password
+type: Opaque
+stringData:
+  password: admin-password
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongodb-rocketchat-password
+type:  Opaque
+stringData:
+  password: rocketchat-password
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metrics-endpoint-password
+type:  Opaque
+stringData:
+  password: metrics-password
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-scram-credentials
+type:  Opaque
+stringData: 
+  username: admin
+  password:  admin-scram-password
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rocketchat-scram-credentials
+type: Opaque
+stringData:
+  username: rocketchat
+  password: rocketchat-scram-password
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata: 
+  name: ${DEPLOYMENT_NAME}-mongodb
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "8.2.3"
+  security:
+    authentication: 
+      modes:  ["SCRAM"]
+    tls:
+      enabled: false
+  users:
+  - name:  admin
+    db:  admin
+    passwordSecretRef: 
+      name: mongodb-admin-password
+    scramCredentialsSecretName: admin-scram-credentials
+    roles:
+    - name: root
+      db: admin
+  - name: rocketchat
+    db: rocketchat
+    passwordSecretRef:
+      name:  mongodb-rocketchat-password
+    scramCredentialsSecretName: rocketchat-scram-credentials
+    roles:
+    - name: readWrite
+      db: rocketchat
+  prometheus:
+    username:  prometheus-username
+    passwordSecretRef:
+      name: metrics-endpoint-password
