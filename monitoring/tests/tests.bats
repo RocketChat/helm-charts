@@ -76,7 +76,7 @@ helm_common() {
   # Verify that the chart archive is not created during dry-run
 }
 
-# bats test_tags=deploy
+# bats test_tags=pre
 @test "deploy cert-manager" {
   helm install \
     cert-manager oci://quay.io/jetstack/charts/cert-manager \
