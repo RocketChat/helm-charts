@@ -107,7 +107,7 @@ grafana:
   enabled: true
   deploy:
     enabled: true
-    storageClassName: # Get available classes with: kubectl get storageclasses.
+    # storageClassName: # Get available classes with: kubectl get storageclasses.
     nodePort: ""
   folders:
     rocketchat:
