@@ -34,8 +34,6 @@ smtp:
 extraEnv:
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
-  # - name: MONGO_OPLOG_URL
-  #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
 # Extra secret for Rocket.Chat, uncomment to use
 # Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
@@ -99,12 +97,11 @@ affinity: {}
 #         - e2e-az1
 #         - e2e-az2
 
-## Use an existing secret file with the MongoDB Url and OplogUrl
+## Use an existing secret file with the MongoDB Url
 existingMongodbSecret: ""
 
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
-externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 
 ##
 ## MongoDB chart configuration
@@ -255,6 +252,7 @@ service:
 
   ## Optional when LoadBalancer specified ServiceType.
   loadBalancerIP: ""
+  loadBalancerClass: ""
 
 ## Optional custom labels for the deployment resource.
 deploymentLabels: {}
@@ -389,6 +387,11 @@ microservices:
     tolerations: []
 
   streamHub:
+    # IMPORTANT: Stream Hub is disabled by default as of Rocket.Chat 7.7.3
+    # For versions < 7.7.3, it will be automatically enabled unless explicitly disabled here
+    # After version 8.0.0, this service will be removed completely
+    # Note: When enabled, DB_WATCHERS=true is automatically set on all services
+    enabled: false
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent

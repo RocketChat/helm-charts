@@ -69,22 +69,12 @@ spec:
             secretKeyRef:
               name: {{ .Values.existingMongodbSecret }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-oplog-uri
         {{- else }}
         - name: MONGO_URL
           valueFrom:
             secretKeyRef:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
-        - name: MONGO_OPLOG_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-oplog-uri
         {{- end }}
         {{- if .Values.host }}
         - name: ROOT_URL
@@ -134,6 +124,10 @@ spec:
         # Environment variables for microservices option
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         {{- if .Values.microservices.enabled }}
+        {{- if eq (include "rocketchat.streamHub.enabled" .) "true" }}
+        - name: DB_WATCHERS
+          value: "true"
+        {{- end }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL

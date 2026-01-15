@@ -82,20 +82,6 @@ Usage:
     {{- end }}
 {{- end }}
 
-{{/*Generate MONGO_OPLOG_URL*/}}
-{{- define "rocketchat.mongodb.oplogUrl" }}
-    {{- if .Values.externalMongodbOplogUrl }}
-        {{- print .Values.externalMongodbOplogUrl }}
-    {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := .Values.mongodb.auth.rootUser }}
-        {{- $password := required "root password must be provided" .Values.mongodb.auth.rootPassword }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
-    {{- end }}
-{{- end }}
-
 {{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}
 
 {{/* Get correct tolerations */}}
@@ -203,3 +189,17 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}}
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
+
+{{/* This is needed to avoid breaking when people use --reuse-values
+    and previously didn't had the path microservices.streamHub.enabled,
+    but always true to version bellow 7.7
+*/}}
+{{- define "rocketchat.streamHub.enabled" -}}
+{{- if (hasKey .Values.microservices.streamHub "enabled") -}}
+{{- .Values.microservices.streamHub.enabled -}}
+{{- else if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) -}}
+true
+{{- else -}}
+true
+{{- end -}}
+{{- end -}}
