@@ -10,7 +10,7 @@ spec:
 
   serviceAccount: "{{ .Release.Name }}-otel-collector"
 
-  image: otel/opentelemetry-collector-contrib:0.137.0
+  image: otel/opentelemetry-collector-contrib:0.143.0
   # endpoint: ""
   # Presets automatically configure the receiver and volumes for you
   env:
