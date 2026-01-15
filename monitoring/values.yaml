@@ -168,6 +168,8 @@ loki:
   singleBinary:
     replicas: 1
     persistence:
+      # Storage allocation for logs. Ensure adequate space: daily_log_volume * retention_days * 1.2
+      # If disk becomes full, Loki stops working and requires manual intervention
       size: 50Gi
     extraArgs:
       - -config.expand-env=true
@@ -199,7 +201,10 @@ loki:
     limits_config:
       allow_structured_metadata: true
       volume_enabled: true
-      retention_period: 30d
+      # Log retention period. Older logs are automatically deleted.
+      # WARNING: Increasing retention requires corresponding increase to singleBinary.persistence.size
+      # If storage is exceeded, Loki will stop and manual intervention is needed
+      retention_period: 15d
     distributor:
       otlp_config:
         default_resource_attributes_as_index_labels:
