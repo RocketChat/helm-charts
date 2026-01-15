@@ -44,6 +44,17 @@ helm_common() {
     "${CHART_ARCHIVE}"
 }
 
+# bats test_tags=pre
+@test "deploy cert-manager" {
+  helm install \
+    cert-manager oci://quay.io/jetstack/charts/cert-manager \
+    --version v1.19.2 \
+    --namespace cert-manager \
+    --create-namespace \
+    --set crds.enabled=true
+}
+
+
 # bats test_tags=pre,deploy
 @test "verify dependency install" {
   [[ -f "$CHART_ARCHIVE" ]] &&
@@ -74,16 +85,6 @@ helm_common() {
     --debug
 
   # Verify that the chart archive is not created during dry-run
-}
-
-# bats test_tags=pre
-@test "deploy cert-manager" {
-  helm install \
-    cert-manager oci://quay.io/jetstack/charts/cert-manager \
-    --version v1.19.2 \
-    --namespace cert-manager \
-    --create-namespace \
-    --set crds.enabled=true
 }
 
 # bats test_tags=deploy
