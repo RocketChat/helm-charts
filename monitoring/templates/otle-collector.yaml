@@ -1,4 +1,4 @@
-{{- if and .Values.opentelemetryOperator.enabled .Values.opentelemetryOperator.collector.enabled -}}
+{{- if and .Values.opentelemetryOperator.enabled -}}
 ---
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector

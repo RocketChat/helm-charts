@@ -276,8 +276,6 @@ loki:
 
 opentelemetryOperator:
   enabled: true
-  collector:
-    enabled: true
   manager:
     image:
       repository: ghcr.io/open-telemetry/opentelemetry-operator/opentelemetry-operator
