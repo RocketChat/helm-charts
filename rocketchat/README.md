@@ -80,7 +80,6 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `minAvailable`                         | Minimum number / percentage of pods that should remain scheduled                                                                                                                                                                                                                                                                                                                                                                                               | `1`                                |
 | `existingMongodbSecret`                | An already existing secret containing MongoDB Connection URL                                                                                                                                                                                                                                                                                                                                                                                                   | `""`                               |
 | `externalMongodbUrl`                   | MongoDB URL if using an externally provisioned MongoDB                                                                                                                                                                                                                                                                                                                                                                                                         | `""`                               |
-| `externalMongodbOplogUrl`              | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set                                                                                                                                                                                                                                                                                                                                                          | `""`                               |
 | `mongodb.enabled`                      | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information                                                                                                                                                                                                                                                                                     | `true`                             |
 | `mongodb.serviceMonitor.enabled` | Enable mongodb service monitor or service with scrape annotation | `true` |
 | `persistence.enabled`                  | Enable persistence using a PVC. This is not necessary if you're using the default [GridFS](https://rocket.chat/docs/administrator-guides/file-upload/) file storage                                                                                                                                                                                                                                                                          | `false`                            |
@@ -245,7 +244,6 @@ Rocket.Chat uses a MongoDB instance to presist its data.
 By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
 Please refer to this (MongoDB) chart for additional MongoDB configuration options.
 If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword` and `mongodb.auth.passwords` values. 
-> **WARNING**: The root credentials are used to connect to the MongoDB OpLog
 
 #### Using an External Database
 
@@ -399,8 +397,8 @@ nats:
 ### Manage MongoDB secrets
 
 This chart provides several ways to manage the Connection for MongoDB
-* Values passed to the chart (externalMongodbUrl, externalMongodbOplogUrl)
-* An ExistingMongodbSecret containing the MongoURL and MongoOplogURL
+* Values passed to the chart externalMongodbUrl
+* An ExistingMongodbSecret containing the MongoURL
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -409,7 +407,6 @@ metadata:
 type: Opaque
 data:
   mongo-uri: mongodb://user:password@localhost:27017/rocketchat
-  mongo-oplog-uri: mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 ```
 
 ## Federation
@@ -528,7 +525,7 @@ Due to changes on upstream MongoDB chart, some variables have been renamed (prev
 - `mongodb.auth.database` is no longer supported either and has been changed to its plural version, `mongodb.auth.databases`. Update your values file, convert it to an array and make sure it's the first entry of that list.
 - `mongodb.auth.rootUsername` and `mongodb.auth.rootPassword` are staying the same.
 
-*`usernames`, `passwords` and `databases` arrays must be of the same length. Rocket.Chat chart will use the first entry for its mongodb connection string in `MONGO_URL` and `MONGO_OPLOG_URL`.*
+*`usernames`, `passwords` and `databases` arrays must be of the same length. Rocket.Chat chart will use the first entry for its mongodb connection string in `MONGO_URL`.*
 
 On each chart update, the used image tag gets updated, **in most cases**. Same is true for the MongoDB chart we use as our dependency. Pre-5.4.3, we had been using the chart version 10.x.x, but starting 5.4.3, the dependency chart version has been bumped to the latest available version, 13.x.x. This chart defaults to mongodb 6.0.x as of the time of writing this.
 
