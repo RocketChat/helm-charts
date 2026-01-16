@@ -73,18 +73,17 @@ Usage:
 
 {{/*Generate the MONGO_URL environment entry*/}}
 {{- define "rocketchat.mongodb.envVars" }}
-    {{- if .Values.externalMongodbUrl }}
-- name: MONGO_URL
-  value: {{ .Values.externalMongodbUrl | quote }}
-    {{- else if .Values.existingMongodbSecret }}
 - name: MONGO_URL
   valueFrom:
     secretKeyRef:
+    {{- if .Values.externalMongodbUrl }}
+      name: {{ include "rocketchat.fullname" . | quote }}
+    {{- else if .Values.existingMongodbSecret }}
       name: {{ .Values.existingMongodbSecret | quote }}
-      key: mongo-uri
     {{- else }}
         {{- fail "one of existingMongodbSecret and externalMongodbUrl is required" -}}
     {{- end }}
+      key: mongo-uri
 {{- end }}
 
 {{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}

@@ -40,7 +40,7 @@ helm_dry_run() {
     "${DEPLOYMENT_NAME}" \
     "${ROCKETCHAT_CHART_DIR}" \
     --values "${VALUES}" \
-	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@${DEPLOYMENT_NAME}-mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=${DEPLOYMENT_NAME}-mongodb" \
     --dry-run=client
 }
 
@@ -54,7 +54,7 @@ helm_install_latest_published_version() {
     "rocketchat" \
     --wait \
     --wait-for-jobs \
-	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@${DEPLOYMENT_NAME}-mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=${DEPLOYMENT_NAME}-mongodb" \
     --timeout 10m
 }
 
@@ -73,7 +73,7 @@ helm_upgrade_to_local_chart() {
     --values "${VALUES}" \
     "${ROCKETCHAT_CHART_DIR}" \
 	--set=upgradeAcknowledgedAt=$(date +%s) \
-	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@mongodb-0.mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=mongodb" \
+	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@${DEPLOYMENT_NAME}-mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=${DEPLLOYMENT_NAME}-mongodb" \
     --wait \
     --wait-for-jobs \
     --timeout 5m
