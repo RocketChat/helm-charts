@@ -70,7 +70,7 @@ spec:
             key: agent
             value: otel
           - action: upsert
-            key: aget_node
+            key: agent_node
             value: "${env:NODE_NAME}"
     service:
       pipelines:
