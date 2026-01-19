@@ -28,15 +28,7 @@ spec:
         start_at: end
         operators:
           - type: container
-          - type: add
-            field: resource["agent"]
-            value: otel
-          - type: add
-            field: resource["agent_node"]
-            value: "${env:NODE_NAME}"
-          - type: add
-            field: resource["job"]
-            value: logs
+
 
     exporters:
       otlphttp:
@@ -69,12 +61,22 @@ spec:
             - tag_name: app
               key: app
               from: pod
-
+      resource:
+        attributes:
+          - key: job
+            value: "logs"
+            action: upsert
+          - action: upsert
+            key: agent
+            value: otel
+          - action: upsert
+            key: aget_node
+            value: "${env:NODE_NAME}"
     service:
       pipelines:
         logs:
           receivers: [filelog]
-          processors: [k8sattributes]
+          processors: [resource, k8sattributes]
           exporters: [otlphttp]
 
   volumes:
@@ -135,4 +137,48 @@ spec:
     - name: var-lib-kubelet
       mountPath: /hostfs/var/lib/kubelet
       readOnly: true
+
+---
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: "{{ .Release.Name }}-otel-collector-events"
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  mode: deployment
+  replicas: 1
+  serviceAccount: "{{ .Release.Name }}-otel-collector"
+
+  image: otel/opentelemetry-collector-contrib:0.143.0
+
+  config:
+    receivers:
+      k8sobjects:
+        objects:
+          - name: events
+            mode: watch
+
+    processors:
+      resource:
+        attributes:
+          - key: service.name
+            value: "kubernetes-events"
+            action: upsert
+          - key: job
+            value: "kubernetes-events"
+            action: upsert
+          - action: upsert
+            key: agent
+            value: otel
+
+    exporters:
+      otlphttp:
+        endpoint: "http://{{ .Release.Name }}-loki-gateway.{{ .Release.Namespace }}.svc.cluster.local/otlp"
+
+    service:
+      pipelines:
+        logs:
+          receivers: [k8sobjects]
+          processors: [resource]
+          exporters: [otlphttp]
 {{- end -}}
