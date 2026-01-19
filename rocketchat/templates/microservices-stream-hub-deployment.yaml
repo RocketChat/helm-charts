@@ -1,4 +1,11 @@
-{{- if .Values.microservices.enabled }}
+{{- if and .Values.microservices.enabled (eq (include "rocketchat.streamHub.enabled" .) "true") }}
+{{- if semverCompare ">=8.0.0" (.Values.image.tag | default .Chart.AppVersion) }}
+{{- fail "Stream Hub microservice is only supported in Rocket.Chat versions prior to 8.0.0, please set microservices.streamHub.enabled to false before upgrading to 8.0.0 or later." -}}
+{{- end }}
+
+
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,6 +57,8 @@ spec:
         env:
         {{- include "rocketchat.mongodb.envVars" . | nindent 8 }}
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
+        - name: DB_WATCHERS
+          value: "true"
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL
@@ -85,6 +94,11 @@ spec:
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
+
+{{- else -}}
+{{- if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) }}
+{{- fail "Stream Hub microservice is required when running Rocket.Chat versions prior to 7.7.0, please set microservices.streamHub.enabled to true." -}}
+{{- end }}
 {{- end }}
 
 {{/* vi: ts=8 et sw=2 smarttab */}}

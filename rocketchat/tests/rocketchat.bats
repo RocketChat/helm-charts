@@ -121,7 +121,6 @@ setup_file() {
     "mongodb-svc" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer" \
     "rocketchat" \
@@ -144,7 +143,6 @@ setup_file() {
     "rocketchat" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -164,7 +162,6 @@ setup_file() {
     "nats-box" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -183,7 +180,6 @@ setup_file() {
     "mongodb-svc mongodb,prometheus 27017,9216" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
-    "stream-hub metrics 9458" \
     "account metrics 9458" \
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
@@ -228,6 +224,38 @@ setup_file() {
 }
 
 # bats test_tags=assertion,microservices,monolith
+<<<<<<< HEAD
+=======
+@test "verify secret resources and their values" {
+  skip_on_mock_server
+  export DETIK_CASE_INSENSITIVE_PROPERTIES="false"
+  # regex matching is must for strict verification
+  # otherwie base64 values won't match
+  local \
+    root_password="$(printf "root" | base64)" \
+    password="$(printf "rocketchat" | base64)"
+
+  run_and_assert_success verify "\
+    '.data.mongodb-passwords' matches '^$password\$' \
+    for secret named '${DEPLOYMENT_NAME}-mongodb' \
+    "
+
+  run_and_assert_success verify "\
+    '.data.mongodb-root-password' matches '^$root_password\$' \
+    for secret named '${DEPLOYMENT_NAME}-mongodb' \
+    "
+
+  local \
+    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)"
+
+  run_and_assert_success verify "\
+    '.data.mongo-uri' matches '^$mongo_uri\$' \
+    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
+    "
+}
+
+# bats test_tags=assertion,microservices,monolith
+>>>>>>> master
 @test "verify configmap resources exist" {
   skip_on_mock_server
 

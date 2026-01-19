@@ -24,6 +24,7 @@ spec:
   type: {{ $service.type }}
   {{- if eq .Values.service.type "LoadBalancer" }}
   loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  loadBalancerClass: {{ .Values.service.loadBalancerClass }}
   {{- end }}
   ports:
   - name: http

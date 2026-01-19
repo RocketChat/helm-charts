@@ -224,3 +224,16 @@ Need more details? Check out the full migration guide in our official docs: http
 
 To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%s)` on the cli while upgrading.
 {{- end -}}
+{{/* This is needed to avoid breaking when people use --reuse-values
+    and previously didn't had the path microservices.streamHub.enabled,
+    but always true to version bellow 7.7
+*/}}
+{{- define "rocketchat.streamHub.enabled" -}}
+{{- if (hasKey .Values.microservices.streamHub "enabled") -}}
+{{- .Values.microservices.streamHub.enabled -}}
+{{- else if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) -}}
+true
+{{- else -}}
+true
+{{- end -}}
+{{- end -}}
