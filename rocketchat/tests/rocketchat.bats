@@ -224,38 +224,6 @@ setup_file() {
 }
 
 # bats test_tags=assertion,microservices,monolith
-<<<<<<< HEAD
-=======
-@test "verify secret resources and their values" {
-  skip_on_mock_server
-  export DETIK_CASE_INSENSITIVE_PROPERTIES="false"
-  # regex matching is must for strict verification
-  # otherwie base64 values won't match
-  local \
-    root_password="$(printf "root" | base64)" \
-    password="$(printf "rocketchat" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongodb-passwords' matches '^$password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongodb-root-password' matches '^$root_password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongo-uri' matches '^$mongo_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-}
-
-# bats test_tags=assertion,microservices,monolith
->>>>>>> master
 @test "verify configmap resources exist" {
   skip_on_mock_server
 
