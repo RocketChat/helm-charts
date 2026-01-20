@@ -1,0 +1,74 @@
+{{- if or .Values.opentelemetryCollector.events.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app.kubernetes.io/name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+    app.kubernetes.io/instance: otlp-events
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+      app.kubernetes.io/instance: otlp-events
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+        app.kubernetes.io/instance: otlp-events
+    spec:
+      serviceAccountName: "{{ .Release.Name }}-otel-collector-service-account"
+      automountServiceAccountToken: true
+      containers:
+        - name: opentelemetry-events-collector
+          image: "{{ .Values.opentelemetryCollector.image.registry }}:{{ .Values.opentelemetryCollector.image.tag }}"
+          imagePullPolicy: "{{ .Values.opentelemetryCollector.image.pullPolicy }}"
+          args:
+            - --config=/conf/events.yaml
+          ports:
+            - name: metrics
+              containerPort: 8888
+            - name: health-check
+              containerPort: 13133
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+          resources:
+            {{- toYaml .Values.opentelemetryCollector.events.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /conf
+              name: "{{ .Release.Name }}-opentelemetry-collector-config"
+      volumes:
+        - name: "{{ .Release.Name }}-opentelemetry-collector-config"
+          configMap:
+            name: "{{ .Release.Name }}-opentelemetry-collector-config"
+            items:
+              - key: events.yaml
+                path: events.yaml
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: "{{ .Release.Name }}-otel-events-pod-monitor"
+  labels:
+    app.kubernetes.io/name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+    app.kubernetes.io/instance: otlp-events
+spec:
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "{{ .Release.Name }}-opentelemetry-collector-events-agent"
+      app.kubernetes.io/instance: otlp-events
+
+{{- end -}}

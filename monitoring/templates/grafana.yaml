@@ -8,8 +8,9 @@ type: Opaque
 stringData:
   GF_SECURITY_ADMIN_USER: admin
   GF_SECURITY_ADMIN_PASSWORD: admin
-{{- if and (.Values.operator.prometheus.enabled) (.Values.operator.enabled) }}
 ---
+{{- if and (.Values.operator.prometheus.enabled) (.Values.operator.enabled) }}
+
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
@@ -30,10 +31,10 @@ spec:
     jsonData:
       "tlsSkipVerify": true
       "timeInterval": {{ $timeInterval := .Values.operator.prometheus.scrapeInterval | default "30s" }}{{ $timeInterval }}
+---
 {{- end }}
 
-{{- if and .Values.loki.enabled .Values.opentelemetryOperator.enabled -}}
----
+{{- if and .Values.loki.enabled -}}
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
@@ -54,8 +55,9 @@ spec:
     jsonData:
       "tlsSkipVerify": true
       "timeInterval": {{ $timeInterval := .Values.operator.prometheus.scrapeInterval | default "30s" }}{{ $timeInterval }}
-{{- end -}}
 ---
+{{- end -}}
+
 apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
@@ -95,12 +97,12 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       key: GF_SECURITY_ADMIN_USER
-                      name: grafana-admin-credentials
+                      name: {{ .Release.Name }}-grafana-admin-credentials
                 - name: GF_SECURITY_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: GF_SECURITY_ADMIN_PASSWORD
-                      name: grafana-admin-credentials
+                      name: {{ .Release.Name }}-grafana-admin-credentials
                 - name: GF_SERVER_SERVE_FROM_SUB_PATH
                   value: "{{ eq .Values.ingress.grafana.path "/" | ternary "false" "true" }}"
                 - name: GF_SERVER_ROOT_URL
@@ -118,13 +120,13 @@ spec:
           volumes:
             - name: grafana-data
               persistentVolumeClaim:
-                claimName: grafana-pvc
+                claimName: {{ .Release.Name }}-grafana-pvc
   persistentVolumeClaim:
     spec:
       accessModes:
       - ReadWriteOnce
       {{- if .Values.grafana.deploy.storageClassName }}
-      storageClassName: "{{ .Values.grafana.deploy.storageClassName }}"
+      storageClassName: "{{ .Values.grafana.deploy.storageClassName | default "" }}"
       {{- end}}
       resources:
         requests:
