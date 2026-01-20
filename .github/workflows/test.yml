@@ -50,9 +50,10 @@ jobs:
   setup-k3d:
     runs-on: ubuntu-latest
     steps:
-      - uses: nolar/setup-k3d-k3s@v1
-        with:
-          skip-creation: true
+    #   - uses: nolar/setup-k3d-k3s@v1
+    #     with:
+    #       skip-creation: true
+      - uses: Rocketchat/k3d-with-registry@main
 
   detect-changes:
     runs-on: ubuntu-latest
