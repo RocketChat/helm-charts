@@ -140,8 +140,9 @@ jobs:
         with:
           submodules: true
 
-      - uses: nolar/setup-k3d-k3s@v1
-        with:
-          skip-creation: true
+    #   - uses: nolar/setup-k3d-k3s@v1
+    #     with:
+    #       skip-creation: true
+      - uses: RocketChat/k3d-with-registry@main
 
       - run: ./task.bash cluster "${{ matrix.chartName }}"
