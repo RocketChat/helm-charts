@@ -17,7 +17,7 @@ processors:
         value: "kubernetes-events"
         action: upsert
       - action: upsert
-        key: agent
+        key: agent.name
         value: otel
 
 exporters:

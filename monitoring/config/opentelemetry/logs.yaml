@@ -49,7 +49,7 @@ processors:
         value: "logs"
         action: upsert
       - action: upsert
-        key: agent
+        key: agent.name
         value: otel
       - action: upsert
         key: agent.node

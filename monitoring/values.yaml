@@ -210,7 +210,7 @@ loki:
         default_resource_attributes_as_index_labels:
           # basic information
           - job
-          - agent
+          - agent.name
           - agent.node
           # Cluster information
           - cluster.name
