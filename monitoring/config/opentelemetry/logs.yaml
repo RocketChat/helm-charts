@@ -52,7 +52,7 @@ processors:
         key: agent
         value: otel
       - action: upsert
-        key: agent_node
+        key: agent.node
         value: "${env:NODE_NAME}"
 service:
   extensions:

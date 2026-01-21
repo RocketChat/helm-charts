@@ -211,7 +211,7 @@ loki:
           # basic information
           - job
           - agent
-          - agent_node
+          - agent.node
           # Cluster information
           - cluster.name
           # basic pod information
