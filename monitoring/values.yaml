@@ -220,7 +220,6 @@ loki:
           - k8s.container.name # k8s_container
           - container.name
           # Deployment information
-          - cloud.availability_zone
           - k8s.replicaset.name
           - k8s.deployment.name
           - k8s.statefulset.name
