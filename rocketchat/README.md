@@ -168,12 +168,14 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
 | `federation.persistence.enabled`       | Enabling persistence for matrix pod
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
-| `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
-| `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
+| `nats.replicaCount`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
+| `nats.promExporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
+| `nats.promExporter.podMonitor.enabled` | Enable NATS PodMonitor for Prometheus metrics collection | `true` |
+| `nats.container.image.repository` | NATS container image repository | `nats` |
+| `nats.container.image.tag` | NATS container image tag | `2.12-alpine` |
 | `nats.enabled` | Enable or disabled NATS deploy, if using microservices and this is nil them it will be deployed | true for microservices (default), false for monolith |
 | `nats.existingSecret.name` | Existing Secret name for an external NATS server | empty |
 | `nats.existingSecret.key` | Existing Secret key for the `nats.existingSecret.name` containing the connection string | empty |
-| `nats.podMonitor.enabled | enable nats pod monitor or service with annotation | `true` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
@@ -497,7 +499,113 @@ Choose PodMonitor if you need detailed pod-level metrics and troubleshooting dat
 
 ## Upgrading
 
-#### Metrics
+### To 6.30.0
+
+**This upgrade includes a NATS dependency upgrade from 0.15.x to 1.3.x to address CVE-2025-30215.**
+
+Chart version 6.30.0 upgrades:
+- NATS Helm chart dependency from 0.15.x to 1.3.x
+- NATS container image from 2.4-alpine to 2.12-alpine
+
+This is a major version upgrade that includes breaking changes to the NATS configuration schema and Kubernetes resource structure.
+
+#### Who is affected?
+
+This only affects deployments using **microservices mode** with the **built-in NATS deployment**. If you're using:
+- Monolith mode (default) - No action required
+- External NATS via `nats.existingSecret` - No action required, but consider upgrading your external NATS to 2.12+ to address CVE-2025-30215
+
+#### Required Configuration Changes
+
+The NATS values schema has changed. Update your `values.yaml`:
+
+**Old configuration (0.15.x):**
+```yaml
+nats:
+  nats:
+    image: nats:2.4-alpine
+  cluster:
+    enabled: true
+    replicas: 2
+  exporter:
+    enabled: true
+    serviceMonitor:
+      enabled: false
+  podMonitor:
+    enabled: true
+```
+
+**New configuration (1.3.x):**
+```yaml
+nats:
+  container:
+    image:
+      repository: nats
+      tag: 2.12-alpine
+  replicaCount: 2
+  promExporter:
+    enabled: true
+    podMonitor:
+      enabled: true
+```
+
+#### Upgrade Procedure
+
+The NATS chart 1.3.x changes immutable fields (StatefulSet selectors, service names). To upgrade without data loss or downtime:
+
+**Option 1: Upgrade without deleting pods (Recommended)**
+
+This method preserves running pods and their data:
+
+```bash
+# 1. Get your release name and namespace
+RELEASE_NAME=rocketchat
+NAMESPACE=default
+
+# 2. Delete the StatefulSet without cascading to pods
+kubectl delete statefulset ${RELEASE_NAME}-nats -n ${NAMESPACE} --cascade=orphan
+
+# 3. Delete the nats-box deployment without cascading
+kubectl delete deployment ${RELEASE_NAME}-nats-box -n ${NAMESPACE} --cascade=orphan
+
+# 4. Update your values.yaml with the new NATS configuration schema (see above)
+
+# 5. Perform the helm upgrade
+helm upgrade ${RELEASE_NAME} rocketchat/rocketchat --version 6.30.0 -f values.yaml -n ${NAMESPACE}
+```
+
+The `--cascade=orphan` flag deletes only the StatefulSet/Deployment objects while keeping pods and PersistentVolumes running. Helm will recreate these resources with the new configuration, and the existing pods will continue operating without interruption.
+
+**Option 2: Clean reinstall (if downtime is acceptable)**
+
+```bash
+# 1. Delete NATS resources completely
+kubectl delete statefulset ${RELEASE_NAME}-nats -n ${NAMESPACE}
+kubectl delete deployment ${RELEASE_NAME}-nats-box -n ${NAMESPACE}
+
+# 2. Update values.yaml with new configuration
+
+# 3. Perform helm upgrade
+helm upgrade ${RELEASE_NAME} rocketchat/rocketchat --version 6.30.0 -f values.yaml -n ${NAMESPACE}
+```
+
+This will cause brief downtime while NATS pods restart.
+
+#### What Changed in NATS 1.3.x?
+
+- Configuration schema reorganized (see above)
+- Metrics collection changed from `exporter.serviceMonitor` to `promExporter.podMonitor`
+- Service architecture updated (separate ClusterIP service in addition to headless service)
+- Resource labels and selectors updated (immutable fields)
+- **PodMonitor management**: NATS 1.3.x chart now creates its own PodMonitor resources. The rocketchat chart's `nats-monitor.yaml` template has been removed to prevent duplicate PodMonitors.
+
+For complete NATS 1.3.x migration details, see the [NATS Helm Chart Upgrading Guide](https://github.com/nats-io/k8s/blob/main/helm/charts/nats/UPGRADING.md).
+
+#### Metrics (Pre-6.30.0)
+
+**Note: This section applies to upgrades from versions prior to 6.30.0. For 6.30.0+, see the "To 6.30.0" section above.**
+
+Before chart version 6.30.0, if migrating NATS metrics collection:
 
 from:
 
@@ -512,7 +620,7 @@ to:
 
 ```yaml
 nats:
-  promExporter:
+  exporter:
     podMonitor:
       enabled: true
 ```

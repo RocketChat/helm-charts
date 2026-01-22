@@ -1,0 +1,30 @@
+mongodb:
+  auth:
+    rootPassword: root
+    passwords:
+      - rocketchat
+    usernames:
+      - rocketchat
+    databases:
+      - rocketchat
+
+federation:
+  enabled: true
+  host: "synapse.${ROCKETCHAT_HOST}"
+
+microservices:
+  enabled: true
+
+# Enable PodMonitor for NATS (requires Prometheus Operator CRDs)
+nats:
+  promExporter:
+    podMonitor:
+      enabled: true
+
+host: "${ROCKETCHAT_HOST}"
+image:
+  tag: "${ROCKETCHAT_TAG}"
+ingress:
+  enabled: true
+  federation:
+    serveWellKnown: true

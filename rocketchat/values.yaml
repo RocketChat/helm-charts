@@ -427,16 +427,22 @@ nats:
   # existingSecret:
   #   name: nats-secret
   #   key: connectionString
-  nats:
-    image: nats:2.12-alpine
-  podMonitor:
+
+  # NATS 1.3.x configuration (new schema)
+  container:
+    image:
+      repository: nats
+      tag: 2.12-alpine
+
+  # Number of NATS replicas
+  replicaCount: 2
+
+  # Metrics collection using PodMonitor (NATS 1.3.x uses promExporter instead of exporter)
+  # Note: PodMonitor requires Prometheus Operator CRDs. If not available, NATS will still
+  # expose metrics via HTTP endpoints that can be scraped by Prometheus using Service annotations
+  promExporter:
     enabled: true
-  cluster:
-    enabled: true
-    replicas: 2
-  exporter:
-    enabled: true
-    serviceMonitor:
+    podMonitor:
       enabled: false
 federation:
   # host:

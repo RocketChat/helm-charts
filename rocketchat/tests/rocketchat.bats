@@ -172,8 +172,8 @@ setup_file() {
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-monolith-ms-metrics moleculer-metrics 9458" \
-    "nats monitor,gateways,cluster,client,metrics,leafnodes 8222,7522,6222,4222,7777,7422" \
-    "nats-metrics monitor 8222"
+    "nats nats 4222" \
+    "nats-headless nats,monitor 4222,8222"
 }
 
 # bats test_tags=assertion,monolith
@@ -262,7 +262,12 @@ setup_file() {
 
 # bats test_tags=operator
 @test "upgrade to install podmonitors and servicemonitors" {
+  # Use values file with PodMonitor enabled (requires Prometheus Operator CRDs)
+  local original_values="${VALUES}"
+  export VALUES="${BATS_TMPDIR}/values-podmonitor.yaml"
+  envsubst < "${BATS_TEST_DIRNAME}/microservices-podmonitor-values.yaml" > "${VALUES}"
   helm_upgrade_to_local_chart
+  export VALUES="${original_values}"
 }
 
 # bats test_tags=assertion,operator
