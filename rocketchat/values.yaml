@@ -433,12 +433,18 @@ nats:
     image: natsio/nats-box:0.19.2
   reloader:
     image: natsio/nats-server-config-reloader:0.21.1
-  exporter:
-    image: natsio/prometheus-nats-exporter:0.18.0
   bootconfig:
     image: natsio/nats-boot-config:0.21.1
   podMonitor:
     enabled: true
+  cluster:
+    enabled: true
+    replicas: 2
+  exporter:
+    enabled: true
+    image: natsio/prometheus-nats-exporter:0.18.0
+    serviceMonitor:
+      enabled: false
 federation:
   # host:
   image:
