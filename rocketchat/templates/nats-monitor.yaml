@@ -1,0 +1,53 @@
+{{/* if nats.podmonitor.enabled is true, microservices enabled and nats is nil or nats.enabled is true */}}
+{{- if
+  and 
+    .Values.nats.podMonitor.enabled
+    (or
+      (and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) (not (hasKey .Values.nats "enabled")))
+      (and (hasKey .Values.nats "enabled") (.Values.nats.enabled))
+    )
+-}}
+
+{{ if (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") }}
+{{/* if there is the monitoring.coreos.com/v1 API, use it */}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: nats
+  name: {{ .Release.Name }}-nats-monitor
+  namespace: {{ .Release.Namespace }}
+spec:
+  podMetricsEndpoints:
+  - port: prom-metrics
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: nats
+{{ else }}
+{{/* if there is no monitoring.coreos.com/v1 API, use the annotations to scrape the metrics */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nats-metrics
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    prometheus.io/path: "/metrics"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8222"
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: nats
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  publishNotReadyAddresses: true
+  ports:
+  - appProtocol: http
+    name: monitor
+    port: 8222
+    protocol: TCP
+    targetPort: monitor
+  sessionAffinity: None
+{{ end }} {{/* endif */}}
+{{ end }}
