@@ -116,6 +116,10 @@ grafana:
     extra: [] # If user wants to add extra folders, they can do so here
   dashboards:
     rocketchat:
+      - name: "rocketchat-logs"
+        folder: "rocketchat"
+        id: "24731"
+        revision: latest
       - name: "rocketchat-metrics"
         folder: "rocketchat"
         id: "23428"
