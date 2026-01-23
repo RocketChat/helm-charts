@@ -2,17 +2,20 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: grafana-admin-credentials
+  name: "{{ .Release.Name }}-grafana-admin-credentials"
+  namespace: "{{ .Release.Namespace }}"
 type: Opaque
 stringData:
   GF_SECURITY_ADMIN_USER: admin
   GF_SECURITY_ADMIN_PASSWORD: admin
-{{- if and (.Values.operator.prometheus.enabled) (.Values.operator.enabled) }}
 ---
+{{- if and (.Values.operator.prometheus.enabled) (.Values.operator.enabled) }}
+
 apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
-  name: prometheus
+  name: "{{ .Release.Name }}-prometheus-datasource"
+  namespace: "{{ .Release.Namespace }}"
 spec:
   allowCrossNamespaceImport: true
   instanceSelector:
@@ -28,12 +31,38 @@ spec:
     jsonData:
       "tlsSkipVerify": true
       "timeInterval": {{ $timeInterval := .Values.operator.prometheus.scrapeInterval | default "30s" }}{{ $timeInterval }}
-{{- end }}
 ---
+{{- end }}
+
+{{- if and .Values.loki.enabled -}}
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: "{{ .Release.Name }}-loki-datasource"
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  allowCrossNamespaceImport: true
+  instanceSelector:
+    matchLabels:
+      grafana: dashboards
+  datasource:
+    name: loki
+    type: loki
+    access: proxy
+    url: http://{{ .Release.Name }}-loki-gateway.{{ .Release.Namespace }}.svc.cluster.local/
+    isDefault: true
+    editable: false
+    jsonData:
+      "tlsSkipVerify": true
+      "timeInterval": {{ $timeInterval := .Values.operator.prometheus.scrapeInterval | default "30s" }}{{ $timeInterval }}
+---
+{{- end -}}
+
 apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
-  name: grafana
+  name: "{{ .Release.Name }}-grafana"
+  namespace: "{{ .Release.Namespace }}"
   labels:
     grafana: dashboards  # THIS LABELS is very important
 spec:
@@ -68,12 +97,12 @@ spec:
                   valueFrom:
                     secretKeyRef:
                       key: GF_SECURITY_ADMIN_USER
-                      name: grafana-admin-credentials
+                      name: {{ .Release.Name }}-grafana-admin-credentials
                 - name: GF_SECURITY_ADMIN_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: GF_SECURITY_ADMIN_PASSWORD
-                      name: grafana-admin-credentials
+                      name: {{ .Release.Name }}-grafana-admin-credentials
                 - name: GF_SERVER_SERVE_FROM_SUB_PATH
                   value: "{{ eq .Values.ingress.grafana.path "/" | ternary "false" "true" }}"
                 - name: GF_SERVER_ROOT_URL
@@ -91,13 +120,13 @@ spec:
           volumes:
             - name: grafana-data
               persistentVolumeClaim:
-                claimName: grafana-pvc
+                claimName: {{ .Release.Name }}-grafana-pvc
   persistentVolumeClaim:
     spec:
       accessModes:
       - ReadWriteOnce
       {{- if .Values.grafana.deploy.storageClassName }}
-      storageClassName: "{{ .Values.grafana.deploy.storageClassName }}"
+      storageClassName: "{{ .Values.grafana.deploy.storageClassName | default "" }}"
       {{- end}}
       resources:
         requests:
@@ -107,8 +136,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-grafana-nodeport
-  namespace: {{ .Release.Namespace }}
+  name: "{{ .Release.Name }}-grafana-nodeport"
+  namespace: "{{ .Release.Namespace }}"
 spec:
   selector:
     grafana: dashboards  # THIS LABELS is very important
