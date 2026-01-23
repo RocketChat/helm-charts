@@ -70,11 +70,6 @@ setup_file() {
 }
 
 # bats test_tags=pre
-@test "verify chart --dry-run" {
-  helm_dry_run
-}
-
-# bats test_tags=pre,deploy
 @test "verify packaging chart" {
   [[ -f "$ROCKETCHAT_CHART_ARCHIVE" ]] &&
     skip "chart package already exists"
@@ -88,9 +83,29 @@ setup_file() {
   assert [ -f "$ROCKETCHAT_CHART_ARCHIVE" ]
 }
 
+# bats test_tags=pre,deploy
+@test "verify install mongodb operator" {
+	kubectl get deployments -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb-kubernetes-operator" && skip "operator already installed"
+	
+	install_mongodb_operator
+}
+
+# bats test_tags=pre,deploy
+@test "verify install mongodb cluster" {
+	kubectl get statefulsets -n "$DETIK_CLIENT_NAMESPACE" | grep -q "mongodb" && skip "cluster already installed"
+	
+	install_mongodb_cluster
+}
+
+
+# bats test_tags=pre,deploy
+@test "verify chart --dry-run" {
+  helm_dry_run
+}
+
 # bats test_tags=deploy
 @test "install latest published version" {
-  helm ls | grep -q rocketchat-0.0.0 &&
+  helm ls -n "${DETIK_CLIENT_NAMESPACE}" | grep -q rocketchat-0.0.0 &&
     skip "upgrade already installed"
   helm_install_latest_published_version
 }
@@ -103,8 +118,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all services are up for microservices" {
   test_services \
-    "mongodb-headless" \
-    "mongodb-metrics" \
+    "mongodb-svc" \
     "presence" \
     "authorization" \
     "account" \
@@ -116,8 +130,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all services are up for monolith" {
   test_services \
-    "mongodb-headless" \
-    "mongodb-metrics" \
+    "mongodb-svc" \
     "rocketchat" \
     "rocketchat-bridge" \
     "rocketchat-synapse"
@@ -164,8 +177,7 @@ setup_file() {
 # bats test_tags=assertion,microservices
 @test "verify all endpointslices microservices' configs" {
   test_endpoint_slice \
-    "mongodb-headless mongodb 27017" \
-    "mongodb-metrics http-metrics 9216" \
+    "mongodb-svc mongodb,prometheus 27017,9216" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
     "account metrics 9458" \
@@ -179,7 +191,7 @@ setup_file() {
 # bats test_tags=assertion,monolith
 @test "verify all endpointslices' configs for monolith" {
   test_endpoint_slice \
-    "mongodb-headless mongodb 27017" \
+    "mongodb-svc mongodb,prometheus 27017,9216" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-bridge http 3300" \
     "rocketchat-synapse http 8008"
@@ -212,39 +224,8 @@ setup_file() {
 }
 
 # bats test_tags=assertion,microservices,monolith
-@test "verify secret resources and their values" {
-  skip_on_mock_server
-  export DETIK_CASE_INSENSITIVE_PROPERTIES="false"
-  # regex matching is must for strict verification
-  # otherwie base64 values won't match
-  local \
-    root_password="$(printf "root" | base64)" \
-    password="$(printf "rocketchat" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongodb-passwords' matches '^$password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongodb-root-password' matches '^$root_password\$' \
-    for secret named '${DEPLOYMENT_NAME}-mongodb' \
-    "
-
-  local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)"
-
-  run_and_assert_success verify "\
-    '.data.mongo-uri' matches '^$mongo_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-}
-
-# bats test_tags=assertion,microservices,monolith
 @test "verify configmap resources exist" {
   skip_on_mock_server
-  run_and_assert_success verify \
-    "there is 1 configmap named '${DEPLOYMENT_NAME}-mongodb-fix-clustermonitor-role-configmap'"
 
   run_and_assert_success verify "\
     there is 1 configmap named '${DEPLOYMENT_NAME}-rocketchat-scripts'"
@@ -291,6 +272,9 @@ setup_file() {
     -n "$DETIK_CLIENT_NAMESPACE" \
     --wait \
     --timeout 5m
+
+  uninstall_mongodb_cluster
+  uninstall_mongodb_operator
 
   run_and_assert_success kubectl delete namespace "$DETIK_CLIENT_NAMESPACE"
   run_and_assert_success kubectl delete crd alertmanagerconfigs.monitoring.coreos.com

@@ -63,19 +63,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        {{- if .Values.existingMongodbSecret }}
-        - name: MONGO_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-uri
-        {{- else }}
-        - name: MONGO_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-uri
-        {{- end }}
+		{{- include "rocketchat.mongodb.envVars" . | nindent 8 }}
         {{- if .Values.host }}
         - name: ROOT_URL
           value: https://{{ .Values.host }}

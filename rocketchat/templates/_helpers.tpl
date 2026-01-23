@@ -23,6 +23,10 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s-headless" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{- define "rocketchat.mongodb.name" -}}
+{{- printf "%s-%s" .Release.Name "mongodb" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -67,19 +71,19 @@ Usage:
     {{- end }}
 {{- end -}}
 
-{{/*Generate the MONGO_URL*/}}
-{{- define "rocketchat.mongodb.url" }}
+{{/*Generate the MONGO_URL environment entry*/}}
+{{- define "rocketchat.mongodb.envVars" }}
+- name: MONGO_URL
+  valueFrom:
+    secretKeyRef:
     {{- if .Values.externalMongodbUrl }}
-        {{- print .Values.externalMongodbUrl }}
+      name: {{ include "rocketchat.fullname" . | quote }}
+    {{- else if .Values.existingMongodbSecret }}
+      name: {{ .Values.existingMongodbSecret | quote }}
     {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
-        {{- $password := required "passwords array must have at least one entry" (first .Values.mongodb.auth.passwords) }}
-        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs }}
+        {{- fail "one of existingMongodbSecret and externalMongodbUrl is required" -}}
     {{- end }}
+      key: mongo-uri
 {{- end }}
 
 {{/* TODO: fail if types of the following are not what is expected instead of silently ignoring */}}
@@ -190,6 +194,36 @@ One of the following must be true to set the TRANSPORTER environment variable:
 {{- end -}} {{/* End if Nats enabled */}}
 {{- end -}} {{/* rocketchat.transporter.connectionString */}}
 
+{{- define "checkAcknowledgeUpgrade" -}}
+	{{- if or .Release.IsUpgrade (and (hasKey .Values "mongodb") (hasKey .Values.mongodb "enabled") .Values.mongodb.enabled) -}}
+		{{- if not (typeIsLike "int64" .Values.upgradeAcknowledgedAt) -}}
+			{{- typeOf .Values.upgradeAcknowledgedAt | printf "upgradeAcknowledgedAt must be an integer, use --set=upgradeAcknowledgedAt=$(date +%%s) to set on the cli while upgrading, got %s" | fail -}}
+		{{- end -}}
+			{{- $tenMinutes := mul 10 60 -}}
+			{{- $current := now | unixEpoch -}}
+			{{- if gt (sub $current .Values.upgradeAcknowledgedAt) $tenMinutes -}}
+				{{- include "v10_breakingMigrationFailMessage" . | cat "Upgrade was not acknowldeged within the last 10 minutes." | fail -}}
+			{{- end -}}
+	{{- end -}}
+{{- end -}}
+
+{{- define "v10_breakingMigrationFailMessage" -}}
+!! Export / Backup your Mongodb database !!
+
+Heads up! We’re updating how we handle databases.
+
+With version 10.x.x this Helm chart changes how it interacts with MongoDB. Moving forward, the chart will no longer manage the database deployment directly, giving you more flexibility.
+
+Your Migration Options:
+
+Deploy MongoDB on your own infrastructure or utilize Mongodb Atlas if you wish. Once running, restore your data and update the chart with your new connection details and set mongodb.enabled to false.
+
+!! Backup your mongodb database before proceeding with either path.  Failing to do so will result in data loss !!
+
+Need more details? Check out the full migration guide in our official docs: https://go.rocket.chat/i/helm-database-migration
+
+To confirm this warning and proceed use `--set=upgradeAcknowledgedAt=$(date +%s)` on the cli while upgrading.
+{{- end -}}
 {{/* This is needed to avoid breaking when people use --reuse-values
     and previously didn't had the path microservices.streamHub.enabled,
     but always true to version bellow 7.7

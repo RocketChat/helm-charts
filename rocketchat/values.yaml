@@ -103,74 +103,17 @@ existingMongodbSecret: ""
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
 
-##
-## MongoDB chart configuration
-### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
-##
 mongodb:
-  image:
-    repository: bitnamilegacy/mongodb
-  tls:
-    image:
-      repository: bitnamilegacy/nginx
-  externalAccess:
-    autoDiscovery:
-      image:
-        registry: docker.io
-        repository: bitnamilegacy/kubectl
-  dnsCheck:
-    image:
-      repository: bitnamilegacy/os-shell
-  volumePermissions:
-    enabled: true
-    image:
-      repository: bitnamilegacy/os-shell
-
-  ## Enable or disable MongoDB dependency completely.
-  enabled: true
-  serviceMonitor:
-    enabled: true
-  initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
-
-  auth:
-    # rootPassword:
-    usernames:
-      - rocketchat
-    # passwords:
-    databases:
-      - rocketchat
-
-  architecture: replicaset
-  replicaCount: 1
-  arbiter:
-    enabled: false
-    pdb:
-      minAvailable: 0
-  pdb:
-    minAvailable: 0
-
   metrics:
     enabled: true
-    image:
-      repository: bitnamilegacy/mongodb-exporter
+    auth:
+      username: mongodb-metrics
+      password: ""
     serviceMonitor:
-      enabled: false # default to false and use ours that checks for the crd
+      enabled: false
 
-    # key:
-
-  persistence:
+  serviceMonitor:
     enabled: true
-    ## mongodb data Persistent Volume Storage Class
-    ## If defined, storageClassName: <storageClass>
-    ## If set to "-", storageClassName: "", which disables dynamic provisioning
-    ## If undefined (the default) or set to null, no storageClassName spec is
-    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-    ##   GKE, AWS & OpenStack)
-    ##
-    # storageClass: "-"
-    accessMode: ReadWriteOnce
-    size: 8Gi
-
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -474,3 +417,5 @@ hooks:
     podLabels: {}
   # nodeSelector: {}
   # affinity: {}
+
+upgradeAcknowledgedAt: 0 # date +%s

@@ -48,19 +48,7 @@ spec:
       - name: presence-service
         image: "{{ .Values.microservices.presence.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         env:
-        {{- if .Values.existingMongodbSecret }}
-        - name: MONGO_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.existingMongodbSecret }}
-              key: mongo-uri
-        {{- else }}
-        - name: MONGO_URL
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: mongo-uri
-        {{- end }}
+		{{- include "rocketchat.mongodb.envVars" . | nindent 8 }}
         {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
         {{- if eq (include "rocketchat.streamHub.enabled" .) "true" }}
         - name: DB_WATCHERS

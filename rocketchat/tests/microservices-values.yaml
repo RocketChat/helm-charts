@@ -1,19 +1,16 @@
-mongodb:
-  auth:
-    rootPassword: root
-    passwords:
-      - rocketchat
-    usernames:
-      - rocketchat
-    databases:
-      - rocketchat
-
 federation:
   enabled: true
   host: "synapse.${ROCKETCHAT_HOST}"
 
 microservices:
   enabled: true
+  
+nats:
+  # not needed for testing.
+  # locally exhausting open files for this container. I don't want to troubleshoot this right now.
+  # ^ Deb
+  reloader:
+    enabled: false
 
 host: "${ROCKETCHAT_HOST}"
 image:
@@ -22,3 +19,4 @@ ingress:
   enabled: true
   federation:
     serveWellKnown: true
+    

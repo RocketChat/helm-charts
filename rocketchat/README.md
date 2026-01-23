@@ -2,7 +2,7 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
-> **WARNING**: Upgrading to chart version 5.4.3 or higher might require extra steps to successfully update MongoDB and Rocket.Chat. See [Upgrading to 5.4.3](#to-543) for more details.
+> **WARNING**: Upgrading to chart version 10.x.x or higher might require extra steps for migration away from the Bitnami MongoDB Helm Chart. See [Upgrading to 10.x.x](#to-10xx) for more details.
 
 ## Introduction
 
@@ -515,6 +515,113 @@ nats:
   promExporter:
     podMonitor:
       enabled: true
+```
+
+### To 10.x.x
+
+With version 10.x.x this Helm chart changes how it interacts with MongoDB. Moving forward, the chart will no longer manage the database deployment directly, giving you more flexibility.
+
+You will need to deploy and manage your MongoDB instance separately, either by using a different Helm chart, a managed database service, or your own custom deployment.
+
+If you were using the Bitnami MongoDB Helm chart previously, please ensure that you have a running MongoDB instance before deploying or upgrading to version 10.x.x of this chart.
+
+### Example procedure to migrate from Bitnami MongoDB to MongoDB Kubernetes Operator
+
+First of all, stop your deployment and take a backup of your MongoDB data.
+
+```bash
+kubectl exec rocketchat-mongodb-0 -- mongodump  --username root  --password "$PASSWORD"  --authenticationDatabase admin  --archive  --gzip > "$(date +%F)-rocketchat.gz"
+```
+
+If you don't have the password handy and you installed with the default settings for this helm chart, you can retrieve it with:
+
+```bash
+PASSWORD=$(kubectl get secret rocketchat-mongodb  -o jsonpath='{.data.mongodb-root-password}' | base64 -d)
+```
+
+Then, install the MongoDB Kubernetes Operator and create a new ReplicaSet deployment:
+
+```bash
+helm repo add mongodb https://mongodb.github.io/helm-charts
+helm repo update
+helm install mongodb-kubernetes-operator mongodb/mongodb-kubernetes --namespace mongodb --create-namespace
+kubectl apply -f mongodb-operator-replicaset.yaml
+```
+
+A sample `mongodb-operator-replicaset.yaml` file could look like this (make sure to replace `yourMongoDBPassword` with a strong password of your choice):
+
+```yaml
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  namespace: mongodb
+  name: rocketchat-mongodb
+spec:
+  members: 3
+  type: ReplicaSet
+  version: "7.0.5"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: rocketchat
+      db: admin
+      passwordSecretRef: 
+        name: rocketchat-mongodb-password
+      roles:
+        - name: clusterAdmin
+          db: admin
+        - name: userAdminAnyDatabase
+          db: admin
+        - name: dbAdminAnyDatabase
+          db: admin
+        - name: readWriteAnyDatabase
+          db: admin
+      scramCredentialsSecretName: rocketchat-scram
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: mongodb
+  name: rocketchat-mongodb-password
+type: Opaque
+stringData:
+  password: yourMongoDBPassword
+```
+
+Next, restore your data into the new MongoDB deployment:
+
+```bash
+kubectl exec -i -n mongodb rocketchat-mongodb-0 -- mongorestore --username root --password "$PASSWORD" --authenticationDatabase admin --gzip --archive --drop < 2026-01-14-rocketchat.gz
+```
+
+Finally, update your Rocket.Chat Helm deployment to use the new MongoDB instance by creating a secret with the connection string and upgrading the Rocket.Chat release:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: rocketchat
+  name: rocketchat-connectionstring
+type: Opaque
+stringData:
+  mongo-uri: mongodb://rocketchat:supersecretpassword@rocketchat-mongodb-0.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017,rocketchat-mongodb-1.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017,rocketchat-mongodb-2.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017/rocketchat?authSource=admin
+  mongo-oplog-uri: mongodb://rocketchat:supersecretpassword@rocketchat-mongodb-0.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017,rocketchat-mongodb-1.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017,rocketchat-mongodb-2.rocketchat-mongodb-svc.mongodb.svc.cluster.local:27017/local?authSource=admin
+```
+
+```bash
+kubectl apply -f rocketchat-connectionstring-secret.yaml
+helm upgrade rocketchat rocketchat/rocketchat --reuse-values --set existingMongodbSecret=rocketchat-mongodb-password --version 6.28.0
+```
+
+Confirm everything is working as expected, then you can upgrade the chart to remove the old Bitnami MongoDB deployment.
+
+```bash
+helm upgrade rocketchat rocketchat/rocketchat --reuse-values --set existingMongodbSecret=rocketchat-connectionstring,upgradeAcknowledgedAt=$(date +%s),mongodb.metrics.enabled=false
 ```
 
 ### To 5.4.3

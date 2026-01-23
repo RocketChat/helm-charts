@@ -9,13 +9,19 @@ metadata:
 spec:
   endpoints:
   - interval: 30s
-    port: http-metrics
+    port: prometheus
+    basicAuth:
+      username:
+        name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+        key: username
+      password:
+        name: {{ include "rocketchat.mongodb.name" . }}-metrics-basic-auth
+        key: password
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
   jobLabel: rocketchat-mongodb
   selector:
     matchLabels:
-      app.kubernetes.io/instance: {{ .Release.Name }}
-      app.kubernetes.io/name: mongodb
+      app: {{ include "rocketchat.mongodb.name" . }}
 {{ end }}

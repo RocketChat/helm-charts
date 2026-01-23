@@ -26,7 +26,7 @@ echo "ROCKETCHAT_HOST: ${ROCKETCHAT_HOST}"
 echo "ROCKETCHAT_TAG: ${ROCKETCHAT_TAG}"
 
 if [[ ${#@} -eq 0 ]]; then
- tests=("microservices" "monolith")
+ tests=(monolith microservices)
 else
  tests=("$@")
 fi
