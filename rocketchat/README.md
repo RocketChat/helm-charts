@@ -168,12 +168,13 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
 | `federation.persistence.enabled`       | Enabling persistence for matrix pod
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
+| `nats.nats.image`          | NATS container image (includes tag)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `nats:2.12-alpine`                                |
 | `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
 | `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
 | `nats.enabled` | Enable or disabled NATS deploy, if using microservices and this is nil them it will be deployed | true for microservices (default), false for monolith |
 | `nats.existingSecret.name` | Existing Secret name for an external NATS server | empty |
 | `nats.existingSecret.key` | Existing Secret key for the `nats.existingSecret.name` containing the connection string | empty |
-| `nats.podMonitor.enabled | enable nats pod monitor or service with annotation | `true` |
+| `nats.podMonitor.enabled` | Enable NATS PodMonitor or service with scrape annotation | `true` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
@@ -496,26 +497,6 @@ For additional NATS configuration options, refer to the [official NATS Helm char
 Choose PodMonitor if you need detailed pod-level metrics and troubleshooting data. Use ServiceMonitor if you only need metrics from healthy, service-ready pods.
 
 ## Upgrading
-
-#### Metrics
-
-from:
-
-```yaml
-nats:
-  exporter:
-    serviceMonitor:
-      enabled: false
-```
-
-to:
-
-```yaml
-nats:
-  promExporter:
-    podMonitor:
-      enabled: true
-```
 
 ### To 5.4.3
 
