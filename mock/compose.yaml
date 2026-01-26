@@ -48,6 +48,68 @@ services:
       - kubeconfig-volume:/kubeconfig-volume
     command: -kubeconfig=/kubeconfig-volume/kubeconfig.yaml
 
+  prometheus-operator:
+    image: ghcr.io/prometheus-operator/prometheus-operator:main
+    networks:
+      - kwok-network
+    depends_on:
+      kubeconfig:
+        condition: service_completed_successfully
+    environment:
+      - KUBERNETES_MASTER=http://kwok:8080
+      - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
+    volumes:
+      - kubeconfig-volume:/kubeconfig-volume
+
+  mongo-operator:
+    image: quay.io/mongodb/mongodb-kubernetes:1.6.1
+    networks:
+      - kwok-network
+    depends_on:
+      kubeconfig:
+        condition: service_completed_successfully
+    environment:
+      - KUBERNETES_MASTER=http://kwok:8080
+      - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
+      - OPERATOR_ENV=prod
+      - MDB_DEFAULT_ARCHITECTURE=non-static
+      - NAMESPACE=mongodb
+      - WATCH_NAMESPACE="*" # allow to watch all namespaces
+      - MDB_OPERATOR_TELEMETRY_COLLECTION_FREQUENCY=1h
+      - MDB_OPERATOR_TELEMETRY_SEND_FREQUENCY=168h
+      - CLUSTER_CLIENT_TIMEOUT=10
+      - IMAGE_PULL_POLICY=Always
+      - MONGODB_ENTERPRISE_DATABASE_IMAGE=quay.io/mongodb/mongodb-kubernetes-database
+      - INIT_DATABASE_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-kubernetes-init-database
+      - INIT_DATABASE_VERSION=1.6.1
+      - DATABASE_VERSION=1.6.1
+      - OPS_MANAGER_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-enterprise-ops-manager-ubi
+      - INIT_OPS_MANAGER_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-kubernetes-init-ops-manager
+      - INIT_OPS_MANAGER_VERSION=1.6.1
+      - INIT_APPDB_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-kubernetes-init-appdb
+      - INIT_APPDB_VERSION=1.6.1
+      - OPS_MANAGER_IMAGE_PULL_POLICY=Always
+      - AGENT_IMAGE=quay.io/mongodb/mongodb-agent:108.0.12.8846-1
+      - MDB_AGENT_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-agent
+      - MONGODB_IMAGE=mongodb-enterprise-server
+      - MONGODB_REPO_URL=quay.io/mongodb
+      - PERFORM_FAILOVER=true
+      - MDB_MAX_CONCURRENT_RECONCILES=1
+      - POD_NAME=mongodb-kubernetes-operator-679c97777-kxl4z (v1:metadata.name)
+      - OPERATOR_NAME=mongodb-kubernetes-operator
+      - MDB_COMMUNITY_AGENT_IMAGE=quay.io/mongodb/mongodb-agent:108.0.2.8729-1
+      - VERSION_UPGRADE_HOOK_IMAGE=quay.io/mongodb/mongodb-kubernetes-operator-version-upgrade-post-start-hook:1.0.10
+      - READINESS_PROBE_IMAGE=quay.io/mongodb/mongodb-kubernetes-readinessprobe:1.0.23
+      - MDB_COMMUNITY_IMAGE=mongodb-community-server
+      - MDB_COMMUNITY_REPO_URL=quay.io/mongodb
+      - MDB_COMMUNITY_IMAGE_TYPE=ubi8
+      - MDB_SEARCH_REPO_URL=quay.io/mongodb
+      - MDB_SEARCH_NAME=mongodb-search
+      - MDB_SEARCH_VERSION=0.55.0
+    volumes:
+      - kubeconfig-volume:/kubeconfig-volume
+
+
 volumes:
   kubeconfig-volume:
     driver: local

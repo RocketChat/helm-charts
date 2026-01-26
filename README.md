@@ -120,24 +120,79 @@ Tests are automatically run in GitHub Actions on:
 
 The CI pipeline runs tests for both monolith and microservices modes using both KWOK and KinD clusters.
 
-### Troubleshooting
+### Adding Kubernetes Operators
 
-#### Common Issues
+When you need to test functionality that depends on Kubernetes operators (such as MongoDB CRDs), you must deploy the operator container as part of the docker-compose stack alongside KWOK.
 
-1. **Submodules not initialized**: Run `./task.bash submodules`
-2. **Docker not running**: Ensure Docker daemon is running
-3. **Port conflicts**: Check if required ports are available
-4. **Cluster already exists**: Verify with `docker ps` and `king get cluster` if there is no leftovers from a failed run
+#### Steps to Add an Operator
 
-#### Environment Variables
+1. **Deploy the operator** in a test Kubernetes cluster
+2. **Inspect the operator pod** to gather configuration:
+   ```bash
+   kubectl describe pod <operator-pod-name> -n <namespace>
+   ```
+3. **Extract the required information**:
+   - Container image and tag
+   - Command and arguments
+   - Environment variables
+   - Volume mounts (if any)
 
-Key environment variables for testing:
+4. **Add the operator to `docker-compose.yml`**:
+```yaml
+   operator-name:
+     image: operator-image:tag
+     command: ["extracted-command"] # some operators won't need to change this
+     environment:
+       - KUBERNETES_MASTER=https://kwok-kwok-controller:10250
+       - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
+       # Add other environment variables from the pod description
+     volumes:
+      - kubeconfig-volume:/kubeconfig-volume
+     networks:
+       - kwok-network
+      depends_on:
+        kubeconfig:
+          condition: service_completed_successfully
+```
 
-- `ROCKETCHAT_HOST`: Hostname for RocketChat (default: rocketchat.example.com)
-- `ROCKETCHAT_TAG`: RocketChat image tag (default: 7.7.1)
-- `HELM_TAG`: Chart version for testing (default: 0.0.0)
-- `POD_RETRIES`: Number of retries for pod checks (default: 5)
-- `POD_RETRY_INTERVAL`: Interval between retries in seconds (default: 30)
+5. **Verify the operator** is running:
+   ```bash
+   docker-compose -f mock/compose.yaml ps
+   docker-compose -f mock/compose.yaml logs operator-name
+   ```
+
+#### Required Environment Variables
+
+All operators need these essential environment variables to connect to the KWOK cluster:
+
+- `KUBERNETES_MASTER`: Points to the KWOK controller (typically `https://kwok-kwok-controller:10250`)
+- `KUBECONFIG`: Path to the kubeconfig file (typically `/root/.kube/config`)
+
+#### Example: MongoDB Community Operator
+
+```yaml
+mongodb-operator:
+  image: quay.io/mongodb/mongodb-kubernetes-operator:0.7.6
+  command: ["/usr/local/bin/entrypoint"]
+  environment:
+    - KUBERNETES_MASTER=https://kwok-kwok-controller:10250
+    - KUBECONFIG=/root/.kube/config
+    - WATCH_NAMESPACE=default
+    - MANAGED_SECURITY_CONTEXT=true
+  volumes:
+    - ./kubeconfig:/root/.kube/config:ro
+  networks:
+    - kwok
+  depends_on:
+    - kwok-controller
+```
+
+#### Troubleshooting Operators
+
+- **Connection issues**: Verify the `KUBERNETES_MASTER` URL matches your KWOK controller service name
+- **Permission errors**: Ensure the operator has necessary RBAC permissions in your test cluster
+- **CRD not found**: Apply CRD definitions before starting the operator
+- **Operator logs**: Check logs with `docker-compose logs -f operator-name`
 
 ### Contributing Guidelines
 
