@@ -20,7 +20,7 @@ install_mongodb_operator() {
 
 uninstall_mongodb_operator() {
 	run_and_assert_success kubectl delete -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
-	run_and_assert_success helm uninstall mongodb-kubernetes-operator -n "${DETIK_CLIENT_NAMESPACE}" --wait --timeout 5m
+	run_and_assert_success helm uninstall mongodb-kubernetes-operator -n "mongodb-kubernetes-operator" --wait --timeout 5m
 }
 
 install_mongodb_cluster() {
