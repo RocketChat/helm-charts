@@ -272,7 +272,7 @@ setup_file() {
     kube-prometheus-stack \
     -n "prometheus-operator" \
     --wait \
-    --timeout 5m
+    --timeout 5m || true
 
   uninstall_mongodb_cluster
   uninstall_mongodb_operator
