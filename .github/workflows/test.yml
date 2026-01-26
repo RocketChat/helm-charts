@@ -107,23 +107,23 @@ jobs:
           echo "runMock=${run_mock}" | tee -a $GITHUB_OUTPUT
           echo "chartname=${json_array}" | tee -a $GITHUB_OUTPUT
 
-#   mock:
-#     if: ${{ needs.detect-changes.outputs.chartNames }} != [""]
-#     needs:
-#       - detect-changes
-#       - setup-docker
-#       - setup-k3d
-#     strategy:
-#       matrix:
-#         chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Clone helm chart repository
-#         uses: actions/checkout@v3
-#         with:
-#           submodules: true
+  mock:
+    if: ${{ needs.detect-changes.outputs.chartNames }} != [""]
+    needs:
+      - detect-changes
+      - setup-docker
+      - setup-k3d
+    strategy:
+      matrix:
+        chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone helm chart repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
 
-#       - run: ./task.bash mock "${{ matrix.chartName }}"
+      - run: ./task.bash mock "${{ matrix.chartName }}"
 
 
   cluster:
