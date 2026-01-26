@@ -23,7 +23,6 @@ setup_file() {
   export POD_RETRIES="${POD_RETRIES:-5}"
   export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-60}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
-  export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
   kubectl create ns "${DETIK_CLIENT_NAMESPACE}" >/dev/null 2>&1 || true
 
@@ -36,7 +35,6 @@ setup_file() {
     "Pod retry interval: ${POD_RETRY_INTERVAL}" \
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
-    "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
     "PWD: $(pwd)" \
     "KUBECONFIG: ${KUBECONFIG:-}"
 
@@ -49,13 +47,11 @@ setup_file() {
   debug_message_on_failure \
     "PWD: $(pwd)" \
     "VALUES: ${VALUES}" \
-    "PROMETHEUS_OPERATOR_VALUES: ${PROMETHEUS_OPERATOR_VALUES}" \
     "ROCKETCHAT_CHART_DIR: ${ROCKETCHAT_CHART_DIR}" \
     "ROCKETCHAT_CHART_ARCHIVE: ${ROCKETCHAT_CHART_ARCHIVE}"
 
   assert [ -n "${DEPLOYMENT_NAME}" ]
   assert [ -f "${VALUES}" ]
-  assert [ -f "${PROMETHEUS_OPERATOR_VALUES}" ]
   [[ "${POD_RETRY_INTERVAL}" =~ ^[0-9]+$ ]] ||
     fail "POD_RETRY_INTERVAL is not a number"
 }
