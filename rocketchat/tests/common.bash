@@ -28,7 +28,7 @@ install_mongodb_cluster() {
 		run_and_assert_success cd "$(git rev-parse --show-toplevel)" || exit 1
 		cat mock/manifests/mongodbcommunity.yaml | envsubst | run_and_assert_success kubectl apply -f - -n ${DETIK_CLIENT_NAMESPACE} || exit 1
 		
-		sleep 30s
+		sleep 60s
 	)
 }
 
