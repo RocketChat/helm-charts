@@ -20,3 +20,10 @@ dependencies:
   repository: oci://ghcr.io/grafana/helm-charts
   version: v5.18.0
   alias: grafana
+  condition: grafana.enabled
+
+- name: loki
+  repository: oci://ghcr.io/grafana/helm-charts
+  version: 6.49.0
+  alias: loki
+  condition: loki.enabled

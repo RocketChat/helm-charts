@@ -1,0 +1,11 @@
+{{- if or .Values.opentelemetryCollector.logs.enabled .Values.opentelemetryCollector.events.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Release.Name }}-opentelemetry-collector-config"
+  namespace: "{{ .Release.Namespace }}"
+data:
+  {{ (tpl (.Files.Glob "config/opentelemetry/*.yaml").AsConfig .) | nindent 2 }}
+
+{{- end -}}

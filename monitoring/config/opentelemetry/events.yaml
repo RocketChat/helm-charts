@@ -1,0 +1,34 @@
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+receivers:
+  k8sobjects:
+    objects:
+      - name: events
+        mode: watch
+
+processors:
+  resource:
+    attributes:
+      - key: service.name
+        value: "kubernetes-events"
+        action: upsert
+      - key: job
+        value: "kubernetes-events"
+        action: upsert
+      - action: upsert
+        key: agent.name
+        value: otel
+
+exporters:
+  otlphttp:
+    endpoint: "http://{{ .Release.Name }}-loki-gateway.{{ .Release.Namespace }}.svc.cluster.local/otlp"
+
+service:
+  extensions:
+    - health_check
+  pipelines:
+    logs:
+      receivers: [k8sobjects]
+      processors: [resource]
+      exporters: [otlphttp]

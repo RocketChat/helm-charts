@@ -2,6 +2,14 @@
 
 This is helm repository for RocketChat charts. Follow the steps below to start deploying any of them in your Kubernetes cluster.
 
+## Important Note!
+
+If you are currently using the built in mongo and have not already switched to an external mongo please see our forum post:
+
+https://forums.rocket.chat/t/action-required-helm-chart-moving-from-bitnami-to-official-mongodb-chart/22679
+
+We will be removing the built in mongo using Bitnami in susequent versions.
+
 ## Usage
 
 Be sure you have helm3 binary insalled, add this repository and install rocketchat chart:
