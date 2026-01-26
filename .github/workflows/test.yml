@@ -84,7 +84,7 @@ jobs:
             chartNames+=(${INPUT_CHART_NAME})
           else
             if echo "$changed_files" | grep -qE 'rocketchat/'; then
-              chartNames+=("rocketchat")
+              chartNames+=("rocketchat-monolith" "rocketchat-microservices")
               run_mock=1
             fi
             if echo "$changed_files" | grep -qE 'monitoring/'; then
@@ -129,7 +129,7 @@ jobs:
   cluster:
     needs:
       - detect-changes
-    #   - mock
+      - mock
     strategy:
       matrix:
         chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}

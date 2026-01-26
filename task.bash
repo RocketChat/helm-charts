@@ -151,6 +151,14 @@ function rocketchat() {
   ./rocketchat/tests/run.bash "$@"
 }
 
+function rocketchat-monolith() {
+    rocketchat "monolith" "$@"
+}
+
+function rocketchat-microservices() {
+    rocketchat "microservices" "$@"
+}
+
 function monitoring() {
   ./bats/core/bin/bats ./monitoring/tests/tests.bats "$@"
 }
