@@ -2,14 +2,20 @@
 # shellcheck disable=SC2312
 
 install_mongodb_operator() {
+	kubectl get deploy -n mongodb-kubernetes-operator | grep -q mongodb-kubernetes-operator \
+		&& skip "mongodb operator already installed"
+
 	run_and_assert_success kubectl apply -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
-	run_and_assert_success helm repo add mongodb https://mongodb.github.io/helm-charts
-	run_and_assert_success helm upgrade --install mongodb-kubernetes-operator mongodb/mongodb-kubernetes \
-	--namespace ${DETIK_CLIENT_NAMESPACE} \
-	--create-namespace \
-	--wait \
-	--wait-for-jobs \
-	--timeout=5m
+	run_and_assert_success helm upgrade \
+		--install mongodb-kubernetes-operator \
+		mongodb-kubernetes \
+		--namespace mongodb-kubernetes-operator \
+		--repo https://mongodb.github.io/helm-charts \
+		--create-namespace \
+		--wait \
+		--wait-for-jobs \
+		--timeout=5m \
+		--set "operator.watchNamespace=*"
 }
 
 uninstall_mongodb_operator() {
@@ -55,7 +61,8 @@ helm_install_latest_published_version() {
     --wait \
     --wait-for-jobs \
 	--set "externalMongodbUrl=mongodb://rocketchat:rocketchat-password@${DEPLOYMENT_NAME}-mongodb-svc.${DETIK_CLIENT_NAMESPACE}.svc.cluster.local:27017/rocketchat?authSource=rocketchat&replicaSet=${DEPLOYMENT_NAME}-mongodb" \
-    --timeout 10m
+    --timeout 10m \
+	"--set=upgradeAcknowledgedAt=$(date +%s)"
 }
 
 helm_package_chart() {
@@ -95,13 +102,36 @@ test_rocketchat_ingress() {
 }
 
 install_prometheus_operator() {
+  helm ls -n "prometheus-operator" | grep -q "prometheus-operator" &&
+	skip "prometheus-operator already installed"
   run_and_assert_success helm upgrade \
     --install \
-    prometheus-operator \
-    --namespace "${DETIK_CLIENT_NAMESPACE}" \
-    --values "${PROMETHEUS_OPERATOR_VALUES}" \
+    kube-prometheus-stack \
+    --namespace "prometheus-operator" \
+	--create-namespace \
     --repo https://prometheus-community.github.io/helm-charts \
     kube-prometheus-stack \
     --wait \
-    --timeout 5m
+    --timeout 5m \
+	--set global.rbac.create=true \
+	--set crds.enabled=true \
+	--set defaultRules.createfalse \
+	--set windowsMonitoring.enabled=false \
+	--set alertmanager.enabled=false \
+	--set grafana.enabled=false \
+	--set kubernetesServiceMonitors.enabled=false \
+	--set kubeApiServer.enabled=false \
+	--set kubelet.enabled=false \
+	--set kubeControllerManager.enabled=false \
+	--set coreDns.enabled=false \
+	--set kubeDns.enabled=false \
+	--set kubeEtcd.enabled=false \
+	--set kubeScheduler.enabled=false \
+	--set kubeProxy.enabled=false \
+	--set kubeStateMetrics.enabled=false \
+	--set nodeExporter.enabled=false \
+	--set prometheus.enabled=false \
+	--set prometheusOperator.enabled=true \
+	--set cleanPrometheusOperatorObjectNames=false \
+	--set extraManifests=null
 }
