@@ -80,3 +80,8 @@ spec:
     username:  prometheus-username
     passwordSecretRef:
       name: metrics-endpoint-password
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mongodb-kubernetes-appdb
