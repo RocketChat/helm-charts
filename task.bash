@@ -50,7 +50,7 @@ function mock.run() {
 
   # shellcheck disable=SC2329
   function create() {
-    _compose up -d
+    _compose up -d --wait
   }
 
   # shellcheck disable=SC2329
