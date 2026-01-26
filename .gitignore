@@ -15,3 +15,6 @@ pvc.yaml
 Makefile
 Chart.lock
 *.ignore
+
+*-defaults.yaml
+*-test-values.yaml

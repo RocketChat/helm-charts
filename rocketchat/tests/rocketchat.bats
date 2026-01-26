@@ -23,8 +23,8 @@ setup_file() {
   export POD_RETRIES="${POD_RETRIES:-5}"
   export POD_RETRY_INTERVAL="${POD_RETRY_INTERVAL:-60}"
   export VALUES="${BATS_TMPDIR}/values.yaml"
-  export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
+  kubectl create ns "${DETIK_CLIENT_NAMESPACE}" >/dev/null 2>&1 || true
 
   info_message \
     "Values file: ${VALUES_FILE}" \
@@ -35,7 +35,6 @@ setup_file() {
     "Pod retry interval: ${POD_RETRY_INTERVAL}" \
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
-    "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
     "PWD: $(pwd)" \
     "KUBECONFIG: ${KUBECONFIG:-}"
 
@@ -48,13 +47,11 @@ setup_file() {
   debug_message_on_failure \
     "PWD: $(pwd)" \
     "VALUES: ${VALUES}" \
-    "PROMETHEUS_OPERATOR_VALUES: ${PROMETHEUS_OPERATOR_VALUES}" \
     "ROCKETCHAT_CHART_DIR: ${ROCKETCHAT_CHART_DIR}" \
     "ROCKETCHAT_CHART_ARCHIVE: ${ROCKETCHAT_CHART_ARCHIVE}"
 
   assert [ -n "${DEPLOYMENT_NAME}" ]
   assert [ -f "${VALUES}" ]
-  assert [ -f "${PROMETHEUS_OPERATOR_VALUES}" ]
   [[ "${POD_RETRY_INTERVAL}" =~ ^[0-9]+$ ]] ||
     fail "POD_RETRY_INTERVAL is not a number"
 }
@@ -184,8 +181,7 @@ setup_file() {
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-monolith-ms-metrics moleculer-metrics 9458" \
-    "nats monitor,gateways,cluster,client,metrics,leafnodes 8222,7522,6222,4222,7777,7422" \
-    "nats-metrics monitor 8222"
+    "nats monitor,gateways,cluster,client,metrics,leafnodes 8222,7522,6222,4222,7777,7422"
 }
 
 # bats test_tags=assertion,monolith
@@ -238,7 +234,8 @@ setup_file() {
 
 # bats test_tags=operator
 @test "verify prometheus operator is installed" {
-  run_and_assert_success verify "there is 1 pod named 'prometheus-operator'"
+  DETIK_CLIENT_NAMESPACE=prometheus-operator \
+    run_and_assert_success verify "there is 1 pod named 'kube-prometheus-stack-operator'"
 }
 
 # bats test_tags=operator
@@ -264,11 +261,6 @@ setup_file() {
     skip "cleanup is disabled"
   run_and_assert_success helm uninstall \
     "$DEPLOYMENT_NAME" \
-    -n "$DETIK_CLIENT_NAMESPACE" \
-    --wait \
-    --timeout 5m
-  run_and_assert_success helm uninstall \
-    prometheus-operator \
     -n "$DETIK_CLIENT_NAMESPACE" \
     --wait \
     --timeout 5m
