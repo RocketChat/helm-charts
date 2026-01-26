@@ -25,22 +25,82 @@ services:
     depends_on:
       kwok:
         condition: service_healthy
+    environment:
+      - KUBERNETES_MASTER=http://kwok:8080
+      - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
     command: 
       - -c
       - |
         sed -E 's/127.0.0.1:[0-9]+/kwok:8080/' /kubeconfig.yaml \
           > /kubeconfig-volume/kubeconfig.yaml
-        kubectl \
-          -s http://kwok:8080 \
-          apply -f /manifests/
+        kubectl apply -f /manifests/
         cat /kubeconfig-volume/kubeconfig.yaml
+        kubectl apply -f https://raw.githubusercontent.com/mongodb/mongodb-kubernetes/1.6.1/public/crds.yaml
+  deploy-operators:
+    image: alpine/helm:3 # 3 for ensuring backwards compatibility
+    networks:
+      - kwok-network
+    volumes:
+      - kubeconfig-volume:/kubeconfig-volume
+    user: root
+    depends_on:
+      kubeconfig:
+        condition: service_completed_successfully
+    environment:
+      - KUBERNETES_MASTER=http://kwok:8080
+      - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
+    entrypoint: sh
+    command:
+      - -c
+      - |
+        helm upgrade \
+          --install mongodb-kubernetes-operator \
+          mongodb-kubernetes \
+          --namespace mongodb-kubernetes-operator \
+          --repo https://mongodb.github.io/helm-charts \
+          --create-namespace \
+          --wait \
+          --wait-for-jobs \
+          --timeout=5m \
+          --set "operator.watchNamespace=*"
+        
+        helm upgrade \
+          --install kube-prometheus-stack \
+          kube-prometheus-stack \
+          --namespace "prometheus-operator" \
+          --create-namespace \
+          --repo https://prometheus-community.github.io/helm-charts \
+          --wait \
+          --timeout 5m \
+          --set global.rbac.create=true \
+          --set crds.enabled=true \
+          --set defaultRules.create=false \
+          --set windowsMonitoring.enabled=false \
+          --set alertmanager.enabled=false \
+          --set grafana.enabled=false \
+          --set kubernetesServiceMonitors.enabled=false \
+          --set kubeApiServer.enabled=false \
+          --set kubelet.enabled=false \
+          --set kubeControllerManager.enabled=false \
+          --set coreDns.enabled=false \
+          --set kubeDns.enabled=false \
+          --set kubeEtcd.enabled=false \
+          --set kubeScheduler.enabled=false \
+          --set kubeProxy.enabled=false \
+          --set kubeStateMetrics.enabled=false \
+          --set nodeExporter.enabled=false \
+          --set prometheus.enabled=false \
+          --set prometheusOperator.enabled=true \
+          --set cleanPrometheusOperatorObjectNames=false \
+          --set extraManifests=null
+
 
   noop_provisioner:
     image: ghcr.io/adriansuarez/noop-provisioner:latest
     networks:
       - kwok-network
     depends_on:
-      kubeconfig:
+      deploy-operators:
         condition: service_completed_successfully
     environment:
       - KUBERNETES_MASTER=http://kwok:8080
@@ -53,7 +113,7 @@ services:
     networks:
       - kwok-network
     depends_on:
-      kubeconfig:
+      deploy-operators:
         condition: service_completed_successfully
     environment:
       - KUBERNETES_MASTER=http://kwok:8080
@@ -66,15 +126,22 @@ services:
     networks:
       - kwok-network
     depends_on:
-      kubeconfig:
+      deploy-operators:
         condition: service_completed_successfully
+    command:
+      - -watch-resource=mongodb
+      - -watch-resource=opsmanagers
+      - -watch-resource=mongodbusers
+      - -watch-resource=mongodbcommunity
+      - -watch-resource=mongodbsearch
+      - -watch-resource=clustermongodbroles
     environment:
       - KUBERNETES_MASTER=http://kwok:8080
       - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
       - OPERATOR_ENV=prod
       - MDB_DEFAULT_ARCHITECTURE=non-static
-      - NAMESPACE=mongodb
-      - WATCH_NAMESPACE="*" # allow to watch all namespaces
+      - NAMESPACE=mongodb-kubernetes-operator 
+      - WATCH_NAMESPACE=*
       - MDB_OPERATOR_TELEMETRY_COLLECTION_FREQUENCY=1h
       - MDB_OPERATOR_TELEMETRY_SEND_FREQUENCY=168h
       - CLUSTER_CLIENT_TIMEOUT=10
@@ -89,17 +156,15 @@ services:
       - INIT_APPDB_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-kubernetes-init-appdb
       - INIT_APPDB_VERSION=1.6.1
       - OPS_MANAGER_IMAGE_PULL_POLICY=Always
-      - AGENT_IMAGE=quay.io/mongodb/mongodb-agent:108.0.12.8846-1
       - MDB_AGENT_IMAGE_REPOSITORY=quay.io/mongodb/mongodb-agent
       - MONGODB_IMAGE=mongodb-enterprise-server
       - MONGODB_REPO_URL=quay.io/mongodb
       - PERFORM_FAILOVER=true
       - MDB_MAX_CONCURRENT_RECONCILES=1
-      - POD_NAME=mongodb-kubernetes-operator-679c97777-kxl4z (v1:metadata.name)
       - OPERATOR_NAME=mongodb-kubernetes-operator
-      - MDB_COMMUNITY_AGENT_IMAGE=quay.io/mongodb/mongodb-agent:108.0.2.8729-1
-      - VERSION_UPGRADE_HOOK_IMAGE=quay.io/mongodb/mongodb-kubernetes-operator-version-upgrade-post-start-hook:1.0.10
-      - READINESS_PROBE_IMAGE=quay.io/mongodb/mongodb-kubernetes-readinessprobe:1.0.23
+      - MDB_COMMUNITY_AGENT_IMAGE=quay.io/mongodb/mongodb-agent108.0.2.8729-1
+      - VERSION_UPGRADE_HOOK_IMAGE=quay.io/mongodb/mongodb-kubernetes-operator-version-upgrade-post-start-hook1.0.10
+      - READINESS_PROBE_IMAGE=quay.io/mongodb/mongodb-kubernetes-readinessprobe1.0.23
       - MDB_COMMUNITY_IMAGE=mongodb-community-server
       - MDB_COMMUNITY_REPO_URL=quay.io/mongodb
       - MDB_COMMUNITY_IMAGE_TYPE=ubi8
