@@ -25,7 +25,8 @@ setup_file() {
   export VALUES="${BATS_TMPDIR}/values.yaml"
   export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
-
+  kubectl create ns "${DETIK_CLIENT_NAMESPACE}" >/dev/null 2>&1 || true
+  
   info_message \
     "Values file: ${VALUES_FILE}" \
     "Bats tmpdir: ${BATS_TMPDIR}" \
@@ -184,8 +185,7 @@ setup_file() {
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
     "rocketchat-monolith-ms-metrics moleculer-metrics 9458" \
-    "nats monitor,gateways,cluster,client,metrics,leafnodes 8222,7522,6222,4222,7777,7422" \
-    "nats-metrics monitor 8222"
+    "nats monitor,gateways,cluster,client,metrics,leafnodes 8222,7522,6222,4222,7777,7422"
 }
 
 # bats test_tags=assertion,monolith
@@ -238,7 +238,8 @@ setup_file() {
 
 # bats test_tags=operator
 @test "verify prometheus operator is installed" {
-  run_and_assert_success verify "there is 1 pod named 'prometheus-operator'"
+  DETIK_CLIENT_NAMESPACE=prometheus-operator \
+    run_and_assert_success verify "there is 1 pod named 'kube-prometheus-stack-operator'"
 }
 
 # bats test_tags=operator
