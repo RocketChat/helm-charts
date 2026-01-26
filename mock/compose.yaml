@@ -74,7 +74,7 @@ services:
       - OPERATOR_ENV=prod
       - MDB_DEFAULT_ARCHITECTURE=non-static
       - NAMESPACE=mongodb
-      - WATCH_NAMESPACE=mongodb
+      - WATCH_NAMESPACE="*" # allow to watch all namespaces
       - MDB_OPERATOR_TELEMETRY_COLLECTION_FREQUENCY=1h
       - MDB_OPERATOR_TELEMETRY_SEND_FREQUENCY=168h
       - CLUSTER_CLIENT_TIMEOUT=10
