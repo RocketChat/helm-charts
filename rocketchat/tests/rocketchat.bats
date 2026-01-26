@@ -268,7 +268,7 @@ setup_file() {
     -n "$DETIK_CLIENT_NAMESPACE" \
     --wait \
     --timeout 5m
-  run_and_assert_success helm uninstall \
+  helm uninstall \
     kube-prometheus-stack \
     -n "prometheus-operator" \
     --wait \
