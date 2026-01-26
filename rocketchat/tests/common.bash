@@ -115,7 +115,7 @@ install_prometheus_operator() {
     --timeout 5m \
 	--set global.rbac.create=true \
 	--set crds.enabled=true \
-	--set defaultRules.createfalse \
+	--set defaultRules.create=false \
 	--set windowsMonitoring.enabled=false \
 	--set alertmanager.enabled=false \
 	--set grafana.enabled=false \
