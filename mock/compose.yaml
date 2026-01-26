@@ -68,13 +68,20 @@ services:
     depends_on:
       kubeconfig:
         condition: service_completed_successfully
+    command:
+      - -watch-resource=mongodb
+      - -watch-resource=opsmanagers
+      - -watch-resource=mongodbusers
+      - -watch-resource=mongodbcommunity
+      - -watch-resource=mongodbsearch
+      - -watch-resource=clustermongodbroles
     environment:
       - KUBERNETES_MASTER=http://kwok:8080
       - KUBECONFIG=/kubeconfig-volume/kubeconfig.yaml
       - OPERATOR_ENV=prod
       - MDB_DEFAULT_ARCHITECTURE=non-static
       - NAMESPACE=mongodb
-      - WATCH_NAMESPACE="*" # allow to watch all namespaces
+      - WATCH_NAMESPACE=* # allow to watch all namespaces
       - MDB_OPERATOR_TELEMETRY_COLLECTION_FREQUENCY=1h
       - MDB_OPERATOR_TELEMETRY_SEND_FREQUENCY=168h
       - CLUSTER_CLIENT_TIMEOUT=10
