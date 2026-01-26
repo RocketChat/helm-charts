@@ -118,7 +118,7 @@ grafana:
     rocketchat:
       - name: "rocketchat-logs"
         folder: "rocketchat"
-        id: "24731"
+        id: "24736"
         revision: latest
       - name: "rocketchat-metrics"
         folder: "rocketchat"
