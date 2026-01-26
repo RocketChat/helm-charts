@@ -268,11 +268,6 @@ setup_file() {
     -n "$DETIK_CLIENT_NAMESPACE" \
     --wait \
     --timeout 5m
-  helm uninstall \
-    kube-prometheus-stack \
-    -n "prometheus-operator" \
-    --wait \
-    --timeout 5m || true
 
   uninstall_mongodb_cluster
   uninstall_mongodb_operator
