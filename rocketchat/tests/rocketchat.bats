@@ -26,7 +26,7 @@ setup_file() {
   export PROMETHEUS_OPERATOR_VALUES="${TESTS_DIR}/../../mock/prometheus-operator/values.yaml"
   export DETIK_CLIENT_NAMESPACE="bats-${DEPLOYMENT_NAME}"
   kubectl create ns "${DETIK_CLIENT_NAMESPACE}" >/dev/null 2>&1 || true
-  
+
   info_message \
     "Values file: ${VALUES_FILE}" \
     "Bats tmpdir: ${BATS_TMPDIR}" \
@@ -269,8 +269,8 @@ setup_file() {
     --wait \
     --timeout 5m
   run_and_assert_success helm uninstall \
-    prometheus-operator \
-    -n "$DETIK_CLIENT_NAMESPACE" \
+    kube-prometheus-stack \
+    -n "prometheus-operator" \
     --wait \
     --timeout 5m
 
