@@ -6,10 +6,12 @@ set -euo pipefail
 
 declare -A PORTS
 
-PORTS["mock-rocketchat"]=8080
-PORTS["cluster-rocketchat"]=9080
-PORTS["mock-monitoring"]=8082
-PORTS["cluster-monitoring"]=9082
+PORTS["mock-rocketchat-monolith"]=8080
+PORTS["cluster-rocketchat-monolith"]=8081
+PORTS["mock-rocketchat-microservices"]=8082
+PORTS["cluster-rocketchat-microservices"]=8083
+PORTS["mock-monitoring"]=8084
+PORTS["cluster-monitoring"]=8085
 
 function _error() {
   for line in "${@}"; do
@@ -147,16 +149,12 @@ function cluster() {
   "$@"
 }
 
-function rocketchat() {
-  ./rocketchat/tests/run.bash "$@"
-}
-
 function rocketchat-monolith() {
-    rocketchat "monolith" "$@"
+  ./rocketchat/tests/run.bash "monolith" "$@"
 }
 
 function rocketchat-microservices() {
-    rocketchat "microservices" "$@"
+  ./rocketchat/tests/run.bash "microservices" "$@"
 }
 
 function monitoring() {
