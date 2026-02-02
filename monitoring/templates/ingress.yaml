@@ -39,15 +39,15 @@ spec:
                 port:
                   name: grafana
     {{- end }}
-  {{ if or .Values.ingress.prometheus.tls .Values.ingress.grafana.tls }}
-    tls:
-      - hosts:
-          {{- if .Values.ingress.prometheus.tls }}
-            - {{ .Values.ingress.prometheus.host }}
-          {{- end }}
-          {{- if .Values.ingress.grafana.tls }}
-            - {{ .Values.ingress.grafana.host }}
-          {{- end }}
+  {{ if .Values.ingress.tls }}
+  tls:
+    - hosts:
+      {{- if and .Values.ingress.tls .Values.ingress.prometheus.enabled }}
+        - {{ .Values.ingress.prometheus.host }}
+      {{- end }}
+      {{- if and .Values.ingress.tls .Values.ingress.grafana.enabled }}
+        - {{ .Values.ingress.grafana.host }}
+      {{- end }}
       secretName: prometheus-prometheus-tls
   {{ end }}
 {{ end }} # if ingress.enabled
