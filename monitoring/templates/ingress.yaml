@@ -35,7 +35,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: grafana-service
+                name: "{{ .Release.Name }}-grafana-service"
                 port:
                   name: grafana
     {{- end }}
