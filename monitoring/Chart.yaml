@@ -7,7 +7,7 @@ type: application
 appVersion: 0.83.0
 
 # Chart version
-version: 0.0.11
+version: 0.0.12
 
 dependencies:
 - name: kube-prometheus-stack
