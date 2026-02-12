@@ -257,6 +257,9 @@ service:
 ## Optional custom labels for the deployment resource.
 deploymentLabels: {}
 
+## Optional custom annotations for the deployment resource.
+deploymentAnnotations: {}
+
 ## Optional Pod Labels.
 podLabels: {}
 
