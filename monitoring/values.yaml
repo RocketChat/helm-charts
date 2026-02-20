@@ -1,11 +1,25 @@
-## common configuration across all deployments
+## Common scheduling configuration across all deployments
+## Set these values once and they apply to all components via YAML anchors
+## 
+## Example with tolerations:
+##   scheduling:
+##     tolerations:
+##       - key: "dedicated"
+##         operator: "Equal"
+##         value: "rocketchat"
+##         effect: "NoSchedule"
+##
+scheduling:
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
+
+## Global values passed to subcharts and used by custom components
 global:
-  # Tolerations for pod assignment
-  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
+  tolerations: *tolerations
   annotations: {}
-  nodeSelector: {}
-  affinity: {}
+  nodeSelector: *nodeSelector
+  affinity: *affinity
 
 operator:
   enabled: true
@@ -15,6 +29,10 @@ operator:
 
   prometheusOperator:
     enabled: true
+    tolerations: *tolerations
+    admissionWebhooks:
+      patch:
+        tolerations: *tolerations
 
   crds:
     enabled: true
@@ -58,8 +76,14 @@ operator:
   kubeStateMetrics:
     enabled: true
 
+  kube-state-metrics:
+    tolerations: *tolerations
+
   nodeExporter:
     enabled: true
+
+  prometheus-node-exporter:
+    tolerations: *tolerations
 
   cleanPrometheusOperatorObjectNames: false
 
@@ -86,6 +110,7 @@ operator:
       retention: 15d
       retentionSize: 8GB
       scrapeInterval: 30s
+      tolerations: *tolerations
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -119,11 +144,10 @@ grafana:
     # storageClassName: # Get available classes with: kubectl get storageclasses.
     nodePort: ""
 
-  # Tolerations for pod assignment
-  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
-  nodeSelector: {}
-  affinity: {}
+  # Tolerations for grafana-operator and Grafana instance (uses scheduling anchors)
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
   folders:
     rocketchat:
       - name: "rocketchat"
@@ -186,6 +210,7 @@ loki:
 
   singleBinary:
     replicas: 1
+    tolerations: *tolerations
     persistence:
       # Storage allocation for logs. Ensure adequate space: daily_log_volume * retention_days * 1.2
       # If disk becomes full, Loki stops working and requires manual intervention
@@ -193,6 +218,14 @@ loki:
     extraArgs:
       - -config.expand-env=true
 
+  gateway:
+    tolerations: *tolerations
+
+  # Disable caches by default for smaller clusters (enables for production if needed)
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
 
   loki:
     auth_enabled: false
@@ -293,11 +326,10 @@ opentelemetryCollector:
     tag: 0.143.0
     pullPolicy: IfNotPresent
 
-  # Tolerations for pod assignment
-  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
-  nodeSelector: {}
-  affinity: {}
+  # Uses scheduling anchors from top of file
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
 
   logs:
     enabled: true

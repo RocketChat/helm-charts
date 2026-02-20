@@ -153,86 +153,93 @@ OpenTelemetry is an open-source observability framework that collects metrics, l
 
 For advanced configuration options, refer to the [OpenTelemetry Operator documentation](https://opentelemetry.io/docs/kubernetes/operator/).
 
-## Node Scheduling
+## Node Scheduling (Taints/Tolerations)
 
-You can control pod placement using `nodeSelector`, `tolerations`, and `affinity`. These can be configured globally (applied to all components) or per-component.
+When deploying to nodes with taints, you need to configure tolerations for all components. This chart includes multiple subcharts (Prometheus Operator, Loki, Grafana Operator), each requiring their own tolerations configuration.
 
-### Global Configuration
+### Recommended: Use the Values Template File
 
-Set scheduling constraints for all monitoring components:
+The simplest approach is to copy and modify the included template file:
+
+```bash
+# Copy the template
+cp monitoring/values-taint-template.yaml my-values.yaml
+
+# Edit my-values.yaml - change the scheduling section:
+#   scheduling:
+#     tolerations:
+#       - key: "your-taint-key"
+#         operator: "Equal"
+#         value: "your-taint-value"
+#         effect: "NoSchedule"
+
+# Install with your values
+helm install monitoring ./monitoring -f my-values.yaml
+```
+
+The template uses YAML anchors to set tolerations once and apply them to all components automatically.
+
+### Alternative: Set Values Individually
+
+If you prefer to set values individually via `--set`, you need to configure each component:
+
+```bash
+helm install monitoring ./monitoring \
+  --set 'global.tolerations[0].key=dedicated' \
+  --set 'global.tolerations[0].operator=Equal' \
+  --set 'global.tolerations[0].value=rocketchat' \
+  --set 'global.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheusOperator.tolerations[0].key=dedicated' \
+  --set 'operator.prometheusOperator.tolerations[0].operator=Equal' \
+  --set 'operator.prometheusOperator.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheusOperator.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].key=dedicated' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].operator=Equal' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].key=dedicated' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].operator=Equal' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].effect=NoSchedule' \
+  --set 'operator.kube-state-metrics.tolerations[0].key=dedicated' \
+  --set 'operator.kube-state-metrics.tolerations[0].operator=Equal' \
+  --set 'operator.kube-state-metrics.tolerations[0].value=rocketchat' \
+  --set 'operator.kube-state-metrics.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].key=dedicated' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].operator=Equal' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].effect=NoSchedule' \
+  --set 'grafana.tolerations[0].key=dedicated' \
+  --set 'grafana.tolerations[0].operator=Equal' \
+  --set 'grafana.tolerations[0].value=rocketchat' \
+  --set 'grafana.tolerations[0].effect=NoSchedule' \
+  --set 'loki.singleBinary.tolerations[0].key=dedicated' \
+  --set 'loki.singleBinary.tolerations[0].operator=Equal' \
+  --set 'loki.singleBinary.tolerations[0].value=rocketchat' \
+  --set 'loki.singleBinary.tolerations[0].effect=NoSchedule' \
+  --set 'loki.gateway.tolerations[0].key=dedicated' \
+  --set 'loki.gateway.tolerations[0].operator=Equal' \
+  --set 'loki.gateway.tolerations[0].value=rocketchat' \
+  --set 'loki.gateway.tolerations[0].effect=NoSchedule'
+```
+
+> **Note:** The template file approach is much simpler. Use `--set` only when you cannot use a values file.
+
+### Node Selector
+
+For simple node selection without taints, you can use nodeSelector:
 
 ```yaml
+# In your values file
 global:
   nodeSelector:
     disktype: ssd
-  tolerations:
-    - key: "node-role"
-      operator: "Exists"
-      effect: "NoSchedule"
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: kubernetes.io/zone
-                operator: In
-                values:
-                  - us-east-1a
 ```
 
-### Per-Component Configuration
-
-Override global settings for specific components:
-
-```yaml
-grafana:
-  nodeSelector:
-    disktype: ssd
-  tolerations:
-    - key: "dedicated"
-      operator: "Equal"
-      value: "monitoring"
-      effect: "NoSchedule"
-
-opentelemetryCollector:
-  nodeSelector:
-    role: logging
-  tolerations: []
-```
-
-### Using `--set` Flags
-
-**Node Selector:**
+Or via command line:
 ```bash
-# Global nodeSelector
-helm install monitoring ./monitoring \
-  --set global.nodeSelector.disktype=ssd
-
-# Component-specific nodeSelector
-helm install monitoring ./monitoring \
-  --set grafana.nodeSelector.disktype=ssd \
-  --set opentelemetryCollector.nodeSelector.role=logging
+helm install monitoring ./monitoring --set global.nodeSelector.disktype=ssd
 ```
-
-**Tolerations:**
-```bash
-# Global toleration
-helm install monitoring ./monitoring \
-  --set 'global.tolerations[0].key=node-role' \
-  --set 'global.tolerations[0].operator=Exists' \
-  --set 'global.tolerations[0].effect=NoSchedule'
-
-# Component-specific toleration
-helm install monitoring ./monitoring \
-  --set 'grafana.tolerations[0].key=dedicated' \
-  --set 'grafana.tolerations[0].operator=Equal' \
-  --set 'grafana.tolerations[0].value=monitoring' \
-  --set 'grafana.tolerations[0].effect=NoSchedule'
-```
-
-> **Note:** When using `--set` with array values like tolerations, you must quote the parameter to prevent shell interpretation of brackets.
-
-Component-specific values take precedence over global values. If a component has its own `nodeSelector`, `tolerations`, or `affinity` defined, those will be used instead of the global settings.
 
 ## Customization
 
