@@ -85,6 +85,21 @@ spec:
         spec:
           securityContext:
             fsGroup: 10001
+          {{- $nodeSelector := include "monitoring.nodeSelector" (dict "name" "grafana" "context" $) }}
+          {{- if $nodeSelector }}
+          nodeSelector:
+            {{- $nodeSelector | nindent 12 }}
+          {{- end }}
+          {{- $tolerations := include "monitoring.tolerations" (dict "name" "grafana" "context" $) }}
+          {{- if $tolerations }}
+          tolerations:
+            {{- $tolerations | nindent 12 }}
+          {{- end }}
+          {{- $affinity := include "monitoring.affinity" (dict "name" "grafana" "context" $) }}
+          {{- if $affinity }}
+          affinity:
+            {{- $affinity | nindent 12 }}
+          {{- end }}
           containers:
             - name: grafana
               resources: {}

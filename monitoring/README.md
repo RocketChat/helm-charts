@@ -153,6 +153,87 @@ OpenTelemetry is an open-source observability framework that collects metrics, l
 
 For advanced configuration options, refer to the [OpenTelemetry Operator documentation](https://opentelemetry.io/docs/kubernetes/operator/).
 
+## Node Scheduling
+
+You can control pod placement using `nodeSelector`, `tolerations`, and `affinity`. These can be configured globally (applied to all components) or per-component.
+
+### Global Configuration
+
+Set scheduling constraints for all monitoring components:
+
+```yaml
+global:
+  nodeSelector:
+    disktype: ssd
+  tolerations:
+    - key: "node-role"
+      operator: "Exists"
+      effect: "NoSchedule"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/zone
+                operator: In
+                values:
+                  - us-east-1a
+```
+
+### Per-Component Configuration
+
+Override global settings for specific components:
+
+```yaml
+grafana:
+  nodeSelector:
+    disktype: ssd
+  tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "monitoring"
+      effect: "NoSchedule"
+
+opentelemetryCollector:
+  nodeSelector:
+    role: logging
+  tolerations: []
+```
+
+### Using `--set` Flags
+
+**Node Selector:**
+```bash
+# Global nodeSelector
+helm install monitoring ./monitoring \
+  --set global.nodeSelector.disktype=ssd
+
+# Component-specific nodeSelector
+helm install monitoring ./monitoring \
+  --set grafana.nodeSelector.disktype=ssd \
+  --set opentelemetryCollector.nodeSelector.role=logging
+```
+
+**Tolerations:**
+```bash
+# Global toleration
+helm install monitoring ./monitoring \
+  --set 'global.tolerations[0].key=node-role' \
+  --set 'global.tolerations[0].operator=Exists' \
+  --set 'global.tolerations[0].effect=NoSchedule'
+
+# Component-specific toleration
+helm install monitoring ./monitoring \
+  --set 'grafana.tolerations[0].key=dedicated' \
+  --set 'grafana.tolerations[0].operator=Equal' \
+  --set 'grafana.tolerations[0].value=monitoring' \
+  --set 'grafana.tolerations[0].effect=NoSchedule'
+```
+
+> **Note:** When using `--set` with array values like tolerations, you must quote the parameter to prevent shell interpretation of brackets.
+
+Component-specific values take precedence over global values. If a component has its own `nodeSelector`, `tolerations`, or `affinity` defined, those will be used instead of the global settings.
+
 ## Customization
 
 You can use all options available from the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart under the top-level `operator` key.
