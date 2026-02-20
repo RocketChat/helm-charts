@@ -1,0 +1,83 @@
+## Monitoring Chart Values Template for Tainted Nodes
+## 
+## This file uses YAML anchors to set tolerations in one place.
+## Copy this file and modify the scheduling section with your tolerations.
+##
+## Usage:
+##   helm install monitoring ./monitoring -f values-taint-template.yaml
+##
+
+## =============================================================================
+## SCHEDULING CONFIGURATION (set once, applies everywhere)
+## =============================================================================
+scheduling:
+  tolerations: &tolerations
+    - key: "your-taint-key"
+      operator: "Equal"
+      value: "your-taint-value"
+      effect: "NoSchedule"
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
+
+## =============================================================================
+## GLOBAL VALUES (passed to custom components)
+## =============================================================================
+global:
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
+
+## =============================================================================
+## PROMETHEUS OPERATOR (kube-prometheus-stack)
+## =============================================================================
+operator:
+  prometheusOperator:
+    tolerations: *tolerations
+    admissionWebhooks:
+      patch:
+        tolerations: *tolerations
+  prometheus:
+    prometheusSpec:
+      tolerations: *tolerations
+  kube-state-metrics:
+    tolerations: *tolerations
+  prometheus-node-exporter:
+    tolerations: *tolerations
+
+## =============================================================================
+## GRAFANA OPERATOR
+## =============================================================================
+grafana:
+  tolerations: *tolerations
+
+## =============================================================================
+## LOKI
+## =============================================================================
+loki:
+  singleBinary:
+    tolerations: *tolerations
+  gateway:
+    tolerations: *tolerations
+  # Disable caches for smaller clusters (enable for production if needed)
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+
+## =============================================================================
+## OPENTELEMETRY COLLECTOR (uses global values automatically)
+## =============================================================================
+opentelemetryCollector:
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
+
+## =============================================================================
+## INGRESS (optional)
+## =============================================================================
+ingress:
+  enabled: true
+  ingressClassName: traefik  # or nginx
+  grafana:
+    enabled: true
+    host: grafana.localhost

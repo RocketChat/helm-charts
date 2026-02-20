@@ -1,11 +1,27 @@
+## Common scheduling configuration across all deployments
+## Set these values once and they apply to all components via YAML anchors
+## 
+## Example with tolerations:
+##   scheduling:
+##     tolerations:
+##       - key: "dedicated"
+##         operator: "Equal"
+##         value: "rocketchat"
+##         effect: "NoSchedule"
+##
+scheduling:
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
+
 ## common configuration across all deployments
 global:
-  # Tolerations for pod assignment
+  # Tolerations for pod assignment (uses scheduling block via anchor)
   # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
+  tolerations: *tolerations
   annotations: {}
-  nodeSelector: {}
-  affinity: {}
+  nodeSelector: *nodeSelector
+  affinity: *affinity
 
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
@@ -427,10 +443,24 @@ nats:
   # existingSecret:
   #   name: nats-secret
   #   key: connectionString
+  
+  # Node tolerations for NATS pods
+  # Note: Set this explicitly when deploying to tainted nodes - NATS is a subchart
+  # and doesn't inherit global values automatically
+  tolerations: []
+  
+  # Node selector for NATS pods
+  # Note: Set this explicitly - NATS is a subchart
+  nodeSelector: {}
+  
   nats:
     image: nats:2.12-alpine
   natsbox:
     image: natsio/nats-box:0.19.2
+    # Node tolerations for natsbox pods
+    tolerations: []
+    # Node selector for natsbox pods
+    nodeSelector: {}
   reloader:
     image: natsio/nats-server-config-reloader:0.21.1
   bootconfig:
