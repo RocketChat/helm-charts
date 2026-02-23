@@ -1,7 +1,7 @@
 apiVersion: v2
 name: rocketchat
-version: 6.30.0
-appVersion: 8.0.1
+version: 6.31.0
+appVersion: 8.1.0
 dependencies:
   - name: mongodb
     repository: https://charts.bitnami.com/bitnami
