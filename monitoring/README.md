@@ -153,6 +153,97 @@ OpenTelemetry is an open-source observability framework that collects metrics, l
 
 For advanced configuration options, refer to the [OpenTelemetry Operator documentation](https://opentelemetry.io/docs/kubernetes/operator/).
 
+## Node Scheduling (Taints/Tolerations)
+
+When deploying to nodes with taints, you need to configure tolerations for all components. This chart includes multiple subcharts (Prometheus Operator, Loki, Grafana Operator), each requiring their own tolerations configuration.
+
+### Recommended: Edit values.yaml
+
+The simplest approach is to copy `values.yaml` and uncomment the tolerations section:
+
+```bash
+# Copy the values file
+cp monitoring/values.yaml my-values.yaml
+
+# Edit my-values.yaml - uncomment the tolerations in the global section:
+#   global:
+#     tolerations: &tolerations
+#       - key: "dedicated"
+#         operator: "Equal"
+#         value: "rocketchat"
+#         effect: "NoSchedule"
+#     nodeSelector: &nodeSelector
+#       dedicated: rocketchat
+# And comment out the default empty values below them.
+
+# Install with your values
+helm install monitoring rocketchat/monitoring -f my-values.yaml
+```
+
+The YAML anchors (`&tolerations`, `&nodeSelector`) automatically propagate to all subchart components.
+
+### Alternative: Set Values Individually
+
+If you prefer to set values individually via `--set`, you need to configure each component:
+
+```bash
+helm install monitoring ./monitoring \
+  --set 'global.tolerations[0].key=dedicated' \
+  --set 'global.tolerations[0].operator=Equal' \
+  --set 'global.tolerations[0].value=rocketchat' \
+  --set 'global.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheusOperator.tolerations[0].key=dedicated' \
+  --set 'operator.prometheusOperator.tolerations[0].operator=Equal' \
+  --set 'operator.prometheusOperator.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheusOperator.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].key=dedicated' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].operator=Equal' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheusOperator.admissionWebhooks.patch.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].key=dedicated' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].operator=Equal' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheus.prometheusSpec.tolerations[0].effect=NoSchedule' \
+  --set 'operator.kube-state-metrics.tolerations[0].key=dedicated' \
+  --set 'operator.kube-state-metrics.tolerations[0].operator=Equal' \
+  --set 'operator.kube-state-metrics.tolerations[0].value=rocketchat' \
+  --set 'operator.kube-state-metrics.tolerations[0].effect=NoSchedule' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].key=dedicated' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].operator=Equal' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].value=rocketchat' \
+  --set 'operator.prometheus-node-exporter.tolerations[0].effect=NoSchedule' \
+  --set 'grafana.tolerations[0].key=dedicated' \
+  --set 'grafana.tolerations[0].operator=Equal' \
+  --set 'grafana.tolerations[0].value=rocketchat' \
+  --set 'grafana.tolerations[0].effect=NoSchedule' \
+  --set 'loki.singleBinary.tolerations[0].key=dedicated' \
+  --set 'loki.singleBinary.tolerations[0].operator=Equal' \
+  --set 'loki.singleBinary.tolerations[0].value=rocketchat' \
+  --set 'loki.singleBinary.tolerations[0].effect=NoSchedule' \
+  --set 'loki.gateway.tolerations[0].key=dedicated' \
+  --set 'loki.gateway.tolerations[0].operator=Equal' \
+  --set 'loki.gateway.tolerations[0].value=rocketchat' \
+  --set 'loki.gateway.tolerations[0].effect=NoSchedule'
+```
+
+> **Note:** The template file approach is much simpler. Use `--set` only when you cannot use a values file.
+
+### Node Selector
+
+For simple node selection without taints, you can use nodeSelector:
+
+```yaml
+# In your values file
+global:
+  nodeSelector:
+    disktype: ssd
+```
+
+Or via command line:
+```bash
+helm install monitoring ./monitoring --set global.nodeSelector.disktype=ssd
+```
+
 ## Customization
 
 You can use all options available from the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart under the top-level `operator` key.

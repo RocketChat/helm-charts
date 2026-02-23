@@ -1,11 +1,25 @@
-## common configuration across all deployments
+## Global configuration across all deployments
+## Define tolerations/nodeSelector/affinity here - use YAML anchors to reference
+## them in subchart configs (e.g., nats) below
+##
+## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
 global:
-  # Tolerations for pod assignment
-  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
+  ## Uncomment for tainted nodes:
+  # tolerations: &tolerations
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "rocketchat"
+  #     effect: "NoSchedule"
+  # nodeSelector: &nodeSelector
+  #   dedicated: rocketchat
+  ##
+  ## Default (no tolerations):
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
   annotations: {}
-  nodeSelector: {}
-  affinity: {}
 
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
@@ -427,10 +441,23 @@ nats:
   # existingSecret:
   #   name: nats-secret
   #   key: connectionString
+  
+  # Node tolerations for NATS pods
+  # Uses YAML anchors from global section above
+  tolerations: *tolerations
+  
+  # Node selector for NATS pods
+  # Uses YAML anchors from global section above
+  nodeSelector: *nodeSelector
+  
   nats:
     image: nats:2.12-alpine
   natsbox:
     image: natsio/nats-box:0.19.2
+    # Node tolerations for natsbox pods (uses anchor from global)
+    tolerations: *tolerations
+    # Node selector for natsbox pods (uses anchor from global)
+    nodeSelector: *nodeSelector
   reloader:
     image: natsio/nats-server-config-reloader:0.21.1
   bootconfig:

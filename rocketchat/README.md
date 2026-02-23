@@ -115,6 +115,9 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `livenessProbe.timeoutSeconds`         | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
 | `livenessProbe.failureThreshold`       | Minimum consecutive failures for the probe                                                                                                                                                                                                                                                                                                                                                                                                                     | `3`                                |
 | `livenessProbe.successThreshold`       | Minimum consecutive successes for the probe                                                                                                                                                                                                                                                                                                                                                                                                                    | `1`                                |
+| `scheduling.tolerations`               | Tolerations for all pods (propagated via YAML anchors to global and nats) | `[]`  |
+| `scheduling.nodeSelector`              | Node selector for all pods (propagated via YAML anchors) | `{}`  |
+| `scheduling.affinity`                  | Affinity rules for all pods (propagated via YAML anchors) | `{}`  |
 | `global.tolerations`                   | common tolerations for all pods (rocket.chat and all microservices) | []  |
 | `global.annotations`                   | common annotations for all pods (rocket.chat and all microservices) | {}  |
 | `global.nodeSelector`                  | common nodeSelector for all pods (rocket.chat and all microservices) | {}  |
@@ -175,6 +178,10 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `nats.existingSecret.name` | Existing Secret name for an external NATS server | empty |
 | `nats.existingSecret.key` | Existing Secret key for the `nats.existingSecret.name` containing the connection string | empty |
 | `nats.podMonitor.enabled` | Enable NATS PodMonitor or service with scrape annotation | `true` |
+| `nats.tolerations` | Tolerations for NATS pods (must be set explicitly for tainted nodes) | `[]` |
+| `nats.nodeSelector` | Node selector for NATS pods (must be set explicitly) | `{}` |
+| `nats.natsbox.tolerations` | Tolerations for NATS box pods (must be set explicitly for tainted nodes) | `[]` |
+| `nats.natsbox.nodeSelector` | Node selector for NATS box pods (must be set explicitly) | `{}` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
@@ -183,6 +190,67 @@ Alternatively, a YAML file that specifies the values for the parameters can be p
 $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ```
 
+## Node Scheduling (Taints/Tolerations)
+
+When deploying to nodes with taints, you need to configure tolerations for all components. This chart uses YAML anchors in the `global` block to simplify configuration - set tolerations once and they automatically apply to all components including NATS.
+
+### Recommended: Edit values.yaml
+
+The simplest approach is to copy `values.yaml` and uncomment the tolerations section:
+
+```bash
+# Copy the values file
+cp rocketchat/values.yaml my-values.yaml
+
+# Edit my-values.yaml - uncomment the tolerations in the global section
+
+# Install with your values
+helm install rocketchat rocketchat/rocketchat -f my-values.yaml
+```
+
+In `values.yaml`, uncomment these lines in the `global` section:
+
+```yaml
+global:
+  ## Uncomment for tainted nodes:
+  tolerations: &tolerations
+    - key: "dedicated"
+      operator: "Equal"
+      value: "rocketchat"
+      effect: "NoSchedule"
+  nodeSelector: &nodeSelector
+    dedicated: rocketchat
+  ##
+  ## Comment out or remove these defaults:
+  # tolerations: &tolerations []
+  # nodeSelector: &nodeSelector {}
+```
+
+The YAML anchors (`&tolerations`, `&nodeSelector`) propagate to NATS and other subcharts automatically.
+
+> **Important:** YAML anchors only work within a single values file. If you use multiple `-f` files or `--set`, you must specify values for each component separately.
+
+### Using --set (Alternative)
+
+If you cannot use a values file, you can set tolerations individually:
+
+```bash
+helm install rocketchat ./rocketchat \
+  --set 'global.tolerations[0].key=dedicated' \
+  --set 'global.tolerations[0].operator=Equal' \
+  --set 'global.tolerations[0].value=rocketchat' \
+  --set 'global.tolerations[0].effect=NoSchedule' \
+  --set 'nats.tolerations[0].key=dedicated' \
+  --set 'nats.tolerations[0].operator=Equal' \
+  --set 'nats.tolerations[0].value=rocketchat' \
+  --set 'nats.tolerations[0].effect=NoSchedule' \
+  --set 'nats.natsbox.tolerations[0].key=dedicated' \
+  --set 'nats.natsbox.tolerations[0].operator=Equal' \
+  --set 'nats.natsbox.tolerations[0].value=rocketchat' \
+  --set 'nats.natsbox.tolerations[0].effect=NoSchedule'
+```
+
+> **Note:** The values file approach is much simpler. Use `--set` only when you cannot use a values file.
 
 ### External Nats
 

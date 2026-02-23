@@ -21,6 +21,21 @@ spec:
     spec:
       serviceAccountName: "{{ .Release.Name }}-otel-collector-service-account"
       automountServiceAccountToken: true
+      {{- $nodeSelector := include "monitoring.nodeSelector" (dict "name" "opentelemetryCollector" "context" $) }}
+      {{- if $nodeSelector }}
+      nodeSelector:
+        {{- $nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- $tolerations := include "monitoring.tolerations" (dict "name" "opentelemetryCollector" "context" $) }}
+      {{- if $tolerations }}
+      tolerations:
+        {{- $tolerations | nindent 8 }}
+      {{- end }}
+      {{- $affinity := include "monitoring.affinity" (dict "name" "opentelemetryCollector" "context" $) }}
+      {{- if $affinity }}
+      affinity:
+        {{- $affinity | nindent 8 }}
+      {{- end }}
       containers:
         - name: opentelemetry-logs-collector
           args:

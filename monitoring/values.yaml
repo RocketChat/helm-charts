@@ -1,3 +1,25 @@
+## Global values passed to subcharts and used by custom components
+## Define tolerations/nodeSelector/affinity here - use YAML anchors to reference
+## them in subchart configs below
+##
+## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
+##
+global:
+  ## Uncomment for tainted nodes:
+  # tolerations: &tolerations
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "rocketchat"
+  #     effect: "NoSchedule"
+  # nodeSelector: &nodeSelector
+  #   dedicated: rocketchat
+  ##
+  ## Default (no tolerations):
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
+  annotations: {}
+
 operator:
   enabled: true
   global:
@@ -6,6 +28,10 @@ operator:
 
   prometheusOperator:
     enabled: true
+    tolerations: *tolerations
+    admissionWebhooks:
+      patch:
+        tolerations: *tolerations
 
   crds:
     enabled: true
@@ -49,8 +75,14 @@ operator:
   kubeStateMetrics:
     enabled: true
 
+  kube-state-metrics:
+    tolerations: *tolerations
+
   nodeExporter:
     enabled: true
+
+  prometheus-node-exporter:
+    tolerations: *tolerations
 
   cleanPrometheusOperatorObjectNames: false
 
@@ -77,6 +109,7 @@ operator:
       retention: 15d
       retentionSize: 8GB
       scrapeInterval: 30s
+      tolerations: *tolerations
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -109,6 +142,11 @@ grafana:
     enabled: true
     # storageClassName: # Get available classes with: kubectl get storageclasses.
     nodePort: ""
+
+  # Tolerations for grafana-operator and Grafana instance (uses scheduling anchors)
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
   folders:
     rocketchat:
       - name: "rocketchat"
@@ -171,6 +209,7 @@ loki:
 
   singleBinary:
     replicas: 1
+    tolerations: *tolerations
     persistence:
       # Storage allocation for logs. Ensure adequate space: daily_log_volume * retention_days * 1.2
       # If disk becomes full, Loki stops working and requires manual intervention
@@ -178,6 +217,14 @@ loki:
     extraArgs:
       - -config.expand-env=true
 
+  gateway:
+    tolerations: *tolerations
+
+  # Disable caches by default for smaller clusters (enables for production if needed)
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
 
   loki:
     auth_enabled: false
@@ -277,6 +324,11 @@ opentelemetryCollector:
     registry: otel/opentelemetry-collector-contrib
     tag: 0.143.0
     pullPolicy: IfNotPresent
+
+  # Uses scheduling anchors from top of file
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
 
   logs:
     enabled: true
