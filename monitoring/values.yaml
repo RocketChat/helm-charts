@@ -1,25 +1,24 @@
-## Common scheduling configuration across all deployments
-## Set these values once and they apply to all components via YAML anchors
-## 
-## Example with tolerations:
-##   scheduling:
-##     tolerations:
-##       - key: "dedicated"
-##         operator: "Equal"
-##         value: "rocketchat"
-##         effect: "NoSchedule"
+## Global values passed to subcharts and used by custom components
+## Define tolerations/nodeSelector/affinity here - use YAML anchors to reference
+## them in subchart configs below
 ##
-scheduling:
+## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
+##
+global:
+  ## Uncomment for tainted nodes:
+  # tolerations: &tolerations
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "rocketchat"
+  #     effect: "NoSchedule"
+  # nodeSelector: &nodeSelector
+  #   dedicated: rocketchat
+  ##
+  ## Default (no tolerations):
   tolerations: &tolerations []
   nodeSelector: &nodeSelector {}
   affinity: &affinity {}
-
-## Global values passed to subcharts and used by custom components
-global:
-  tolerations: *tolerations
   annotations: {}
-  nodeSelector: *nodeSelector
-  affinity: *affinity
 
 operator:
   enabled: true

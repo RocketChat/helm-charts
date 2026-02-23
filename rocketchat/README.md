@@ -192,28 +192,27 @@ $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 
 ## Node Scheduling (Taints/Tolerations)
 
-When deploying to nodes with taints, you need to configure tolerations for all components. This chart uses YAML anchors in the `scheduling` block to simplify configuration - set tolerations once and they automatically apply to all components including NATS.
+When deploying to nodes with taints, you need to configure tolerations for all components. This chart uses YAML anchors in the `global` block to simplify configuration - set tolerations once and they automatically apply to all components including NATS.
 
-### Recommended: Use the Values Template File
+### Recommended: Edit values.yaml
 
-The simplest approach is to copy and modify the included template file:
+The simplest approach is to copy `values.yaml` and uncomment the tolerations section:
 
 ```bash
-# Copy the template
-cp rocketchat/values-taint-template.yaml my-values.yaml
+# Copy the values file
+cp rocketchat/values.yaml my-values.yaml
 
-# Edit my-values.yaml - change the scheduling section to match your taints
+# Edit my-values.yaml - uncomment the tolerations in the global section
 
 # Install with your values
-helm install rocketchat ./rocketchat -f my-values.yaml
+helm install rocketchat rocketchat/rocketchat -f my-values.yaml
 ```
 
-The template uses YAML anchors to define scheduling config once and apply to all components. Here's an example:
+In `values.yaml`, uncomment these lines in the `global` section:
 
 ```yaml
-# my-values.yaml
-# Define scheduling config once using YAML anchors
-scheduling:
+global:
+  ## Uncomment for tainted nodes:
   tolerations: &tolerations
     - key: "dedicated"
       operator: "Equal"
@@ -221,26 +220,13 @@ scheduling:
       effect: "NoSchedule"
   nodeSelector: &nodeSelector
     dedicated: rocketchat
-
-# Scheduling for Rocket.Chat pods (uses anchors)
-global:
-  tolerations: *tolerations
-  nodeSelector: *nodeSelector
-
-# NATS subchart requires explicit config (doesn't inherit from global)
-nats:
-  tolerations: *tolerations
-  nodeSelector: *nodeSelector
-  natsbox:
-    tolerations: *tolerations
-    nodeSelector: *nodeSelector
+  ##
+  ## Comment out or remove these defaults:
+  # tolerations: &tolerations []
+  # nodeSelector: &nodeSelector {}
 ```
 
-Then install with:
-
-```bash
-helm install rocketchat ./rocketchat -f my-values.yaml
-```
+The YAML anchors (`&tolerations`, `&nodeSelector`) propagate to NATS and other subcharts automatically.
 
 > **Important:** YAML anchors only work within a single values file. If you use multiple `-f` files or `--set`, you must specify values for each component separately.
 

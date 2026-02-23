@@ -157,27 +157,30 @@ For advanced configuration options, refer to the [OpenTelemetry Operator documen
 
 When deploying to nodes with taints, you need to configure tolerations for all components. This chart includes multiple subcharts (Prometheus Operator, Loki, Grafana Operator), each requiring their own tolerations configuration.
 
-### Recommended: Use the Values Template File
+### Recommended: Edit values.yaml
 
-The simplest approach is to copy and modify the included template file:
+The simplest approach is to copy `values.yaml` and uncomment the tolerations section:
 
 ```bash
-# Copy the template
-cp monitoring/values-taint-template.yaml my-values.yaml
+# Copy the values file
+cp monitoring/values.yaml my-values.yaml
 
-# Edit my-values.yaml - change the scheduling section:
-#   scheduling:
-#     tolerations:
-#       - key: "your-taint-key"
+# Edit my-values.yaml - uncomment the tolerations in the global section:
+#   global:
+#     tolerations: &tolerations
+#       - key: "dedicated"
 #         operator: "Equal"
-#         value: "your-taint-value"
+#         value: "rocketchat"
 #         effect: "NoSchedule"
+#     nodeSelector: &nodeSelector
+#       dedicated: rocketchat
+# And comment out the default empty values below them.
 
 # Install with your values
-helm install monitoring ./monitoring -f my-values.yaml
+helm install monitoring rocketchat/monitoring -f my-values.yaml
 ```
 
-The template uses YAML anchors to set tolerations once and apply them to all components automatically.
+The YAML anchors (`&tolerations`, `&nodeSelector`) automatically propagate to all subchart components.
 
 ### Alternative: Set Values Individually
 
