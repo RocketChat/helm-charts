@@ -443,22 +443,21 @@ nats:
   #   key: connectionString
   
   # Node tolerations for NATS pods
-  # Note: Set this explicitly when deploying to tainted nodes - NATS is a subchart
-  # and doesn't inherit global values automatically
-  tolerations: []
+  # Uses YAML anchors from global section above
+  tolerations: *tolerations
   
   # Node selector for NATS pods
-  # Note: Set this explicitly - NATS is a subchart
-  nodeSelector: {}
+  # Uses YAML anchors from global section above
+  nodeSelector: *nodeSelector
   
   nats:
     image: nats:2.12-alpine
   natsbox:
     image: natsio/nats-box:0.19.2
-    # Node tolerations for natsbox pods
-    tolerations: []
-    # Node selector for natsbox pods
-    nodeSelector: {}
+    # Node tolerations for natsbox pods (uses anchor from global)
+    tolerations: *tolerations
+    # Node selector for natsbox pods (uses anchor from global)
+    nodeSelector: *nodeSelector
   reloader:
     image: natsio/nats-server-config-reloader:0.21.1
   bootconfig:
