@@ -51,10 +51,16 @@ spec:
       - name: rocketchat
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        {{- if .Values.extraSecret }}
+        {{- if or .Values.extraSecret .Values.extraEnvFromConfigMap}}
         envFrom:
-        - secretRef:
-            name: {{ .Values.extraSecret }}
+          {{- if .Values.extraSecret }}
+          - secretRef:
+              name: {{ .Values.extraSecret }}
+          {{- end }}
+          {{- if .Values.extraEnvFromConfigMap }}
+          - configMapRef:
+              name: {{ .Values.extraEnvFromConfigMap }}
+          {{- end }}
         {{- end }}
         env:
         - name: DEPLOY_PLATFORM

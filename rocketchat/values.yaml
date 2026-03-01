@@ -49,6 +49,10 @@ extraEnv:
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
 
+# Extra config map for Rocket.Chat, uncomment to use
+# Usefull to store non-sensitive data for configuring Rocket.Chat (e.g. Accounts_OAuth settings)
+# extraEnvFromConfigMap: "some-configMap"
+
 # Extra secret for Rocket.Chat, uncomment to use
 # Usefull to store sensitive data for creating initial user (e.g. ADMIN_* env vars) or custom OAUTH settings (e.g. Accounts_OAuth_Custom_* env vars)
 # extraSecret: "some-secret"
