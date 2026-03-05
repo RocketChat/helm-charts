@@ -46,7 +46,7 @@ spec:
         {{ include "rocketchat.nodeAffinity" (dict "name" "presence" "context" $) | indent 8 }}   
       containers:
       - name: presence-service
-        image: "{{ .Values.microservices.presence.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        image: "{{ include "rocketchat.image" (dict "repository" .Values.microservices.presence.image.repository "tag" .Values.image.tag "appVersion" .Chart.AppVersion "global" .Values.global) }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL

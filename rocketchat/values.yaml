@@ -6,6 +6,11 @@
 ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 global:
+  ## Image registry to use for all images (for airgapped deployments)
+  ## When set, this will be prepended to all image repositories
+  ## Example: "my-registry.internal:5000"
+  imageRegistry: ""
+
   ## Uncomment for tainted nodes:
   # tolerations: &tolerations
   #   - key: "dedicated"

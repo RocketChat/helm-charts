@@ -7,6 +7,30 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
+Return the image registry prefix.
+When global.imageRegistry is set, returns "registry/" to prepend to image names.
+Usage: {{ include "rocketchat.imageRegistry" . }}{{ .Values.image.repository }}
+*/}}
+{{- define "rocketchat.imageRegistry" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- printf "%s/" .Values.global.imageRegistry -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the full image reference with optional registry override.
+Usage: {{ include "rocketchat.image" (dict "repository" .Values.image.repository "tag" .Values.image.tag "appVersion" .Chart.AppVersion "global" .Values.global) }}
+*/}}
+{{- define "rocketchat.image" -}}
+{{- $registry := "" -}}
+{{- if .global.imageRegistry -}}
+{{- $registry = printf "%s/" .global.imageRegistry -}}
+{{- end -}}
+{{- $tag := .tag | default .appVersion -}}
+{{- printf "%s%s:%s" $registry .repository $tag -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}

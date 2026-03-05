@@ -53,3 +53,5 @@ jobs:
       chartName: ${{ inputs.chartName }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
+      docker-username: ${{ secrets.DOCKER_USERNAME }}
+      docker-password: ${{ secrets.DOCKER_PASSWORD }}
