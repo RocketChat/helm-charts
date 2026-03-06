@@ -513,13 +513,3 @@ hooks:
     podLabels: {}
   # nodeSelector: {}
   # affinity: {}
-
-## Helm test configuration
-## Disabled by default to exclude test images from airgapped/hauler manifests
-## Set enabled to true if you want to run `helm test`
-tests:
-  enabled: false
-  image:
-    repository: r0zbot/rocketchat-test-utils
-    tag: latest
-    pullPolicy: IfNotPresent
