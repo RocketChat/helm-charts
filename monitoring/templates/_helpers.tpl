@@ -6,6 +6,16 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Return the image registry prefix.
+When global.imageRegistry is set, returns "registry/" to prepend to image names.
+*/}}
+{{- define "monitoring.imageRegistry" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- printf "%s/" .Values.global.imageRegistry -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.

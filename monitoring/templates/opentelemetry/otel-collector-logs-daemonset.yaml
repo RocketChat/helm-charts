@@ -40,7 +40,7 @@ spec:
         - name: opentelemetry-logs-collector
           args:
             - --config=/conf/logs.yaml
-          image: "{{ .Values.opentelemetryCollector.image.registry }}:{{ .Values.opentelemetryCollector.image.tag }}"
+          image: "{{ include "monitoring.imageRegistry" . }}{{ .Values.opentelemetryCollector.image.repository }}:{{ .Values.opentelemetryCollector.image.tag }}"
           imagePullPolicy: "{{ .Values.opentelemetryCollector.image.pullPolicy }}"
           resources:
             {{- toYaml .Values.opentelemetryCollector.logs.resources | nindent 12 }}

@@ -5,6 +5,12 @@
 ## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
 ##
 global:
+  ## Image registry to use for monitoring components (for airgapped deployments)
+  ## When set, this will be prepended to image repositories
+  ## Example: "my-registry.internal:5000"
+  ## Note: Subchart images (Prometheus, Grafana, Loki) require separate configuration
+  imageRegistry: ""
+
   ## Uncomment for tainted nodes:
   # tolerations: &tolerations
   #   - key: "dedicated"
@@ -321,7 +327,7 @@ loki:
 opentelemetryCollector:
   mode: daemonset
   image:
-    registry: otel/opentelemetry-collector-contrib
+    repository: otel/opentelemetry-collector-contrib
     tag: 0.143.0
     pullPolicy: IfNotPresent
 

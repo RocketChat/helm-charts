@@ -45,7 +45,7 @@ spec:
         {{ include "rocketchat.nodeAffinity" (dict "name" "account" "context" $) | indent 8 }}
       containers:
       - name: account-service
-        image: "{{ .Values.microservices.account.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        image: "{{ include "rocketchat.image" (dict "repository" .Values.microservices.account.image.repository "tag" .Values.image.tag "appVersion" .Chart.AppVersion "global" .Values.global) }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
