@@ -39,7 +39,7 @@ spec:
       {{- end }}
       containers:
         - name: opentelemetry-events-collector
-          image: "{{ include "monitoring.imageRegistry" . }}{{ .Values.opentelemetryCollector.image.registry }}:{{ .Values.opentelemetryCollector.image.tag }}"
+          image: "{{ include "monitoring.imageRegistry" . }}{{ .Values.opentelemetryCollector.image.repository }}:{{ .Values.opentelemetryCollector.image.tag }}"
           imagePullPolicy: "{{ .Values.opentelemetryCollector.image.pullPolicy }}"
           args:
             - --config=/conf/events.yaml

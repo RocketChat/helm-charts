@@ -327,7 +327,7 @@ loki:
 opentelemetryCollector:
   mode: daemonset
   image:
-    registry: otel/opentelemetry-collector-contrib
+    repository: otel/opentelemetry-collector-contrib
     tag: 0.143.0
     pullPolicy: IfNotPresent
 
