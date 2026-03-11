@@ -102,6 +102,9 @@ spec:
           {{- end }}
           containers:
             - name: grafana
+              {{- if .Values.grafana.deploy.image }}
+              image: {{ .Values.grafana.deploy.image }}
+              {{- end }}
               resources: {}
               securityContext:
                 allowPrivilegeEscalation: false
