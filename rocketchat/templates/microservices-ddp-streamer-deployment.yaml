@@ -81,6 +81,10 @@ spec:
         - name: MS_METRICS_PORT
           value: {{ .Values.prometheusScraping.msPort | default "9458" | quote }}
         {{- end }}
+        {{- if .Values.customCAs.enabled }}
+        - name: NODE_EXTRA_CA_CERTS
+          value: /etc/ssl/certs/custom-ca/ca-certificate.crt
+        {{- end }}
         ports:
         - name: http
           containerPort: 3000
@@ -109,7 +113,12 @@ spec:
           periodSeconds: 10
           failureThreshold: 3
           successThreshold: 1
-        volumeMounts: 
+        volumeMounts:
+        {{- if .Values.customCAs.enabled }}
+        - name: custom-ca
+          mountPath: /etc/ssl/certs/custom-ca
+          readOnly: true
+        {{- end }}
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
         {{- end }}   
@@ -117,6 +126,12 @@ spec:
           {{- toYaml .Values.microservices.ddpStreamer.securityContext | nindent 10 }}
         resources: {{- toYaml .Values.microservices.ddpStreamer.resources | nindent 10 }}
       volumes:
+      {{- if .Values.customCAs.enabled }}
+      - name: custom-ca
+        configMap:
+          name: {{ if .Values.customCAs.existingConfigMap }}{{ .Values.customCAs.existingConfigMap }}{{- else }}{{ include "rocketchat.fullname" . }}-custom-ca{{- end }}
+          defaultMode: 0444
+      {{- end }}
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
       {{- end }}

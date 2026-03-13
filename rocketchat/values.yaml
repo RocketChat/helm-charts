@@ -190,7 +190,6 @@ mongodb:
     accessMode: ReadWriteOnce
     size: 8Gi
 
-
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 ##
@@ -242,8 +241,7 @@ ingress:
   enabled: false
   pathType: Prefix
   # ingressClassName: "nginx"
-  annotations:
-    {}
+  annotations: {}
     # kubernetes.io/ingress.class: "nginx"
   path: /
   tls: []
@@ -280,8 +278,7 @@ deploymentLabels: {}
 podLabels: {}
 
 ## Optional Pod Annotations.
-podAnnotations:
-  {}
+podAnnotations: {}
   # prometheus.io/port: "9458"
   # prometheus.io/path: "/metrics"
   # prometheus.io/scrape: "true"
@@ -446,15 +443,15 @@ nats:
   # existingSecret:
   #   name: nats-secret
   #   key: connectionString
-  
+
   # Node tolerations for NATS pods
   # Uses YAML anchors from global section above
   tolerations: *tolerations
-  
+
   # Node selector for NATS pods
   # Uses YAML anchors from global section above
   nodeSelector: *nodeSelector
-  
+
   nats:
     image: nats:2.12-alpine
   natsbox:
@@ -506,6 +503,24 @@ postgresql:
 # Tolerations for pod assignment
 # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
+
+## Custom CA certificate for airgapped environments
+## Allows mounting a custom CA certificate to be trusted by Rocket.Chat
+customCAs:
+  # Enable custom CA certificate mounting
+  enabled: false
+
+  # Option 1: Provide CA certificate content directly
+  # When set, the chart will create a ConfigMap automatically
+  # ca: |
+  #   -----BEGIN CERTIFICATE-----
+  #   MIIDXTCCAkWgAwIBAgIJAKp...
+  #   -----END CERTIFICATE-----
+
+  # Option 2: Reference an existing ConfigMap
+  # If set, this ConfigMap will be used instead of creating a new one
+  # Leave empty to use the chart-managed ConfigMap
+  existingConfigMap: ""
 
 hooks:
   preUpgrade:

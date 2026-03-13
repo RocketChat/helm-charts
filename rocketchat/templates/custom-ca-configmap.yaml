@@ -1,0 +1,16 @@
+{{- if and .Values.customCAs.enabled .Values.customCAs.ca (not .Values.customCAs.existingConfigMap) }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rocketchat.fullname" . }}-custom-ca
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+
+data:
+  ca-certificate.crt: |
+{{ .Values.customCAs.ca | indent 4 }}
+{{- end }}

@@ -140,6 +140,10 @@ spec:
         {{- with .Values.extraEnv }}
           {{- include "common.tplvalues.render" (dict "value" . "context" $) | nindent 8 }}
         {{- end }}
+        {{- if .Values.customCAs.enabled }}
+        - name: NODE_EXTRA_CA_CERTS
+          value: /etc/ssl/certs/custom-ca/ca-certificate.crt
+        {{- end }}
         {{- if .Values.federation.enabled }}
         - name: OVERWRITE_SETTING_Federation_Matrix_homeserver_domain
           value: {{ .Values.host }}
@@ -224,6 +228,11 @@ spec:
           mountPath: /app/uploads
         - name: tmp
           mountPath: /tmp
+        {{- if .Values.customCAs.enabled }}
+        - name: custom-ca
+          mountPath: /etc/ssl/certs/custom-ca
+          readOnly: true
+        {{- end }}
         {{- if .Values.extraVolumeMounts }}
         {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 8 }}
         {{- end }}          
@@ -236,6 +245,12 @@ spec:
           claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "rocketchat.fullname" . }}{{- end }}
       {{- else }}
         emptyDir: {}
+      {{- end }}
+      {{- if .Values.customCAs.enabled }}
+      - name: custom-ca
+        configMap:
+          name: {{ if .Values.customCAs.existingConfigMap }}{{ .Values.customCAs.existingConfigMap }}{{- else }}{{ include "rocketchat.fullname" . }}-custom-ca{{- end }}
+          defaultMode: 0444
       {{- end }}
       {{- if .Values.extraVolumes }}
       {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 6 }}
