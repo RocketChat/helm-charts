@@ -1,11 +1,30 @@
-## common configuration across all deployments
+## Global configuration across all deployments
+## Define tolerations/nodeSelector/affinity here - use YAML anchors to reference
+## them in subchart configs (e.g., nats) below
+##
+## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
 global:
-  # Tolerations for pod assignment
-  # Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-  tolerations: []
+  ## Image registry to use for all images (for airgapped deployments)
+  ## When set, this will be prepended to all image repositories
+  ## Example: "my-registry.internal:5000"
+  imageRegistry: ""
+
+  ## Uncomment for tainted nodes:
+  # tolerations: &tolerations
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "rocketchat"
+  #     effect: "NoSchedule"
+  # nodeSelector: &nodeSelector
+  #   dedicated: rocketchat
+  ##
+  ## Default (no tolerations):
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
   annotations: {}
-  nodeSelector: {}
-  affinity: {}
 
 ## Rocket Chat image version
 ## ref: https://hub.docker.com/r/rocketchat/rocket.chat/tags
@@ -34,8 +53,6 @@ smtp:
 extraEnv:
   # - name: MONGO_OPTIONS
   #   value: '{"ssl": "true"}'
-  # - name: MONGO_OPLOG_URL
-  #   value: mongodb://oploguser:password@rocket-1:27017/local&replicaSet=rs0
 
 # Extra config map for Rocket.Chat, uncomment to use
 # Usefull to store non-sensitive data for configuring Rocket.Chat (e.g. Accounts_OAuth settings)
@@ -103,21 +120,39 @@ affinity: {}
 #         - e2e-az1
 #         - e2e-az2
 
-## Use an existing secret file with the MongoDB Url and OplogUrl
+## Use an existing secret file with the MongoDB Url
 existingMongodbSecret: ""
 
 ## MongoDB URL if using an externally provisioned MongoDB
 externalMongodbUrl: # mongodb://user:password@localhost:27017/rocketchat
-externalMongodbOplogUrl: # mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 
 ##
 ## MongoDB chart configuration
 ### ref https://github.com/helm/charts/tree/master/stable/mongodb#configuration
 ##
 mongodb:
+  image:
+    repository: bitnamilegacy/mongodb
+  tls:
+    image:
+      repository: bitnamilegacy/nginx
+  externalAccess:
+    autoDiscovery:
+      image:
+        registry: docker.io
+        repository: bitnamilegacy/kubectl
+  dnsCheck:
+    image:
+      repository: bitnamilegacy/os-shell
+  volumePermissions:
+    enabled: true
+    image:
+      repository: bitnamilegacy/os-shell
+
   ## Enable or disable MongoDB dependency completely.
   enabled: true
-
+  serviceMonitor:
+    enabled: true
   initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:
@@ -139,6 +174,8 @@ mongodb:
 
   metrics:
     enabled: true
+    image:
+      repository: bitnamilegacy/mongodb-exporter
     serviceMonitor:
       enabled: false # default to false and use ours that checks for the crd
 
@@ -157,7 +194,6 @@ mongodb:
     accessMode: ReadWriteOnce
     size: 8Gi
 
-  volumePermissions: { enabled: true }
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -190,7 +226,6 @@ securityContext:
 
 containerSecurityContext:
   runAsUser: 999
-  fsGroup: 999
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
@@ -240,6 +275,7 @@ service:
 
   ## Optional when LoadBalancer specified ServiceType.
   loadBalancerIP: ""
+  loadBalancerClass: ""
 
 ## Optional custom labels for the deployment resource.
 deploymentLabels: {}
@@ -321,7 +357,7 @@ podDisruptionBudget:
 ## Deploy as microservices?
 # Monolithic architecture, by default
 microservices:
-  enabled: false
+  enabled: true
 
   logLevel: warn
 
@@ -374,6 +410,11 @@ microservices:
     tolerations: []
 
   streamHub:
+    # IMPORTANT: Stream Hub is disabled by default as of Rocket.Chat 7.7.3
+    # For versions < 7.7.3, it will be automatically enabled unless explicitly disabled here
+    # After version 8.0.0, this service will be removed completely
+    # Note: When enabled, DB_WATCHERS=true is automatically set on all services
+    enabled: false
     image:
       repository: rocketchat/stream-hub-service
       pullPolicy: IfNotPresent
@@ -393,13 +434,51 @@ microservices:
   authorizationService:
 
 nats:
+  # Helm docs: https://helm.sh/docs/topics/charts/#tags-and-condition-resolution
+  #
+  # IMPORTANT: Do not set nats.enabled here unless you want to override the default behavior.
+  # By default, nats.enabled is nil and its deployment is determined by microservices.enabled:
+  #   - microservices.enabled: true, nats.enabled: nil        = NATS is enabled and deployed internally, this is the default behavior
+  #   - microservices.enabled: true, nats.enabled: false      = NATS is NOT deployed (use external NATS)
+  #   - microservices.enabled: false, nats.enabled: true      = Monolith RC with NATS deployed
+  #   - microservices.enabled: false, nats.enabled: nil/false = Monolith RC without NATS
+  #
+  # To deploy NATS, uncomment and set enabled: true below. To use an external NATS, set enabled: false.
+  # enabled: true
+
+  # For using an external NATS server, uncomment and set existingSecret below with the name of a Kubernetes Secret containing the connection string
+  # existingSecret:
+  #   name: nats-secret
+  #   key: connectionString
+  
+  # Node tolerations for NATS pods
+  # Uses YAML anchors from global section above
+  tolerations: *tolerations
+  
+  # Node selector for NATS pods
+  # Uses YAML anchors from global section above
+  nodeSelector: *nodeSelector
+  
   nats:
-    image: nats:2.4-alpine
+    image: nats:2.12-alpine
+  natsbox:
+    image: natsio/nats-box:0.19.2
+    # Node tolerations for natsbox pods (uses anchor from global)
+    tolerations: *tolerations
+    # Node selector for natsbox pods (uses anchor from global)
+    nodeSelector: *nodeSelector
+  reloader:
+    image: natsio/nats-server-config-reloader:0.21.1
+  bootconfig:
+    image: natsio/nats-boot-config:0.21.1
+  podMonitor:
+    enabled: true
   cluster:
     enabled: true
     replicas: 2
   exporter:
     enabled: true
+    image: natsio/prometheus-nats-exporter:0.18.0
     serviceMonitor:
       enabled: false
 federation:

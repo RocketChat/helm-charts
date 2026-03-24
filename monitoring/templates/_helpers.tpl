@@ -6,6 +6,16 @@ Expand the name of the chart.
 {{- end }}
 
 {{/*
+Return the image registry prefix.
+When global.imageRegistry is set, returns "registry/" to prepend to image names.
+*/}}
+{{- define "monitoring.imageRegistry" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- printf "%s/" .Values.global.imageRegistry -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -60,4 +70,61 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/* Get correct tolerations */}}
+{{- define "monitoring.tolerations" -}}
+{{- $name := .name -}}
+{{- $tolerations := list -}}
+{{- with .context }}
+{{- if and $name (hasKey .Values $name) }}
+{{- $component := get .Values $name }}
+{{- if and (hasKey $component "tolerations") (kindIs "slice" $component.tolerations) (gt (len $component.tolerations) 0) }}
+{{- $tolerations = $component.tolerations }}
+{{- end }}
+{{- end }}
+{{- if (and (kindIs "slice" $tolerations) (gt (len $tolerations) 0)) }}
+{{- toYaml $tolerations }}
+{{- else if (and (kindIs "slice" .Values.global.tolerations) (gt (len .Values.global.tolerations) 0)) }}
+{{- toYaml .Values.global.tolerations }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/* Get correct nodeSelector */}}
+{{- define "monitoring.nodeSelector" -}}
+{{- $name := .name -}}
+{{- $nodeSelector := dict -}}
+{{- with .context }}
+{{- if and $name (hasKey .Values $name) }}
+{{- $component := get .Values $name }}
+{{- if and (hasKey $component "nodeSelector") (kindIs "map" $component.nodeSelector) (gt (len $component.nodeSelector) 0) }}
+{{- $nodeSelector = $component.nodeSelector }}
+{{- end }}
+{{- end }}
+{{- if (and (kindIs "map" $nodeSelector) (gt (len $nodeSelector) 0)) }}
+{{- toYaml $nodeSelector }}
+{{- else if (and (kindIs "map" .Values.global.nodeSelector) (gt (keys .Values.global.nodeSelector | len) 0)) }}
+{{- toYaml .Values.global.nodeSelector }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
+{{/* Get correct affinity */}}
+{{- define "monitoring.affinity" -}}
+{{- $name := .name -}}
+{{- $affinity := dict -}}
+{{- with .context }}
+{{- if and $name (hasKey .Values $name) }}
+{{- $component := get .Values $name }}
+{{- if and (hasKey $component "affinity") (kindIs "map" $component.affinity) (gt (len $component.affinity) 0) }}
+{{- $affinity = $component.affinity }}
+{{- end }}
+{{- end }}
+{{- if (and (kindIs "map" $affinity) (gt (len $affinity) 0)) }}
+{{- toYaml $affinity }}
+{{- else if (and (kindIs "map" .Values.global.affinity) (gt (keys .Values.global.affinity | len) 0)) }}
+{{- toYaml .Values.global.affinity }}
+{{- end }}
+{{- end }}
+{{- end -}}
 

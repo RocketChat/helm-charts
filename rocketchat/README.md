@@ -81,8 +81,8 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `minAvailable`                         | Minimum number / percentage of pods that should remain scheduled                                                                                                                                                                                                                                                                                                                                                                                               | `1`                                |
 | `existingMongodbSecret`                | An already existing secret containing MongoDB Connection URL                                                                                                                                                                                                                                                                                                                                                                                                   | `""`                               |
 | `externalMongodbUrl`                   | MongoDB URL if using an externally provisioned MongoDB                                                                                                                                                                                                                                                                                                                                                                                                         | `""`                               |
-| `externalMongodbOplogUrl`              | MongoDB OpLog URL if using an externally provisioned MongoDB. Required if `externalMongodbUrl` is set                                                                                                                                                                                                                                                                                                                                                          | `""`                               |
 | `mongodb.enabled`                      | Enable or disable MongoDB dependency. Refer to the [stable/mongodb docs](https://github.com/bitnami/charts/tree/master/bitnami/mongodb#configuration) for more information                                                                                                                                                                                                                                                                                     | `true`                             |
+| `mongodb.serviceMonitor.enabled` | Enable mongodb service monitor or service with scrape annotation | `true` |
 | `persistence.enabled`                  | Enable persistence using a PVC. This is not necessary if you're using the default [GridFS](https://rocket.chat/docs/administrator-guides/file-upload/) file storage                                                                                                                                                                                                                                                                          | `false`                            |
 | `persistence.storageClass`             | Storage class of the PVC to use                                                                                                                                                                                                                                                                                                                                                                                                                                | `""`                               |
 | `persistence.accessMode`               | Access mode of the PVC                                                                                                                                                                                                                                                                                                                                                                                                                                         | `ReadWriteOnce`                    |
@@ -116,12 +116,16 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `livenessProbe.timeoutSeconds`         | When the probe times out                                                                                                                                                                                                                                                                                                                                                                                                                                       | `5`                                |
 | `livenessProbe.failureThreshold`       | Minimum consecutive failures for the probe                                                                                                                                                                                                                                                                                                                                                                                                                     | `3`                                |
 | `livenessProbe.successThreshold`       | Minimum consecutive successes for the probe                                                                                                                                                                                                                                                                                                                                                                                                                    | `1`                                |
+| `scheduling.tolerations`               | Tolerations for all pods (propagated via YAML anchors to global and nats) | `[]`  |
+| `scheduling.nodeSelector`              | Node selector for all pods (propagated via YAML anchors) | `{}`  |
+| `scheduling.affinity`                  | Affinity rules for all pods (propagated via YAML anchors) | `{}`  |
 | `global.tolerations`                   | common tolerations for all pods (rocket.chat and all microservices) | []  |
 | `global.annotations`                   | common annotations for all pods (rocket.chat and all microservices) | {}  |
 | `global.nodeSelector`                  | common nodeSelector for all pods (rocket.chat and all microservices) | {}  |
 | `global.affinity`                      | common affinity for all pods (rocket.chat and all microservices) | {}  |
 | `tolerations`                          | tolerations for main rocket.chat pods (the `meteor` service) | [] |
 | `microservices.enabled`                | Use [microservices](https://docs.rocket.chat/quick-start/installing-and-updating/micro-services-setup-beta) architecture                                                                                                                                                                                                                                                                                                                                       | `false`                            |
+| `microservices.streamHub.enabled`      | Enable the Stream Hub microservice. **DEPRECATED**: Disabled by default for versions >= 7.7.3. Cannot be enabled for versions >= 8.0.0 (completely removed). For versions < 7.7.3, enabled by default unless explicitly disabled. When enabled, automatically sets `DB_WATCHERS=true` on all services. | `false` (auto-enabled for < 7.7.3) |
 | `microservices.presence.replicas`      | Number of replicas to run for the presence service                                                                                                                                                                                                                                                                                                                                                                                                                | `1`                                |
 | `microservices.ddpStreamer.replicas`   | Number of replicas to run for the ddpStreamer service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
 | `microservices.account.replicas`      | Number of replicas to run for the account service                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `1`                                |
@@ -168,9 +172,17 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `federation.image.tag`                 | Image tag to use for federation image, defaults to `latest`
 | `federation.persistence.enabled`       | Enabling persistence for matrix pod
 | `postgresql.enabled`                   | Enabling postgresql for matrix (synapse), defaults to false, if false, uses sqlite
+| `nats.nats.image`          | NATS container image (includes tag)                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `nats:2.12-alpine`                                |
 | `nats.cluster.replicas`          | Number of replicas to run NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `2`                                |
 | `nats.exporter.enabled`          | Enable or Disable metrics collection for NATS                                                                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                                |
-
+| `nats.enabled` | Enable or disabled NATS deploy, if using microservices and this is nil them it will be deployed | true for microservices (default), false for monolith |
+| `nats.existingSecret.name` | Existing Secret name for an external NATS server | empty |
+| `nats.existingSecret.key` | Existing Secret key for the `nats.existingSecret.name` containing the connection string | empty |
+| `nats.podMonitor.enabled` | Enable NATS PodMonitor or service with scrape annotation | `true` |
+| `nats.tolerations` | Tolerations for NATS pods (must be set explicitly for tainted nodes) | `[]` |
+| `nats.nodeSelector` | Node selector for NATS pods (must be set explicitly) | `{}` |
+| `nats.natsbox.tolerations` | Tolerations for NATS box pods (must be set explicitly for tainted nodes) | `[]` |
+| `nats.natsbox.nodeSelector` | Node selector for NATS box pods (must be set explicitly) | `{}` |
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart. For example,
@@ -179,13 +191,129 @@ Alternatively, a YAML file that specifies the values for the parameters can be p
 $ helm install rocketchat -f values.yaml rocketchat/rocketchat
 ```
 
+## Node Scheduling (Taints/Tolerations)
+
+When deploying to nodes with taints, you need to configure tolerations for all components. This chart uses YAML anchors in the `global` block to simplify configuration - set tolerations once and they automatically apply to all components including NATS.
+
+### Recommended: Edit values.yaml
+
+The simplest approach is to copy `values.yaml` and uncomment the tolerations section:
+
+```bash
+# Copy the values file
+cp rocketchat/values.yaml my-values.yaml
+
+# Edit my-values.yaml - uncomment the tolerations in the global section
+
+# Install with your values
+helm install rocketchat rocketchat/rocketchat -f my-values.yaml
+```
+
+In `values.yaml`, uncomment these lines in the `global` section:
+
+```yaml
+global:
+  ## Uncomment for tainted nodes:
+  tolerations: &tolerations
+    - key: "dedicated"
+      operator: "Equal"
+      value: "rocketchat"
+      effect: "NoSchedule"
+  nodeSelector: &nodeSelector
+    dedicated: rocketchat
+  ##
+  ## Comment out or remove these defaults:
+  # tolerations: &tolerations []
+  # nodeSelector: &nodeSelector {}
+```
+
+The YAML anchors (`&tolerations`, `&nodeSelector`) propagate to NATS and other subcharts automatically.
+
+> **Important:** YAML anchors only work within a single values file. If you use multiple `-f` files or `--set`, you must specify values for each component separately.
+
+### Using --set (Alternative)
+
+If you cannot use a values file, you can set tolerations individually:
+
+```bash
+helm install rocketchat ./rocketchat \
+  --set 'global.tolerations[0].key=dedicated' \
+  --set 'global.tolerations[0].operator=Equal' \
+  --set 'global.tolerations[0].value=rocketchat' \
+  --set 'global.tolerations[0].effect=NoSchedule' \
+  --set 'nats.tolerations[0].key=dedicated' \
+  --set 'nats.tolerations[0].operator=Equal' \
+  --set 'nats.tolerations[0].value=rocketchat' \
+  --set 'nats.tolerations[0].effect=NoSchedule' \
+  --set 'nats.natsbox.tolerations[0].key=dedicated' \
+  --set 'nats.natsbox.tolerations[0].operator=Equal' \
+  --set 'nats.natsbox.tolerations[0].value=rocketchat' \
+  --set 'nats.natsbox.tolerations[0].effect=NoSchedule'
+```
+
+> **Note:** The values file approach is much simpler. Use `--set` only when you cannot use a values file.
+
+### External Nats
+
+This chart supports using an existing NATS server instead of deploying a new one. This is useful when you have a shared NATS infrastructure or want to manage NATS separately from your Rocket.Chat deployment.
+
+#### Using an External NATS Server
+
+To use an external NATS server, you need to:
+
+1. **Create a Kubernetes Secret** containing the NATS connection string:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-nats-secret
+  namespace: rocketchat
+type: Opaque
+data:
+  # Base64 encoded NATS connection string
+  # Example: nats://user:password@nats-server:4222
+  nats-url: bmF0czovL3VzZXI6cGFzc3dvcmRAbmF0cy1zZXJ2ZXI6NDIyMg==
+```
+
+2. **Configure the chart** to use the external NATS server:
+
+```yaml
+# Disable the built-in NATS deployment
+nats:
+  enabled: false
+  existingSecret:
+    name: "my-nats-secret"
+    key: "nats-url"
+```
+
+### Stream Hub Microservice Deprecation
+
+> **IMPORTANT**: As of Rocket.Chat version 7.7.3, the Stream Hub microservice is deprecated and disabled by default. As of version 8.0.0, it has been completely removed.
+
+The Stream Hub microservice (`microservices.streamHub`) is being phased out:
+
+- **Versions < 7.7.3**: Stream Hub is automatically enabled when using microservices architecture (unless explicitly disabled)
+- **Versions >= 7.7.3 and < 8.0.0**: Stream Hub is disabled by default and should not be used for new deployments
+- **Versions >= 8.0.0**: Stream Hub is completely removed and cannot be enabled (will always be disabled regardless of configuration)
+
+If you need to enable Stream Hub for older versions (< 8.0.0) or backward compatibility, set:
+
+```yaml
+microservices:
+  enabled: true
+  streamHub:
+    enabled: true
+```
+
+**Note**: When Stream Hub is enabled, the `DB_WATCHERS=true` environment variable is automatically set on all Rocket.Chat services to support database change stream watching.
+
 ### Database Setup
 
 Rocket.Chat uses a MongoDB instance to presist its data.
 By default, the [MongoDB](https://github.com/bitnami/charts/tree/master/bitnami/mongodb) chart is deployed and a single MongoDB instance is created as the primary in a replicaset.  
 Please refer to this (MongoDB) chart for additional MongoDB configuration options.
 If you are using chart defaults, make sure to set at least the `mongodb.auth.rootPassword` and `mongodb.auth.passwords` values. 
-> **WARNING**: The root credentials are used to connect to the MongoDB OpLog
 
 #### Using an External Database
 
@@ -343,8 +471,8 @@ nats:
 ### Manage MongoDB secrets
 
 This chart provides several ways to manage the Connection for MongoDB
-* Values passed to the chart (externalMongodbUrl, externalMongodbOplogUrl)
-* An ExistingMongodbSecret containing the MongoURL and MongoOplogURL
+* Values passed to the chart externalMongodbUrl
+* An ExistingMongodbSecret containing the MongoURL
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -353,7 +481,6 @@ metadata:
 type: Opaque
 data:
   mongo-uri: mongodb://user:password@localhost:27017/rocketchat
-  mongo-oplog-uri: mongodb://user:password@localhost:27017/local?replicaSet=rs0&authSource=admin
 ```
 
 ## Federation
@@ -444,26 +571,6 @@ Choose PodMonitor if you need detailed pod-level metrics and troubleshooting dat
 
 ## Upgrading
 
-#### Metrics
-
-from:
-
-```yaml
-nats:
-  exporter:
-    serviceMonitor:
-      enabled: false
-```
-
-to:
-
-```yaml
-nats:
-  promExporter:
-    podMonitor:
-      enabled: true
-```
-
 ### To 5.4.3
 
 Due to changes on upstream MongoDB chart, some variables have been renamed (previously deprecated), which, in turn changed how this chart generates its manifests. Values that need changing -
@@ -472,7 +579,7 @@ Due to changes on upstream MongoDB chart, some variables have been renamed (prev
 - `mongodb.auth.database` is no longer supported either and has been changed to its plural version, `mongodb.auth.databases`. Update your values file, convert it to an array and make sure it's the first entry of that list.
 - `mongodb.auth.rootUsername` and `mongodb.auth.rootPassword` are staying the same.
 
-*`usernames`, `passwords` and `databases` arrays must be of the same length. Rocket.Chat chart will use the first entry for its mongodb connection string in `MONGO_URL` and `MONGO_OPLOG_URL`.*
+*`usernames`, `passwords` and `databases` arrays must be of the same length. Rocket.Chat chart will use the first entry for its mongodb connection string in `MONGO_URL`.*
 
 On each chart update, the used image tag gets updated, **in most cases**. Same is true for the MongoDB chart we use as our dependency. Pre-5.4.3, we had been using the chart version 10.x.x, but starting 5.4.3, the dependency chart version has been bumped to the latest available version, 13.x.x. This chart defaults to mongodb 6.0.x as of the time of writing this.
 

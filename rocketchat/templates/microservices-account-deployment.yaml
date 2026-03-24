@@ -45,7 +45,7 @@ spec:
         {{ include "rocketchat.nodeAffinity" (dict "name" "account" "context" $) | indent 8 }}
       containers:
       - name: account-service
-        image: "{{ .Values.microservices.account.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        image: "{{ include "rocketchat.image" (dict "repository" .Values.microservices.account.image.repository "tag" .Values.image.tag "appVersion" .Chart.AppVersion "global" .Values.global) }}"
         env:
         {{- if .Values.existingMongodbSecret }}
         - name: MONGO_URL
@@ -60,8 +60,11 @@ spec:
               name: {{ template "rocketchat.fullname" . }}
               key: mongo-uri
         {{- end }}
-        - name: TRANSPORTER
-          value: nats://{{ .Release.Name }}-nats:4222
+        {{- include "rocketchat.transporter.connectionString" (dict "Values" $.Values "Release" $.Release) | nindent 8 }}
+        {{- if eq (include "rocketchat.streamHub.enabled" .) "true" }}
+        - name: DB_WATCHERS
+          value: "true"
+        {{- end }}
         - name: MOLECULER_LOG_LEVEL
           value: {{ .Values.microservices.logLevel | quote }}
         - name: HEARTBEAT_INTERVAL

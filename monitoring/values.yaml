@@ -1,3 +1,31 @@
+## Global values passed to subcharts and used by custom components
+## Define tolerations/nodeSelector/affinity here - use YAML anchors to reference
+## them in subchart configs below
+##
+## To deploy on tainted nodes, uncomment the tolerations/nodeSelector below:
+##
+global:
+  ## Image registry to use for monitoring components (for airgapped deployments)
+  ## When set, this will be prepended to image repositories
+  ## Example: "my-registry.internal:5000"
+  ## Note: Subchart images (Prometheus, Grafana, Loki) require separate configuration
+  imageRegistry: ""
+
+  ## Uncomment for tainted nodes:
+  # tolerations: &tolerations
+  #   - key: "dedicated"
+  #     operator: "Equal"
+  #     value: "rocketchat"
+  #     effect: "NoSchedule"
+  # nodeSelector: &nodeSelector
+  #   dedicated: rocketchat
+  ##
+  ## Default (no tolerations):
+  tolerations: &tolerations []
+  nodeSelector: &nodeSelector {}
+  affinity: &affinity {}
+  annotations: {}
+
 operator:
   enabled: true
   global:
@@ -6,6 +34,10 @@ operator:
 
   prometheusOperator:
     enabled: true
+    tolerations: *tolerations
+    admissionWebhooks:
+      patch:
+        tolerations: *tolerations
 
   crds:
     enabled: true
@@ -49,8 +81,14 @@ operator:
   kubeStateMetrics:
     enabled: true
 
+  kube-state-metrics:
+    tolerations: *tolerations
+
   nodeExporter:
     enabled: true
+
+  prometheus-node-exporter:
+    tolerations: *tolerations
 
   cleanPrometheusOperatorObjectNames: false
 
@@ -68,6 +106,7 @@ operator:
     #   - kubernetes.io/pvc-protection
 
   prometheus:
+    enabled: true
     prometheusSpec:
       enableAdminAPI: true
       # this allows to get monitors from any namespace
@@ -75,6 +114,8 @@ operator:
       podMonitorSelectorNilUsesHelmValues: false
       retention: 15d
       retentionSize: 8GB
+      scrapeInterval: 30s
+      tolerations: *tolerations
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -105,8 +146,13 @@ grafana:
   enabled: true
   deploy:
     enabled: true
-    storageClassName: # Get available classes with: kubectl get storageclasses.
+    # storageClassName: # Get available classes with: kubectl get storageclasses.
     nodePort: ""
+
+  # Tolerations for grafana-operator and Grafana instance (uses scheduling anchors)
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
   folders:
     rocketchat:
       - name: "rocketchat"
@@ -114,6 +160,10 @@ grafana:
     extra: [] # If user wants to add extra folders, they can do so here
   dashboards:
     rocketchat:
+      - name: "rocketchat-logs"
+        folder: "rocketchat"
+        id: "24736"
+        revision: latest
       - name: "rocketchat-metrics"
         folder: "rocketchat"
         id: "23428"
@@ -121,6 +171,14 @@ grafana:
       - name: "rocketchat-microservices"
         folder: "rocketchat"
         id: "23427"
+        revision: latest
+      - name: "rocketchat-mongo-8"
+        folder: "rocketchat"
+        id: "24296"
+        revision: latest
+      - name: "rocketchat-mongo-7"
+        folder: "rocketchat"
+        id: "23712"
         revision: latest
     community:
       - name: "node-exporter-full"
@@ -142,3 +200,158 @@ grafana:
         id: "17347"
         revision: latest
     extra: [] # If user wants to add extra dashboards, they can do so here
+
+
+
+loki:
+  enabled: true
+
+  monitoring:
+    selfMonitoring:
+      grafanaAgent:
+        installOperator: false
+  
+  deploymentMode: SingleBinary
+
+  singleBinary:
+    replicas: 1
+    tolerations: *tolerations
+    persistence:
+      # Storage allocation for logs. Ensure adequate space: daily_log_volume * retention_days * 1.2
+      # If disk becomes full, Loki stops working and requires manual intervention
+      size: 50Gi
+    extraArgs:
+      - -config.expand-env=true
+
+  gateway:
+    tolerations: *tolerations
+
+  # Disable caches by default for smaller clusters (enables for production if needed)
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: 'filesystem'
+    schemaConfig:
+      configs:
+        - from: "2024-04-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    compactor:
+      retention_enabled: true
+      compaction_interval: 10m
+      retention_delete_delay: 2h
+      retention_delete_worker_count: 100
+      delete_request_store: filesystem
+    pattern_ingester:
+        enabled: true
+    limits_config:
+      allow_structured_metadata: true
+      volume_enabled: true
+      # Log retention period. Older logs are automatically deleted.
+      # WARNING: Increasing retention requires corresponding increase to singleBinary.persistence.size
+      # If storage is exceeded, Loki will stop and manual intervention is needed
+      retention_period: 15d
+    distributor:
+      otlp_config:
+        default_resource_attributes_as_index_labels:
+          # basic information
+          - job
+          - agent.name
+          - agent.node
+          # Cluster information
+          - cluster.name
+          # basic pod information
+          - k8s.namespace.name
+          - k8s.pod.name # k8s_pod
+          - k8s.container.name # k8s_container
+          - container.name
+          # Deployment information
+          - k8s.replicaset.name
+          - k8s.deployment.name
+          - k8s.statefulset.name
+          - k8s.daemonset.name
+          - k8s.cronjob.name
+          - k8s.job.name
+
+
+    ruler:
+      enabled: true
+      enable_api: true
+
+        
+  # since we are running as single-binary, disable everything else
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  minio:
+    enabled: false
+  rollout_operator:
+    enabled: false
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomCompactor:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
+
+opentelemetryCollector:
+  mode: daemonset
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: 0.143.0
+    pullPolicy: IfNotPresent
+
+  # Uses scheduling anchors from top of file
+  tolerations: *tolerations
+  nodeSelector: *nodeSelector
+  affinity: *affinity
+
+  logs:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  events:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi

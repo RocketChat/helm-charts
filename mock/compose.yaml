@@ -13,14 +13,14 @@ services:
       start_period: 2s
 
   kubeconfig:
-    image: bitnami/kubectl:latest
+    image: alpine/kubectl:latest
     networks:
       - kwok-network
     volumes:
       - ./kubeconfig.yaml:/kubeconfig.yaml:ro
       - ./manifests:/manifests:ro
       - kubeconfig-volume:/kubeconfig-volume:rw
-    entrypoint: bash
+    entrypoint: sh
     user: root
     depends_on:
       kwok:
@@ -28,7 +28,6 @@ services:
     command: 
       - -c
       - |
-        set -euo pipefail
         sed -E 's/127.0.0.1:[0-9]+/kwok:8080/' /kubeconfig.yaml \
           > /kubeconfig-volume/kubeconfig.yaml
         kubectl \

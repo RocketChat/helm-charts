@@ -1,0 +1,8 @@
+{{ if (hasKey .Values.nats "existingSecret") }}
+  {{if or 
+    (and .Values.microservices.enabled (not (hasKey .Values.nats "enabled")))
+    .Values.nats.enabled
+  }}
+    {{ fail "set nats.enabled to false to use nats.existingSecret" }}
+  {{ end }}
+{{ end }}

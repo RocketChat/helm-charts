@@ -4,10 +4,10 @@ description: Wrap recommended monitoring stack with sane defaults for deploying 
 type: application
 
 # Prometheus operator version
-appVersion: 0.83.0
+appVersion: 8.2.0
 
 # Chart version
-version: 0.0.8
+version: 0.0.15
 
 dependencies:
 - name: kube-prometheus-stack
@@ -20,3 +20,10 @@ dependencies:
   repository: oci://ghcr.io/grafana/helm-charts
   version: v5.18.0
   alias: grafana
+  condition: grafana.enabled
+
+- name: loki
+  repository: oci://ghcr.io/grafana/helm-charts
+  version: 6.49.0
+  alias: loki
+  condition: loki.enabled

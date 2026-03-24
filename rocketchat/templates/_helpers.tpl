@@ -7,6 +7,30 @@ Expand the name of the chart.
 {{- end -}}
 
 {{/*
+Return the image registry prefix.
+When global.imageRegistry is set, returns "registry/" to prepend to image names.
+Usage: {{ include "rocketchat.imageRegistry" . }}{{ .Values.image.repository }}
+*/}}
+{{- define "rocketchat.imageRegistry" -}}
+{{- if .Values.global.imageRegistry -}}
+{{- printf "%s/" .Values.global.imageRegistry -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Return the full image reference with optional registry override.
+Usage: {{ include "rocketchat.image" (dict "repository" .Values.image.repository "tag" .Values.image.tag "appVersion" .Chart.AppVersion "global" .Values.global) }}
+*/}}
+{{- define "rocketchat.image" -}}
+{{- $registry := "" -}}
+{{- if .global.imageRegistry -}}
+{{- $registry = printf "%s/" .global.imageRegistry -}}
+{{- end -}}
+{{- $tag := .tag | default .appVersion -}}
+{{- printf "%s%s:%s" $registry .repository $tag -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
@@ -71,28 +95,16 @@ Usage:
 {{- define "rocketchat.mongodb.url" }}
     {{- if .Values.externalMongodbUrl }}
         {{- print .Values.externalMongodbUrl }}
-    {{- else }}
+    {{- else if .Values.mongodb.enabled }}
         {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := required "usernames array must have at least one entry" (first .Values.mongodb.auth.usernames) }}
-        {{- $password := required "passwords array must have at least one entry" (first .Values.mongodb.auth.passwords) }}
-        {{- $database := required "databases array must have at least one entry" (first .Values.mongodb.auth.databases) }}
+        {{- $user := first .Values.mongodb.auth.usernames | default "rocketchat" }}
+        {{- $password := first .Values.mongodb.auth.passwords | default "changeme" }}
+        {{- $database := first .Values.mongodb.auth.databases | default "rocketchat" }}
         {{- $port := .Values.mongodb.service.ports.mongodb }}
         {{- $rs := .Values.mongodb.replicaSetName }}
         {{- printf "mongodb://%s:%s@%s:%0.f/%s?replicaSet=%s" $user $password $service $port $database $rs }}
-    {{- end }}
-{{- end }}
-
-{{/*Generate MONGO_OPLOG_URL*/}}
-{{- define "rocketchat.mongodb.oplogUrl" }}
-    {{- if .Values.externalMongodbOplogUrl }}
-        {{- print .Values.externalMongodbOplogUrl }}
     {{- else }}
-        {{- $service := include "rocketchat.mongodb.fullname" . }}
-        {{- $user := .Values.mongodb.auth.rootUser }}
-        {{- $password := required "root password must be provided" .Values.mongodb.auth.rootPassword }}
-        {{- $port := .Values.mongodb.service.ports.mongodb }}
-        {{- $rs := .Values.mongodb.replicaSetName }}
-        {{- printf "mongodb://%s:%s@%s:%0.f/local?replicaSet=%s&authSource=admin" $user $password $service $port $rs }}
+        {{- fail "mongodb.enabled is false but externalMongodbUrl is not set" }}
     {{- end }}
 {{- end }}
 
@@ -168,4 +180,52 @@ Usage:
 {{- toYaml .Values.global.affinity | indent 8 }}
 {{- end }}
 {{- end }}
+{{- end -}}
+
+
+{{/* Nats */}}
+{{- define "rocketchat.transporter.connectionString" -}}
+{{/*
+One of the following must be true to set the TRANSPORTER environment variable:
+1. If running microservices, and nats.enabled is not set, then we have deployed it
+2. If nats.enabled is true, then we have deployed it
+3. If nats.existingSecret is set, then we are using an external NATS server
+*/}}
+{{- if
+    or
+        (and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) (not (hasKey .Values.nats "enabled")))
+        (and (hasKey .Values.nats "enabled") (.Values.nats.enabled))
+        (and (hasKey .Values.nats "existingSecret") (not (empty .Values.nats.existingSecret)))
+-}}
+{{- if (hasKey .Values.nats "existingSecret") }}
+- name: TRANSPORTER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.nats.existingSecret.name }}
+      key: {{ .Values.nats.existingSecret.key }}
+{{- else }}
+{{/* Determine protocol to use */}}
+{{- $natsProtocol := "monolith+nats" -}}
+{{- if and (hasKey .Values.microservices "enabled") (.Values.microservices.enabled) -}}
+{{- $natsProtocol = "nats" -}}
+{{- end -}}
+- name: TRANSPORTER
+  value: "{{ $natsProtocol }}://{{ .Release.Name }}-nats:4222"
+
+{{- end -}}
+{{- end -}} {{/* End if Nats enabled */}}
+{{- end -}} {{/* rocketchat.transporter.connectionString */}}
+
+{{/* This is needed to avoid breaking when people use --reuse-values
+    and previously didn't had the path microservices.streamHub.enabled,
+    but always true to version bellow 7.7
+*/}}
+{{- define "rocketchat.streamHub.enabled" -}}
+{{- if (hasKey .Values.microservices.streamHub "enabled") -}}
+{{- .Values.microservices.streamHub.enabled -}}
+{{- else if semverCompare "<=7.7.0" (.Values.image.tag | default .Chart.AppVersion) -}}
+true
+{{- else -}}
+true
+{{- end -}}
 {{- end -}}

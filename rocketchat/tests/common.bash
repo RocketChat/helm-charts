@@ -37,7 +37,7 @@ helm_upgrade_to_local_chart() {
     "${DEPLOYMENT_NAME}" \
     --namespace "${DETIK_CLIENT_NAMESPACE}" \
     --values "${VALUES}" \
-    "${ROCKETCHAT_CHART_ARCHIVE}" \
+    "${ROCKETCHAT_CHART_DIR}" \
     --wait \
     --wait-for-jobs \
     --timeout 5m

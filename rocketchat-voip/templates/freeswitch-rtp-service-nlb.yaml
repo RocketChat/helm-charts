@@ -20,7 +20,9 @@ spec:
   ports:
     {{- $start := .Values.freeswitch.rtpPortRangeStart | int }}
     {{- $end := .Values.freeswitch.rtpPortRangeEnd | int }}
-    {{- range $port := untilStep $start $end 1 }}
+    {{- $evenStart := $start }}
+    {{- if mod $start 2 }}{{- $evenStart = add $start 1 | int }}{{- end }}
+    {{- range $port := untilStep $evenStart $end 2 }}
     - name: rtp-port-{{ $port }}
       port: {{ $port }}
       protocol: UDP

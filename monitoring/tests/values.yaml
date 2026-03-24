@@ -23,3 +23,6 @@ grafana:
   enabled: true
   deploy:
     storageClassName: something # Get available classes with: kubectl get storageclasses.
+
+opentelemetryOperator:
+  enabled: false

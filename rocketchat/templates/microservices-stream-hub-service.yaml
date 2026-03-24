@@ -1,4 +1,4 @@
-{{- if .Values.microservices.enabled }}
+{{- if and .Values.microservices.enabled (eq (include "rocketchat.streamHub.enabled" .) "true") }}
   {{- if .Values.prometheusScraping.enabled }}
     {{- $service := .Values.service -}}
 apiVersion: v1

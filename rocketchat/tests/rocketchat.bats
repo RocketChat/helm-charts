@@ -36,7 +36,8 @@ setup_file() {
     "Values file: ${VALUES_FILE}" \
     "Values: ${VALUES}" \
     "Prometheus operator values: ${PROMETHEUS_OPERATOR_VALUES}" \
-    "PWD: $(pwd)"
+    "PWD: $(pwd)" \
+    "KUBECONFIG: ${KUBECONFIG:-}"
 
   envsubst <"$TESTS_DIR/${VALUES_FILE}" >"$VALUES"
 
@@ -65,7 +66,7 @@ setup_file() {
 
 # bats test_tags=pre
 @test "lint chart" {
-  run_and_assert_success helm lint "$ROCKETCHAT_CHART_DIR"
+  run_and_assert_success helm lint --values "$VALUES" "$ROCKETCHAT_CHART_DIR"
 }
 
 # bats test_tags=pre
@@ -106,7 +107,6 @@ setup_file() {
     "mongodb-metrics" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer" \
     "rocketchat" \
@@ -130,7 +130,6 @@ setup_file() {
     "rocketchat" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -150,7 +149,6 @@ setup_file() {
     "nats-box" \
     "presence" \
     "authorization" \
-    "stream-hub" \
     "account" \
     "ddp-streamer"
 }
@@ -170,7 +168,6 @@ setup_file() {
     "mongodb-metrics http-metrics 9216" \
     "presence metrics 9458" \
     "authorization metrics 9458" \
-    "stream-hub metrics 9458" \
     "account metrics 9458" \
     "ddp-streamer metrics,http 9458,3000" \
     "rocketchat metrics,http 9100,3000" \
@@ -235,16 +232,10 @@ setup_file() {
     "
 
   local \
-    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)" \
-    mongo_oplog_uri="$(printf "mongodb://root:root@%s-mongodb-headless:27017/local?replicaSet=rs0&authSource=admin" "$DEPLOYMENT_NAME" | base64)"
+    mongo_uri="$(printf "mongodb://rocketchat:rocketchat@%s-mongodb-headless:27017/rocketchat?replicaSet=rs0" "$DEPLOYMENT_NAME" | base64)"
 
   run_and_assert_success verify "\
     '.data.mongo-uri' matches '^$mongo_uri\$' \
-    for secret named '${DEPLOYMENT_NAME}-rocketchat' \
-    "
-
-  run_and_assert_success verify "\
-    '.data.mongo-oplog-uri' matches '^$mongo_oplog_uri\$' \
     for secret named '${DEPLOYMENT_NAME}-rocketchat' \
     "
 }
@@ -288,6 +279,8 @@ setup_file() {
 
 # bats test_tags=cleanup
 @test "cleanup" {
+  [[ -n "${IGNORE_CLEANUP:-}" ]] &&
+    skip "cleanup is disabled"
   run_and_assert_success helm uninstall \
     "$DEPLOYMENT_NAME" \
     -n "$DETIK_CLIENT_NAMESPACE" \

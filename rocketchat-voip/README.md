@@ -8,9 +8,10 @@
 ## Preamble
 
 This chart **doesn't** deploy Rocket.Chat. In fact, it doesn't even 
-require an workspace to be running. All it does is to deploy FreeSWITCH to 
-the specified namespace. The way Rocket.Chat is deployed is up to you, but 
-for it to work, the instance has to be able to talk with FreeSWITCH's API. 
+require an workspace to be running. All it does is to deploy FreeSWITCH and 
+optionally Drachtio to the specified namespace. The way Rocket.Chat is deployed 
+is up to you, but for it to work, the instance has to be able to talk with 
+FreeSWITCH's API. 
 
 In this document, we're assuming you're deploying directly to a namespace 
 in which there's already a workspace running and exposed to the internet. 
@@ -58,6 +59,76 @@ pod/foobar-rocketchat-voip-76d87bc887-l7m42   1/1     Running   0          17m
 ```
 
 FreeSWITCH is now running. 
+
+## Architecture Support
+
+This chart supports both legacy and new architecture modes:
+
+### New Architecture (Default)
+- **Drachtio**: Enabled by default (`drachtio.enabled: true`)
+- **USE_LEGACY_ARCH**: Set to `false` on FreeSWITCH
+- **DRACHTIO_DOMAIN**: Set to the drachtio service name for FreeSWITCH integration
+- **Prometheus Monitoring**: Both FreeSWITCH and Drachtio have ServiceMonitors
+
+### Legacy Architecture
+Set `useLegacyArch: true` to use the legacy architecture:
+- **Drachtio**: Automatically disabled
+- **USE_LEGACY_ARCH**: Set to `true` on FreeSWITCH
+- **Prometheus Monitoring**: Only FreeSWITCH ServiceMonitor is created
+
+## Drachtio (New Architecture Only)
+
+Drachtio provides a SIP server framework for Node.js applications and is automatically enabled for the new architecture.
+
+- **Admin Port**: 9022 (for client connections)
+- **SIP Port**: 5060 (UDP)
+- **Image**: `drachtio/drachtio-server:latest`
+- **Resources**: Configurable memory and CPU limits
+- **Service Type**: ClusterIP with None clusterIP (headless service)
+
+### Configuration
+
+Key configuration options in `values.yaml`:
+
+```yaml
+# Architecture selection
+useLegacyArch: false  # Set to true for legacy architecture
+
+# Drachtio (new architecture only)
+drachtio:
+  enabled: true
+  secret: "SECRETPASSWORD"  # Change this!
+  config:
+    logging:
+      level: info
+    sip:
+      contacts:
+        - "sip:*;transport=udp"
+      udpMtu: 8192
+    monitoring:
+      prometheus:
+        enabled: true  # ServiceMonitor created automatically
+
+# FreeSWITCH Prometheus monitoring
+freeswitch:
+  monitoring:
+    prometheus:
+      enabled: true  # ServiceMonitor created automatically
+```
+
+### Services Created
+
+**Always created:**
+* A `Deployment` called `foobar-rocketchat-voip` (FreeSWITCH)
+* A `ClusterIP` service called `foobar-rocketchat-voip` (FreeSWITCH)
+* A `LoadBalancer` service called `foobar-rocketchat-voip-rtp` (RTP ports)
+* A `ServiceMonitor` called `foobar-rocketchat-voip-freeswitch` (if monitoring enabled)
+
+**New Architecture only (`useLegacyArch: false`):**
+* A `Deployment` called `foobar-rocketchat-voip-drachtio`
+* A `ClusterIP` service called `foobar-rocketchat-voip-drachtio`
+* A `Secret` containing the Drachtio configuration
+* A `ServiceMonitor` called `foobar-rocketchat-voip-drachtio` (if monitoring enabled)
 
 ## Accessing FreeSWITCH
 
