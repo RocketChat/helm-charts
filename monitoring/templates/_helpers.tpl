@@ -128,3 +128,22 @@ Create the name of the service account to use
 {{- end }}
 {{- end -}}
 
+{{/* Get correct imagePullSecrets */}}
+{{- define "monitoring.imagePullSecrets" -}}
+{{- $name := .name -}}
+{{- $imagePullSecrets := list -}}
+{{- with .context }}
+{{- if and $name (hasKey .Values $name) }}
+{{- $component := get .Values $name }}
+{{- if and (hasKey $component "imagePullSecrets") (kindIs "slice" $component.imagePullSecrets) (gt (len $component.imagePullSecrets) 0) }}
+{{- $imagePullSecrets = $component.imagePullSecrets }}
+{{- end }}
+{{- end }}
+{{- if (and (kindIs "slice" $imagePullSecrets) (gt (len $imagePullSecrets) 0)) }}
+{{- toYaml $imagePullSecrets }}
+{{- else if (and (kindIs "slice" .Values.global.imagePullSecrets) (gt (len .Values.global.imagePullSecrets) 0)) }}
+{{- toYaml .Values.global.imagePullSecrets }}
+{{- end }}
+{{- end }}
+{{- end -}}
+
