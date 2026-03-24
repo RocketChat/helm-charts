@@ -36,6 +36,11 @@ spec:
       affinity:
         {{- $affinity | nindent 8 }}
       {{- end }}
+      {{- $imagePullSecrets := include "monitoring.imagePullSecrets" (dict "name" "opentelemetryCollector" "context" $) }}
+      {{- if $imagePullSecrets }}
+      imagePullSecrets:
+        {{- $imagePullSecrets | nindent 8 }}
+      {{- end }}
       containers:
         - name: opentelemetry-logs-collector
           args:

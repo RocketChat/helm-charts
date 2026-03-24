@@ -100,6 +100,11 @@ spec:
           affinity:
             {{- $affinity | nindent 12 }}
           {{- end }}
+          {{- $imagePullSecrets := include "monitoring.imagePullSecrets" (dict "name" "grafana" "context" $) }}
+          {{- if $imagePullSecrets }}
+          imagePullSecrets:
+            {{- $imagePullSecrets | nindent 12 }}
+          {{- end }}
           containers:
             - name: grafana
               {{- if .Values.grafana.deploy.image }}
