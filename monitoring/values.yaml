@@ -11,6 +11,13 @@ global:
   ## Note: Subchart images (Prometheus, Grafana, Loki) require separate configuration
   imageRegistry: ""
 
+  ## Image pull secrets for monitoring components (for private registries)
+  ## Example:
+  ##   imagePullSecrets:
+  ##     - name: my-registry-secret
+  ## Note: Subchart images (Prometheus, Grafana, Loki) require separate configuration
+  imagePullSecrets: []
+
   ## Uncomment for tainted nodes:
   # tolerations: &tolerations
   #   - key: "dedicated"
