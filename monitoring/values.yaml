@@ -166,6 +166,14 @@ grafana:
         id: "rocketchat"
     extra: [] # If user wants to add extra folders, they can do so here
   dashboards:
+    ## When true, the built-in dashboards below are loaded from JSON bundled in the
+    ## chart instead of being fetched live from grafana.com - use this for air-gapped
+    ## clusters that can't reach the internet.
+    ## Note: "kubernetes-node" and "kubernetes-pod" have no bundled JSON (their
+    ## upstream grafana.com IDs no longer exist) and won't render while this is
+    ## enabled. Any "extra" dashboards you add must supply their own `json: |` content
+    ## directly, since the chart can't bundle dashboards it doesn't know about.
+    airgapped: false
     rocketchat:
       - name: "rocketchat-logs"
         folder: "rocketchat"

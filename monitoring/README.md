@@ -248,4 +248,29 @@ helm install monitoring ./monitoring --set global.nodeSelector.disktype=ssd
 
 You can use all options available from the [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) Helm chart under the top-level `operator` key.
 
+## Air-gapped / Offline Dashboards
+
+By default, the built-in Grafana dashboards are fetched live from `grafana.com` (with a 48h cache). Clusters without internet access can't reach `grafana.com`, so the chart can also serve dashboard JSON that's bundled directly into the chart:
+
+```yaml
+grafana:
+  dashboards:
+    airgapped: true
+```
+
+When `airgapped` is enabled:
+- All built-in `rocketchat` and `community` dashboards are loaded from JSON bundled in the chart instead of being downloaded.
+- **Exception:** `kubernetes-node` and `kubernetes-pod` have no bundled JSON, because their upstream `grafana.com` dashboard IDs no longer exist (they 404 even with internet access) and won't render in either mode.
+- Any `extra` dashboards you add yourself must supply their own content via `json: |` directly on the entry, since the chart can't bundle dashboards it doesn't know about:
+
+```yaml
+grafana:
+  dashboards:
+    extra:
+      - name: "my-custom-dashboard"
+        folder: "custom"
+        json: |
+          { "title": "My Custom Dashboard", ... }
+```
+
 
