@@ -250,7 +250,7 @@ You can use all options available from the [kube-prometheus-stack](https://githu
 
 ## Air-gapped / Offline Dashboards
 
-By default, the built-in Grafana dashboards are fetched live from `grafana.com` (with a 48h cache). Clusters without internet access can't reach `grafana.com`, so the chart can also serve dashboard JSON that's bundled directly into the chart:
+By default, the built-in Grafana dashboards are fetched live from external sources (grafana.com or GitHub, with a 48h cache). Clusters without internet access can't reach those sources, so the chart can also serve dashboard JSON that's bundled directly into the chart:
 
 ```yaml
 grafana:
@@ -271,6 +271,16 @@ grafana:
         folder: "custom"
         json: |
           { "title": "My Custom Dashboard", ... }
+```
+
+You can also add dashboards that aren't on grafana.com by providing a direct `url` (used in online mode; the bundled JSON is used when `airgapped: true`):
+
+```yaml
+grafana:
+  dashboards:
+    extra:
+      - name: "my-github-dashboard"
+        url: "https://raw.githubusercontent.com/my-org/my-repo/main/dashboard.json"
 ```
 
 

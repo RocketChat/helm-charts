@@ -58,6 +58,9 @@ spec:
   {{- else if $bundled }}
   json: |
 {{ $bundled | indent 4 }}
+  {{- else if $dashboard.url }}
+  url: "{{ $dashboard.url }}"
+  contentCacheDuration: 48h
   {{- else }}
   url: "https://grafana.com/api/dashboards/{{ $dashboard.id }}/revisions/{{ $dashboard.revision }}/download"
   contentCacheDuration: 48h

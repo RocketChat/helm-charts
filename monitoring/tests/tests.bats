@@ -116,7 +116,26 @@ helm_common() {
   test_dashboards node-exporter-full
   test_dashboards rocketchat-metrics
   test_dashboards rocketchat-microservices
+  test_dashboards seaweedfs
 }
+
+# bats test_tags=asserts, dashboards
+@test "assert airgapped dashboards embed bundled json" {
+  bundled_dashboards="rocketchat-logs rocketchat-metrics rocketchat-microservices rocketchat-mongo-8 rocketchat-mongo-7 node-exporter-full kubernetes-deployment ingress-nginx ingress-traefik seaweedfs"
+
+  run helm template "$DEPLOYMENT_NAME" "$CHART_ARCHIVE" \
+    --set grafana.dashboards.airgapped=true \
+    --show-only templates/grafana-dashboards.yaml
+  assert_success
+
+  for dashboard in $bundled_dashboards; do
+    doc="$(awk -v target="name: ${DEPLOYMENT_NAME}-${dashboard}" 'BEGIN{RS="\n---\n"} $0 ~ target {print; exit}' <<< "$output")"
+    assert [ -n "$doc" ] "expected to find GrafanaDashboard named ${DEPLOYMENT_NAME}-${dashboard}"
+    [[ "$doc" == *"json: |"* ]] || fail "expected ${dashboard} to embed bundled json when airgapped=true"
+    [[ "$doc" != *"url:"* ]] || fail "expected ${dashboard} to NOT fetch from url when airgapped=true"
+  done
+}
+
 # bats test_tags=cleanup
 @test "cleanup" {
   [[ -n "$IGNORE_CLEANUP" ]] &&
