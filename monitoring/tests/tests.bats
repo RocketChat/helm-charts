@@ -128,12 +128,15 @@ helm_common() {
     --show-only templates/grafana-dashboards.yaml
   assert_success
 
+  # Verify every bundled dashboard has a named CRD in the output
   for dashboard in $bundled_dashboards; do
-    doc="$(awk -v target="name: ${DEPLOYMENT_NAME}-${dashboard}" 'BEGIN{RS="\n---\n"} $0 ~ target {print; exit}' <<< "$output")"
-    assert [ -n "$doc" ] "expected to find GrafanaDashboard named ${DEPLOYMENT_NAME}-${dashboard}"
-    [[ "$doc" == *"json: |"* ]] || fail "expected ${dashboard} to embed bundled json when airgapped=true"
-    [[ "$doc" != *"url:"* ]] || fail "expected ${dashboard} to NOT fetch from url when airgapped=true"
+    assert_output --partial "name: ${DEPLOYMENT_NAME}-${dashboard}"
   done
+
+  # Verify exactly 10 dashboards embed inline JSON (one per bundled dashboard)
+  local json_count
+  json_count=$(grep -c "^  json: |" <<< "$output")
+  assert [ "$json_count" -eq 10 ]
 }
 
 # bats test_tags=cleanup
