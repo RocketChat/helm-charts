@@ -233,8 +233,8 @@ persistence:
 # BREAKING CHANGE: UID changed from 999 to 65533 to match the image build UID.
 # Existing deployments with PVC data owned by UID 999 must chown before upgrading:
 #   kubectl exec -it <pod> -- chown -R 65533:65533 /app/uploads
-# Alternatively, override securityContext.runAsUser and securityContext.fsGroup back
-# to 999 if you cannot migrate the PVC data.
+# Alternatively, override securityContext.runAsUser, securityContext.fsGroup, and
+# containerSecurityContext.runAsUser back to 999 if you cannot migrate the PVC data.
 securityContext:
   runAsUser: 65533
   fsGroup: 65533
