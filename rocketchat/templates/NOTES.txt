@@ -25,3 +25,9 @@ To expose Rocket.Chat via an Ingress you need to set host and enable ingress.
 
 helm install --set host=chat.yourdomain.com --set ingress.enabled=true stable/rocketchat
 {{- end -}}
+{{- if .Values.httproute.enabled }}
+
+Rocket.Chat is exposed via the Gateway API HTTPRoute at the URL:
+
+- http://{{ .Values.host }}
+{{- end -}}

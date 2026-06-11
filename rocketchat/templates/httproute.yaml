@@ -1,0 +1,102 @@
+{{- if .Values.httproute.enabled -}}
+{{- $route := .Values.httproute -}}
+{{- if not $route.parentRefs -}}
+{{- fail "httproute.enabled is true but httproute.parentRefs is empty; an HTTPRoute needs at least one parentRef to attach to a Gateway" -}}
+{{- end -}}
+apiVersion: {{ $route.apiVersion | default "gateway.networking.k8s.io/v1" }}
+kind: HTTPRoute
+metadata:
+  name: {{ template "rocketchat.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with $route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $route.parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- $hostnames := $route.hostnames }}
+  {{- if and (not $hostnames) .Values.host }}
+  {{- $hostnames = list .Values.host }}
+  {{- end }}
+  {{- with $hostnames }}
+  hostnames:
+    {{- tpl (toYaml .) $ | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- with $route.additionalRules }}
+    {{- tpl (toYaml .) $ | nindent 4 }}
+    {{- end }}
+    - backendRefs:
+        - name: {{ template "rocketchat.fullname" . }}
+          port: {{ .Values.service.port }}
+      {{- with $route.matches }}
+      matches:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $route.filters }}
+      filters:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- if .Values.microservices.enabled }}
+    - backendRefs:
+        - name: {{ .Release.Name }}-ddp-streamer
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /sockjs
+        - path:
+            type: PathPrefix
+            value: /websocket
+    {{- end }}
+    {{- if and .Values.federation.enabled $route.federation.serveWellKnown }}
+    - backendRefs:
+        - name: {{ template "rocketchat.fullname" . }}-wellknown
+          port: 80
+      matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/matrix/server
+        - path:
+            type: PathPrefix
+            value: /.well-known/matrix/client
+    {{- end }}
+{{- if and .Values.federation.enabled .Values.federation.host }}
+---
+apiVersion: {{ $route.apiVersion | default "gateway.networking.k8s.io/v1" }}
+kind: HTTPRoute
+metadata:
+  name: {{ template "rocketchat.fullname" . }}-synapse
+  labels:
+    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
+    helm.sh/chart: {{ include "rocketchat.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with $route.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with $route.parentRefs }}
+  parentRefs:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  hostnames:
+    - {{ tpl .Values.federation.host $ }}
+  rules:
+    - backendRefs:
+        - name: {{ template "rocketchat.fullname" . }}-synapse
+          port: 8008
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+{{- end }}
+{{- end -}}
