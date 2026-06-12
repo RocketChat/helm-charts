@@ -2,6 +2,8 @@
 
 [Rocket.Chat](https://rocket.chat/) is free, unlimited and open source. Replace email, HipChat & Slack with the ultimate team chat software solution.
 
+> **WARNING**: Upgrading to chart version 7.0.0 changes the default pod UID from 999 to 65533. If you have `persistence.enabled: true`, PVC data must be re-owned before upgrading. See [Upgrading to 7.0.0](#to-700) for details.
+
 > **WARNING**: Upgrading to chart version 5.4.3 or higher might require extra steps to successfully update MongoDB and Rocket.Chat. See [Upgrading to 5.4.3](#to-543) for more details.
 
 ## Introduction
@@ -89,8 +91,8 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `persistence.existingClaim`            | An Existing PVC name for rocketchat volume                                                                                                                                                                                                                                                                                                                                                                                                                     | `""`                               |
 | `resources`                            | Pod resource requests and limits                                                                                                                                                                                                                                                                                                                                                                                                                               | `{}`                               |
 | `securityContext.enabled`              | Enable security context for the pod                                                                                                                                                                                                                                                                                                                                                                                                                            | `true`                             |
-| `securityContext.runAsUser`            | User to run the pod as                                                                                                                                                                                                                                                                                                                                                                                                                                         | `999`                              |
-| `securityContext.fsGroup`              | fs group to use for the pod                                                                                                                                                                                                                                                                                                                                                                                                                                    | `999`                              |
+| `securityContext.runAsUser`            | User to run the pod as                                                                                                                                                                                                                                                                                                                                                                                                                                         | `65533`                            |
+| `securityContext.fsGroup`              | fs group to use for the pod                                                                                                                                                                                                                                                                                                                                                                                                                                    | `65533`                            |
 | `serviceAccount.create`                | Specifies whether a ServiceAccount should be created                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                             |
 | `serviceAccount.name`                  | Name of the ServiceAccount to use. If not set and create is true, a name is generated using the fullname template                                                                                                                                                                                                                                                                                                                                              | `""`                               |
 | `ingress.enabled`                      | If `true`, an ingress is created                                                                                                                                                                                                                                                                                                                                                                                                                               | `false`                            |
@@ -605,6 +607,33 @@ References:
 IFF you manually enabled ingress.federation.serveWellKnown (which was a hidden setting) before, during upgrade, disable it once before enabling it again.
 
 Chart contained a bug that would cause `wellknown` deployment to fail to update (illegal live modification of `matchLabels`).
+
+### To 7.0.0
+
+The default pod UID has changed from `999` to `65533` to match the UID baked into the Rocket.Chat image at build time. Running as `999` caused the Apps Engine to fail writing its configuration file (`EACCES` on `/app/bundle/programs/server/npm/node_modules/@rocket.chat/apps/deno-runtime/deno.runtime.jsonc`).
+
+**Who is affected:** deployments with `persistence.enabled: true`. If you are not using a PVC for uploads (the default), no action is required.
+
+**Migration steps:**
+
+Before running `helm upgrade`, re-own the upload data on the existing PVC:
+
+```bash
+# Scale down to avoid writes during the chown
+kubectl scale deployment <release-name>-rocketchat --replicas=0
+
+# Run the chown in a temporary pod against the same PVC
+kubectl run chown-migration --rm -it --restart=Never \
+  --overrides='{"spec":{"volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"<release-name>-rocketchat"}}],"containers":[{"name":"chown","image":"busybox","command":["chown","-R","65533:65533","/data"],"volumeMounts":[{"name":"data","mountPath":"/data"}]}]}}' \
+  --image=busybox
+
+# Then upgrade
+helm upgrade <release-name> rocketchat/rocketchat
+```
+
+Replace `<release-name>-rocketchat` with the actual PVC name (`kubectl get pvc`).
+
+> **Note:** Reverting to UID `999` by overriding `securityContext.runAsUser` and `securityContext.fsGroup` is only safe on Rocket.Chat **< 8.5.0**. From 8.5.0 onward the Apps Engine requires write access to paths owned by UID `65533` and apps will fail to start under UID `999`.
 
 ### To 6.25.0
 
