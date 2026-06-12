@@ -88,6 +88,96 @@ setup_file() {
   assert [ -f "$ROCKETCHAT_CHART_ARCHIVE" ]
 }
 
+# HTTPRoute (Gateway API) rendering checks. These run `helm template` only, so
+# they need no cluster and no Gateway API CRDs, and live in the `pre` phase next
+# to the other render-time checks (lint / dry-run / package).
+
+# bats test_tags=pre
+@test "httproute is not rendered by default" {
+  run render_chart
+  assert_success
+  refute_output --partial "kind: HTTPRoute"
+}
+
+# bats test_tags=pre
+@test "httproute fails to render when enabled without a parentRef" {
+  run render_httproute --set httproute.enabled=true
+  assert_failure
+  assert_output --partial "httproute.parentRefs is empty"
+}
+
+# bats test_tags=pre
+@test "httproute renders the main route when enabled with a parentRef" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway"
+  assert_success
+  assert_output --partial "kind: HTTPRoute"
+  assert_output --partial "apiVersion: gateway.networking.k8s.io/v1"
+  assert_output --partial "name: ${DEPLOYMENT_NAME}-rocketchat"
+  assert_output --partial "name: rocketchat-gateway"
+}
+
+# bats test_tags=pre
+@test "httproute defaults its hostname to .Values.host" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway"
+  assert_success
+  assert_output --partial "$ROCKETCHAT_HOST"
+}
+
+# bats test_tags=pre
+@test "httproute hostnames override the default host" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
+    --set "httproute.hostnames[0]=chat.example.com"
+  assert_success
+  assert_output --partial "chat.example.com"
+}
+
+# bats test_tags=pre
+@test "httproute apiVersion can be overridden" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
+    --set "httproute.apiVersion=gateway.networking.k8s.io/v1beta1"
+  assert_success
+  assert_output --partial "apiVersion: gateway.networking.k8s.io/v1beta1"
+}
+
+# bats test_tags=pre
+@test "httproute serves matrix well-known routes when serveWellKnown is enabled" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
+    --set httproute.federation.serveWellKnown=true
+  assert_success
+  assert_output --partial "/.well-known/matrix/server"
+  assert_output --partial "/.well-known/matrix/client"
+}
+
+# bats test_tags=microservices
+@test "httproute adds ddp-streamer routes for microservices" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway"
+  assert_success
+  assert_output --partial "${DEPLOYMENT_NAME}-ddp-streamer"
+  assert_output --partial "/sockjs"
+  assert_output --partial "/websocket"
+}
+
+# bats test_tags=monolith
+@test "httproute omits ddp-streamer routes for monolith" {
+  run render_httproute \
+    --set httproute.enabled=true \
+    --set "httproute.parentRefs[0].name=rocketchat-gateway"
+  assert_success
+  refute_output --partial "ddp-streamer"
+}
+
 # bats test_tags=deploy
 @test "install latest published version" {
   helm ls | grep -q rocketchat-0.0.0 &&

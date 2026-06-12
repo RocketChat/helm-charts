@@ -67,3 +67,18 @@ install_prometheus_operator() {
     --wait \
     --timeout 5m
 }
+
+# Render the whole chart with the test values, plus any extra `--set` flags.
+render_chart() {
+  helm template \
+    "${DEPLOYMENT_NAME}" \
+    "${ROCKETCHAT_CHART_DIR}" \
+    --values "${VALUES}" \
+    "$@"
+}
+
+# Render only the HTTPRoute template (Gateway API). No cluster or Gateway API
+# CRDs are required, so these checks run in the lightweight `pre` phase.
+render_httproute() {
+  render_chart --show-only templates/httproute.yaml "$@"
+}
