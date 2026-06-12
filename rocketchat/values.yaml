@@ -87,7 +87,11 @@ extraInitContainers: []
 ## Specifies a Registration Token (obtainable at https://cloud.rocket.chat)
 #registrationToken: ""
 
-## Specifies an Enterprise License
+## Specifies an Enterprise License key
+## When set, automatically configures:
+##   OVERWRITE_SETTING_Enterprise_License - injects the license key
+##   OVERWRITE_SETTING_Show_Setup_Wizard  - marks setup as completed
+##   LICENSE_DEBUG                        - enables license debug logging
 # license: ""
 
 ## Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node.
