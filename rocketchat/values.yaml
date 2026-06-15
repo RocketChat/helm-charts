@@ -220,12 +220,18 @@ persistence:
 #     memory: 512Mi
 #     cpu: 300m
 
+# BREAKING CHANGE: UID changed from 999 to 65533 to match the image build UID.
+# Existing deployments with PVC data owned by UID 999 must chown before upgrading:
+#   kubectl exec -it <pod> -- chown -R 65533:65533 /app/uploads
+# NOTE: Reverting to UID 999 is only viable on Rocket.Chat < 8.5.0. From 8.5.0 onward
+# the Apps Engine requires write access to paths owned by UID 65533 and will fail to
+# start apps if the container runs as UID 999.
 securityContext:
-  runAsUser: 999
-  fsGroup: 999
+  runAsUser: 65533
+  fsGroup: 65533
 
 containerSecurityContext:
-  runAsUser: 999
+  runAsUser: 65533
 
 serviceAccount:
   # Specifies whether a ServiceAccount should be created
