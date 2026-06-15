@@ -3,7 +3,7 @@
 {{- if not $route.parentRefs -}}
 {{- fail "httproute.enabled is true but httproute.parentRefs is empty; an HTTPRoute needs at least one parentRef to attach to a Gateway" -}}
 {{- end -}}
-apiVersion: {{ $route.apiVersion | default "gateway.networking.k8s.io/v1" }}
+apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: {{ template "rocketchat.fullname" . }}
@@ -21,16 +21,12 @@ spec:
   parentRefs:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- $hostnames := $route.hostnames }}
-  {{- if and (not $hostnames) .Values.host }}
-  {{- $hostnames = list .Values.host }}
-  {{- end }}
-  {{- with $hostnames }}
+  {{- with .Values.host }}
   hostnames:
-    {{- tpl (toYaml .) $ | nindent 4 }}
+    - {{ tpl . $ | quote }}
   {{- end }}
   rules:
-    {{- with $route.additionalRules }}
+    {{- with $route.extraRules }}
     {{- tpl (toYaml .) $ | nindent 4 }}
     {{- end }}
     - backendRefs:
@@ -56,47 +52,4 @@ spec:
             type: PathPrefix
             value: /websocket
     {{- end }}
-    {{- if and .Values.federation.enabled $route.federation.serveWellKnown }}
-    - backendRefs:
-        - name: {{ template "rocketchat.fullname" . }}-wellknown
-          port: 80
-      matches:
-        - path:
-            type: PathPrefix
-            value: /.well-known/matrix/server
-        - path:
-            type: PathPrefix
-            value: /.well-known/matrix/client
-    {{- end }}
-{{- if and .Values.federation.enabled .Values.federation.host }}
----
-apiVersion: {{ $route.apiVersion | default "gateway.networking.k8s.io/v1" }}
-kind: HTTPRoute
-metadata:
-  name: {{ template "rocketchat.fullname" . }}-synapse
-  labels:
-    app.kubernetes.io/name: {{ include "rocketchat.name" . }}
-    helm.sh/chart: {{ include "rocketchat.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-  {{- with $route.annotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-spec:
-  {{- with $route.parentRefs }}
-  parentRefs:
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  hostnames:
-    - {{ tpl .Values.federation.host $ }}
-  rules:
-    - backendRefs:
-        - name: {{ template "rocketchat.fullname" . }}-synapse
-          port: 8008
-      matches:
-        - path:
-            type: PathPrefix
-            value: /
-{{- end }}
 {{- end -}}

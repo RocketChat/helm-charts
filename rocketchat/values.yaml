@@ -257,8 +257,6 @@ ingress:
 ## Requires the Gateway API CRDs and a Gateway controller to be installed in the cluster.
 httproute:
   enabled: false
-  # HTTPRoute apiVersion (defaults to "gateway.networking.k8s.io/v1" when empty)
-  apiVersion: ""
   annotations: {}
   # parentRefs reference the Gateway(s) this HTTPRoute attaches to. At least one is required.
   # parentRefs:
@@ -266,10 +264,6 @@ httproute:
   #     namespace: gateway-system
   #     sectionName: https
   parentRefs: []
-  # hostnames matched against the HTTP Host header. Defaults to [host] when empty.
-  # hostnames:
-  #   - chat.example.com
-  hostnames: []
   # matches for the main Rocket.Chat rule. Defaults to a PathPrefix "/" match (mirrors the Ingress).
   matches:
     - path:
@@ -277,12 +271,8 @@ httproute:
         value: /
   # filters applied to the main Rocket.Chat rule
   filters: []
-  # additionalRules (templated) prepends custom HTTPRoute rules to the main route
-  additionalRules: []
-  federation:
-    # serveWellKnown adds /.well-known/matrix/{server,client} routes to the wellknown service
-    # (only rendered when federation.enabled is also true)
-    serveWellKnown: false
+  # extraRules (templated) prepends custom HTTPRoute rules to the main route
+  extraRules: []
 
 service:
   annotations: {}

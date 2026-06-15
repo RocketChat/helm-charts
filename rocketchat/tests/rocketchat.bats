@@ -127,37 +127,6 @@ setup_file() {
   assert_output --partial "$ROCKETCHAT_HOST"
 }
 
-# bats test_tags=pre
-@test "httproute hostnames override the default host" {
-  run render_httproute \
-    --set httproute.enabled=true \
-    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
-    --set "httproute.hostnames[0]=chat.example.com"
-  assert_success
-  assert_output --partial "chat.example.com"
-}
-
-# bats test_tags=pre
-@test "httproute apiVersion can be overridden" {
-  run render_httproute \
-    --set httproute.enabled=true \
-    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
-    --set "httproute.apiVersion=gateway.networking.k8s.io/v1beta1"
-  assert_success
-  assert_output --partial "apiVersion: gateway.networking.k8s.io/v1beta1"
-}
-
-# bats test_tags=pre
-@test "httproute serves matrix well-known routes when serveWellKnown is enabled" {
-  run render_httproute \
-    --set httproute.enabled=true \
-    --set "httproute.parentRefs[0].name=rocketchat-gateway" \
-    --set httproute.federation.serveWellKnown=true
-  assert_success
-  assert_output --partial "/.well-known/matrix/server"
-  assert_output --partial "/.well-known/matrix/client"
-}
-
 # bats test_tags=microservices
 @test "httproute adds ddp-streamer routes for microservices" {
   run render_httproute \
