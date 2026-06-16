@@ -153,6 +153,23 @@ mongodb:
   enabled: true
   serviceMonitor:
     enabled: true
+    # Labels used to select the MongoDB metrics service.
+    # Defaults to Bitnami MongoDB subchart labels when empty.
+    # For the MongoDB Community Operator use:
+    #   selector:
+    #     app: <mongodb-resource-name>-svc
+    selector: {}
+    # Port name on the MongoDB service that exposes Prometheus metrics.
+    # Bitnami subchart: http-metrics
+    # MongoDB Community Operator: prometheus
+    port: ""
+    # HTTP basic auth credentials for the metrics endpoint.
+    # Required when using the MongoDB Community Operator (which protects /metrics by default).
+    # The secret must contain both username and password keys.
+    # basicAuth:
+    #   secretName: metrics-endpoint-password
+    #   usernameKey: username   # default: username
+    #   passwordKey: password   # default: password
   initdbScriptsConfigMap: rocketchat-mongodb-fix-clustermonitor-role-configmap
 
   auth:

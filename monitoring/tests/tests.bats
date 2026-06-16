@@ -116,7 +116,29 @@ helm_common() {
   test_dashboards node-exporter-full
   test_dashboards rocketchat-metrics
   test_dashboards rocketchat-microservices
+  test_dashboards seaweedfs
 }
+
+# bats test_tags=asserts, dashboards
+@test "assert airgapped dashboards embed bundled json" {
+  bundled_dashboards="rocketchat-logs rocketchat-metrics rocketchat-microservices rocketchat-mongo-8 rocketchat-mongo-7 node-exporter-full kubernetes-deployment ingress-nginx ingress-traefik seaweedfs"
+
+  run helm template "$DEPLOYMENT_NAME" "$CHART_ARCHIVE" \
+    --set grafana.dashboards.airgapped=true \
+    --show-only templates/grafana-dashboards.yaml
+  assert_success
+
+  # Verify every bundled dashboard has a named CRD in the output
+  for dashboard in $bundled_dashboards; do
+    assert_output --partial "name: ${DEPLOYMENT_NAME}-${dashboard}"
+  done
+
+  # Verify exactly 10 dashboards embed inline JSON (one per bundled dashboard)
+  local json_count
+  json_count=$(grep -c "^  json: |" <<< "$output")
+  assert [ "$json_count" -eq 10 ]
+}
+
 # bats test_tags=cleanup
 @test "cleanup" {
   [[ -n "$IGNORE_CLEANUP" ]] &&

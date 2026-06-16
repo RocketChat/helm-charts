@@ -50,7 +50,7 @@ spec:
     type: loki
     access: proxy
     url: http://{{ .Release.Name }}-loki-gateway.{{ .Release.Namespace }}.svc.cluster.local/
-    isDefault: true
+    isDefault: false
     editable: false
     jsonData:
       "tlsSkipVerify": true
