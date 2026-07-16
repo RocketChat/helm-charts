@@ -45,7 +45,7 @@ spec:
       serviceAccountName: {{ template "rocketchat.serviceAccountName" . }}
       {{- if .Values.extraInitContainers }}
       initContainers:
-        {{- toYaml .Values.extraInitContainers | nindent 8 }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.extraInitContainers "context" $) | nindent 8 }}
       {{- end }}
       containers:
       - name: rocketchat
