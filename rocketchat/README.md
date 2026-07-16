@@ -354,8 +354,7 @@ If you set `containerSecurityContext.runAsUser` to a UID other than the image's 
 enabling apps can fail with an `EACCES` error writing
 `.../@rocket.chat/apps/deno-runtime/deno.runtime.jsonc`. This is an upstream Rocket.Chat
 issue ([rocketchat/Rocket.Chat#41006](https://github.com/rocketchat/rocket.chat/issues/41006)):
-the Apps-Engine writes an ephemeral config file into a directory that is root-owned in the
-image, and `runAsUser` alone doesn't change on-disk ownership from the image layer.
+the Apps-Engine writes an ephemeral config file into a directory that does not have write permission for the non-65533 user.
 
 Until that's fixed upstream, work around it by seeding an `emptyDir` over that directory
 with an initContainer that runs as the same UID as the main container (so no `chown`/root
@@ -390,15 +389,7 @@ extraInitContainers:
 
 `extraInitContainers` is rendered with `tpl`, so the `image:` line above resolves to
 whatever you've set for the main container — no need to duplicate the image reference as a
-separate literal that can drift on upgrade. `runAsUser` is left as a plain literal on
-purpose: it's a typed integer field in the Kubernetes API, and templating it through `tpl`
-would make it render as a quoted string, which the API server rejects — so just keep this
-value matched to `containerSecurityContext.runAsUser` by hand.
-
-Use `cp -r`, not `cp -a`: `-a` tries to preserve the source files' ownership (root, from the
-image) on the copies, which a non-root, unprivileged initContainer can't do and fails with
-`Operation not permitted`. Plain `cp -r` skips that, so the copies simply end up owned by
-whichever UID ran the copy — which is exactly what you want here.
+separate literal that can drift on upgrade. 
 
 ### Increasing Server Capacity and HA Setup
 
