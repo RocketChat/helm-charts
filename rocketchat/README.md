@@ -76,6 +76,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `extraSecret`                             | An already existing secret to be used by chat deployment. It needs to be a string                                                                                                                                                                                                                                                                                                                                                            | `""`                               |
 | `extraVolumes`                         | Extra volumes allowing inclusion of certificates or any sort of file that might be required (see bellow)                                                                                                                                                                                                                                                                                                                                                       | `[]`                               |
 | `extraVolumeMounts`                    | Where the aforementioned extra volumes should be mounted inside the container                                                                                                                                                                                                                                                                                                                                                                                  | `[]`                               |
+| `extraInitContainers`                  | Containers run before the `rocketchat` container starts. Rendered with `tpl`, so entries can reference `.Values`/`.Chart` (e.g. to reuse the main image or UID, see bellow)                                                                                                                                                                                                                                                                                    | `[]`                               |
 | `podAntiAffinity`                      | Pod anti-affinity can prevent the scheduler from placing RocketChat replicas on the same node. The default value "soft" means that the scheduler should *prefer* to not schedule two replica pods onto the same node but no guarantee is provided. The value "hard" means that the scheduler is *required* to not schedule two replica pods onto the same node. The value "" will disable pod anti-affinity so that no anti-affinity rules will be configured. | `""`                               |
 | `podAntiAffinityTopologyKey`           | If anti-affinity is enabled sets the topologyKey to use for anti-affinity. This can be changed to, for example `failure-domain.beta.kubernetes.io/zone`                                                                                                                                                                                                                                                                                                        | `kubernetes.io/hostname`           |
 | `affinity`                             | Assign custom affinity rules to the RocketChat instance https://kubernetes.io/docs/concepts/configuration/assign-pod-node/                                                                                                                                                                                                                                                                                                                                     | `{}`                               |
@@ -93,6 +94,7 @@ The following table lists the configurable parameters of the Rocket.Chat chart a
 | `securityContext.enabled`              | Enable security context for the pod                                                                                                                                                                                                                                                                                                                                                                                                                            | `true`                             |
 | `securityContext.runAsUser`            | User to run the pod as                                                                                                                                                                                                                                                                                                                                                                                                                                         | `65533`                            |
 | `securityContext.fsGroup`              | fs group to use for the pod                                                                                                                                                                                                                                                                                                                                                                                                                                    | `65533`                            |
+| `containerSecurityContext.runAsUser`   | User to run the `rocketchat` container as                                                                                                                                                                                                                                                                                                                                                                                                                      | `65533`                            |
 | `serviceAccount.create`                | Specifies whether a ServiceAccount should be created                                                                                                                                                                                                                                                                                                                                                                                                           | `true`                             |
 | `serviceAccount.name`                  | Name of the ServiceAccount to use. If not set and create is true, a name is generated using the fullname template                                                                                                                                                                                                                                                                                                                                              | `""`                               |
 | `ingress.enabled`                      | If `true`, an ingress is created                                                                                                                                                                                                                                                                                                                                                                                                                               | `false`                            |
@@ -344,6 +346,59 @@ extraVolumeMounts:
     name: etc-certs   
     readOnly: true
 ```
+
+### Running with a custom `runAsUser` (Apps/Deno-runtime EACCES)
+
+If you set `containerSecurityContext.runAsUser` to a UID other than the image's built-in
+`65533` (e.g. under a PodSecurityStandard/SCC that assigns its own UID), installing or
+enabling apps can fail with an `EACCES` error writing
+`.../@rocket.chat/apps/deno-runtime/deno.runtime.jsonc`. This is an upstream Rocket.Chat
+issue ([rocketchat/Rocket.Chat#41006](https://github.com/rocketchat/rocket.chat/issues/41006)):
+the Apps-Engine writes an ephemeral config file into a directory that is root-owned in the
+image, and `runAsUser` alone doesn't change on-disk ownership from the image layer.
+
+Until that's fixed upstream, work around it by seeding an `emptyDir` over that directory
+with an initContainer that runs as the same UID as the main container (so no `chown`/root
+is needed):
+
+```yaml
+containerSecurityContext:
+  runAsUser: 65533   # set to your custom UID
+
+extraVolumes:
+  - name: deno-runtime
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: deno-runtime
+    mountPath: /app/bundle/programs/server/npm/node_modules/@rocket.chat/apps/deno-runtime
+
+extraInitContainers:
+  - name: seed-deno-runtime
+    image: "{{ include \"rocketchat.image\" (dict \"repository\" .Values.image.repository \"tag\" .Values.image.tag \"appVersion\" .Chart.AppVersion \"global\" .Values.global) }}"
+    command:
+      - sh
+      - -c
+      - cp -r /app/bundle/programs/server/npm/node_modules/@rocket.chat/apps/deno-runtime/. /seed/
+    volumeMounts:
+      - name: deno-runtime
+        mountPath: /seed
+    securityContext:
+      runAsUser: 65533   # keep in sync with containerSecurityContext.runAsUser above
+      runAsNonRoot: true
+```
+
+`extraInitContainers` is rendered with `tpl`, so the `image:` line above resolves to
+whatever you've set for the main container — no need to duplicate the image reference as a
+separate literal that can drift on upgrade. `runAsUser` is left as a plain literal on
+purpose: it's a typed integer field in the Kubernetes API, and templating it through `tpl`
+would make it render as a quoted string, which the API server rejects — so just keep this
+value matched to `containerSecurityContext.runAsUser` by hand.
+
+Use `cp -r`, not `cp -a`: `-a` tries to preserve the source files' ownership (root, from the
+image) on the copies, which a non-root, unprivileged initContainer can't do and fails with
+`Operation not permitted`. Plain `cp -r` skips that, so the copies simply end up owned by
+whichever UID ran the copy — which is exactly what you want here.
 
 ### Increasing Server Capacity and HA Setup
 
