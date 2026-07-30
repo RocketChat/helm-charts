@@ -103,15 +103,12 @@ spec:
               key: reg-token
         {{- end }}
         {{- if .Values.license }}
-        - name: OVERWRITE_SETTING_Enterprise_License
-          valueFrom:
-            secretKeyRef:
-              name: {{ template "rocketchat.fullname" . }}
-              key: license
         - name: OVERWRITE_SETTING_Show_Setup_Wizard
           value: "completed"
         - name: LICENSE_DEBUG
           value: "true"
+        - name: ROCKETCHAT_LICENSE
+          value: {{ quote .Values.license }}
         {{- end }}
         {{- if .Values.prometheusScraping.enabled }}
         - name: OVERWRITE_SETTING_Prometheus_Enabled
