@@ -5,9 +5,7 @@ on:
     secrets:
       github-token:
         required: true
-      docker-username:
-        required: true
-      docker-password:
+      docker-oidc-id:
         required: true
     inputs:
       tag:
@@ -100,6 +98,8 @@ jobs:
       - set-versions
     # prettier-ignore
     if: '! contains(inputs.tag, ''rc'')'
+    permissions:
+      id-token: write
     uses: ./.github/workflows/release.yml
     with:
       tag: ${{ inputs.tag }}
@@ -107,5 +107,4 @@ jobs:
       chartName: ${{ inputs.chartName }}
     secrets:
       github-token: ${{ secrets.github-token }}
-      docker-username: ${{ secrets.docker-username }}
-      docker-password: ${{ secrets.docker-password }}
+      docker-oidc-id: ${{ secrets.docker-oidc-id }}
