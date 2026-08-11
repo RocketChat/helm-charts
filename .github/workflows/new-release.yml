@@ -46,6 +46,8 @@ jobs:
   run:
     needs:
       - config
+    permissions:
+      id-token: write
     uses: ./.github/workflows/main.yml
     with:
       tag: ${{ needs.config.outputs.tag }}
@@ -53,5 +55,4 @@ jobs:
       chartName: ${{ inputs.chartName }}
     secrets:
       github-token: ${{ secrets.GITHUB_TOKEN }}
-      docker-username: ${{ secrets.DOCKER_USERNAME }}
-      docker-password: ${{ secrets.DOCKER_PASSWORD }}
+      docker-oidc-id: ${{ secrets.DOCKER_OIDC_ID }}
