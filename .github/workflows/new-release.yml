@@ -18,9 +18,13 @@ on:
           - rocketchat-voip
 
 
+permissions: {}
+
 jobs:
   config:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       chart-version: ${{ steps.set.outputs.chart-version }}
       tag: ${{ steps.set.outputs.tag }}
@@ -47,6 +51,9 @@ jobs:
     needs:
       - config
     permissions:
+      # ceiling for main.yml -> release.yml: push to master + gh-pages,
+      # create the GitHub release, and Docker Hub OIDC login
+      contents: write
       id-token: write
     uses: ./.github/workflows/main.yml
     with:

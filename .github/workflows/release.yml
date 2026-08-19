@@ -18,6 +18,8 @@ on:
         type: string
         required: true
 
+permissions: {}
+
 env:
   REPO: 'RocketChat/helm-charts'
 
@@ -25,7 +27,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # push to master + gh-pages and create the GitHub release
+      contents: write
+      # Docker Hub OIDC login
       id-token: write
     steps:
       - name: Clone helm repo
