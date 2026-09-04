@@ -35,7 +35,9 @@ on:
       - .github/workflows/test.yml
       - task.bash
 
-env: 
+permissions: {}
+
+env:
   REPO: 'RocketChat/helm-charts'
   TESTS_REPO: 'RocketChat/public-releases'
 
@@ -45,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup docker
-        uses: docker/setup-docker-action@v4
+        uses: docker/setup-docker-action@e43656e248c0bd0647d3f5c195d116aacf6fcaf4 # v4.7.0
 
   setup-k3d:
     runs-on: ubuntu-latest
@@ -57,18 +59,20 @@ jobs:
 
   detect-changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       chartNames: ${{ steps.set-chartname.outputs.chartname }}
       runMock: ${{ steps.set-chartname.outputs.run_mock }}
     steps:
       - name: Clone helm chart repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           submodules: true
 
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v46
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
 
       - name: Set chartname variable
         id: set-chartname
@@ -118,9 +122,11 @@ jobs:
       matrix:
         chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Clone helm chart repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           submodules: true
 
@@ -135,9 +141,11 @@ jobs:
       matrix:
         chartName: ${{ fromJson(needs.detect-changes.outputs.chartNames) }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Clone helm chart repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           submodules: true
 

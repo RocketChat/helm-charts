@@ -18,18 +18,22 @@ on:
         required: true
         type: string
 
+permissions: {}
+
 env:
   HELM_REPO: RocketChat/helm-charts
 
 jobs:
   set-versions:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       chart-version: ${{ steps.set-chart-version.outputs.chart-version }}
       app-version: ${{ inputs.tag }}
       run: ${{ steps.set-chart-version.outputs.run }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
         with:
           repository: ${{ env.HELM_REPO }}
 
@@ -86,6 +90,8 @@ jobs:
     needs:
       - set-versions
     if: ${{ needs.set-versions.outputs.run }} == 'true'
+    permissions:
+      contents: read
     uses: ./.github/workflows/test.yml
     with:
       tag: ${{ needs.set-versions.outputs.app-version }}
@@ -99,6 +105,9 @@ jobs:
     # prettier-ignore
     if: '! contains(inputs.tag, ''rc'')'
     permissions:
+      # push to master + gh-pages and create the GitHub release
+      contents: write
+      # Docker Hub OIDC login
       id-token: write
     uses: ./.github/workflows/release.yml
     with:
