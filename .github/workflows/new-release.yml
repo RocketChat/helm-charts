@@ -29,7 +29,7 @@ jobs:
       chart-version: ${{ steps.set.outputs.chart-version }}
       tag: ${{ steps.set.outputs.tag }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3.7.0
 
       - shell: bash
         id: set

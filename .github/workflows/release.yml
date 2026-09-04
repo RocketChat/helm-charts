@@ -33,14 +33,14 @@ jobs:
       id-token: write
     steps:
       - name: Clone helm repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         with:
           repository: ${{ env.REPO }}
           path: ./helm-charts
           token: ${{ secrets.github-token }}
 
       - name: Clone helm repo (gh-pages)
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         with:
           repository: ${{ env.REPO }}
           ref: gh-pages
@@ -66,7 +66,7 @@ jobs:
         run: helm repo index ./gh-pages/
 
       - name: Install ORAS
-        uses: oras-project/setup-oras@v1
+        uses: oras-project/setup-oras@22ce207df3b08e061f537244349aac6ae1d214f6 # v1.2.4
 
       - name: OIDC token
         id: docker_oidc
@@ -96,7 +96,7 @@ jobs:
             ./gh-pages/charts/${{ inputs.chartName }}-${{ inputs.chartVersion }}.tgz:application/vnd.cncf.helm.chart.content.v1.tar+gzip
 
       - name: Push to master
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           add: "${{ inputs.chartName }}/Chart.yaml"
           cwd: helm-charts
@@ -104,7 +104,7 @@ jobs:
           push: true
 
       - name: Push to gh-pages
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
         with:
           add: "."
           cwd: gh-pages
@@ -112,7 +112,7 @@ jobs:
           push: true
       
       - name: Create a release with artifact
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
         with:
           files: ${{ format('./gh-pages/charts/${0}-{1}.tgz', inputs.chartName, inputs.chartVersion) }}
           prerelease: false
