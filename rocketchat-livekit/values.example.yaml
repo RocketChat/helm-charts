@@ -1,0 +1,24 @@
+# Where clients reach LiveKit's signalling. Point it to the same place
+# `chat.foobar.org` does.
+host: livekit.chat.foobar.org
+
+media:
+  # Point this one at the media load balancer (cf. README.md)
+  externalAddress: rtc.chat.foobar.org
+  # Or, if you know the load balancer's public IP (e.g. an EIP), set it
+  # directly and leave `externalAddress` empty:
+  # nodeIP: 203.0.113.10
+  # serviceAnnotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxx"
+
+# Leave empty to have a pair generated for you. If set, the secret must be
+# at least 32 characters long.
+# credentials:
+#   apiKey: "APIchangeme"
+#   apiSecret: "changeme!!!changeme!!!changeme!!!"
+
+ingress:
+  className: traefik
+  certManager:
+    enabled: true
+    clusterIssuer: "production-cert-issuer"

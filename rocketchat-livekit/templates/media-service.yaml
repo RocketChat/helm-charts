@@ -1,0 +1,57 @@
+# Media (WebRTC), exposed directly as it isn't HTTP. LiveKit advertises
+# `media.udpPort` to clients, so the Service port, the node port (if any)
+# and the container port are all the same.
+{{- $isLB := eq (include "rocketchat-livekit.mediaIsLoadBalancer" .) "true" }}
+{{- $annotations := dict }}
+{{- if eq .Values.media.serviceType "nlb" }}
+{{- $_ := set $annotations "service.beta.kubernetes.io/aws-load-balancer-type" "nlb" }}
+{{- /*
+The NLB has an IP per zone, LiveKit advertises only one of them, and with
+`externalTrafficPolicy: Local` only the LiveKit pod's node is a healthy
+target. Without cross-zone, media sent to another zone's IP goes nowhere.
+*/}}
+{{- $_ := set $annotations "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" "true" }}
+{{- end }}
+{{- $annotations = mergeOverwrite $annotations (.Values.media.serviceAnnotations | default dict) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}-media
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+  {{- with $annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ ternary "LoadBalancer" "NodePort" $isLB }}
+  # Keeps the client's address, which ICE checks rely on.
+  externalTrafficPolicy: Local
+  selector:
+    {{- include "rocketchat-livekit.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: rtc-udp
+      port: {{ .Values.media.udpPort }}
+      targetPort: rtc-udp
+      protocol: UDP
+      {{- if not $isLB }}
+      nodePort: {{ .Values.media.udpPort }}
+      {{- end }}
+    {{- if eq (include "rocketchat-livekit.isTrue" .Values.media.tcp.enabled) "true" }}
+    - name: rtc-tcp
+      port: {{ .Values.media.tcp.port }}
+      targetPort: rtc-tcp
+      protocol: TCP
+      {{- if not $isLB }}
+      nodePort: {{ .Values.media.tcp.port }}
+      {{- end }}
+    {{- end }}
+    {{- if eq (include "rocketchat-livekit.isTrue" .Values.turn.enabled) "true" }}
+    - name: turn-tls
+      port: {{ .Values.turn.tlsPort }}
+      targetPort: turn-tls
+      protocol: TCP
+      {{- if not $isLB }}
+      nodePort: {{ .Values.turn.tlsPort }}
+      {{- end }}
+    {{- end }}

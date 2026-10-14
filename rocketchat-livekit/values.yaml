@@ -1,0 +1,161 @@
+# Default values for rocketchat-livekit.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+#
+# NOTE: launchcontrol passes every plugin value as a string, so booleans
+#       and numbers in here are read as "true"/"false" and "7882" just as
+#       well. Values accept templates (`tpl`), as the plugin's defaultValues
+#       are built from `.Values.launchcontrol.*`.
+
+# Public host of LiveKit's signalling (WebSocket), served through the ingress.
+# Rocket.Chat's `VideoConf_LiveKit_Url` becomes `wss://<host>`.
+# Do not put SSO or proxy authentication in front of it: a LiveKit client
+# cannot answer a proxy challenge.
+host: livekit.test.rocket.chat
+
+image:
+  name: livekit/livekit-server
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# The API key pair shared by LiveKit and Rocket.Chat.
+credentials:
+  # Name of the Secret holding `apiKey`, `apiSecret` and `url`. It's fixed
+  # on purpose: the launchcontrol Plugin points Rocket.Chat at it by name.
+  # The Secret is kept on uninstall, so the pair survives a reinstall.
+  secretName: livekit-credentials
+  # Leave both empty to generate a pair on install and keep it on upgrades.
+  apiKey: ""
+  # Must be at least 32 characters long.
+  apiSecret: ""
+  # Use an existing Secret instead of creating one (e.g. a SealedSecret).
+  # It must contain the `apiKey`, `apiSecret` and `url` keys.
+  existingSecret: ""
+
+# How clients reach LiveKit's media (WebRTC) ports. Signalling goes through
+# the ingress, media can't: it's raw UDP (and optionally TCP).
+media:
+  # Options: "nlb", "LoadBalancer", "NodePort"
+  serviceType: "nlb"
+  # Merged over the chart's own. With "nlb", that's cross-zone load balancing
+  # enabled (cf. README.md), which you can turn off by setting
+  # `service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "false"`
+  serviceAnnotations: {}
+    # Example: To use specific EIP allocations for AWS NLB, uncomment and configure:
+    # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxx,eipalloc-yyyy"
+  # One UDP port for all media. With NodePort it must sit in the cluster's
+  # node port range (30000-32767 by default), as LiveKit advertises this
+  # very port to clients.
+  udpPort: 7882
+  # ICE over TCP, for clients that can't reach UDP. Exposed on the same
+  # Service as UDP, so the cluster must support mixed-protocol LoadBalancers.
+  tcp:
+    enabled: false
+    port: 7881
+  # The public IPv4 LiveKit advertises to clients. Set it when it's known
+  # (e.g. an EIP allocated to the NLB).
+  nodeIP: ""
+  # Otherwise, a FQDN resolved to that IP when LiveKit starts. Point it at
+  # the media load balancer, LiveKit waits until it resolves.
+  externalAddress: rtc.test.rocket.chat
+  # With neither of them set, LiveKit finds its public IP through STUN, which
+  # is only right when the pod's egress IP is also where clients reach it.
+  stunServers:
+    - stun.l.google.com:19302
+
+# LiveKit's embedded TURN relay over TLS, for clients on networks that block
+# UDP. It's served on the media Service, so it needs mixed-protocol support
+# just like `media.tcp`.
+turn:
+  enabled: false
+  # Defaults to `media.externalAddress`. It must resolve to the media load
+  # balancer, and the certificate must be valid for it.
+  host: ""
+  tlsPort: 5349
+  # Certificate for the TURN host. As the host points at the media load
+  # balancer and not at the ingress, the issuer must solve DNS-01 challenges.
+  certManager:
+    enabled: false
+    clusterIssuer: "production-cert-issuer"
+  # Or a `kubernetes.io/tls` Secret of your own.
+  existingTlsSecret: ""
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+  certManager:
+    enabled: true
+    clusterIssuer: "production-cert-issuer" # Specify the cluster issuer to use when cert-manager is enabled
+
+logLevel: info
+
+# Extra livekit.yaml settings, merged over the ones the chart generates.
+# cf. https://github.com/livekit/livekit/blob/master/config-sample.yaml
+config: {}
+  # room:
+  #   empty_timeout: 300
+
+monitoring:
+  prometheus:
+    enabled: true
+    port: 6789
+
+# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+imagePullSecrets: []
+# This is to override the chart name.
+nameOverride: ""
+fullnameOverride: ""
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    memory: 2Gi
+
+# Gives in-flight calls a chance to end before the pod goes away.
+terminationGracePeriodSeconds: 30
+
+# Additional volumes on the output Deployment definition.
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

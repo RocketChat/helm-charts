@@ -1,0 +1,28 @@
+# Signalling (HTTP/WebSocket), reached through the ingress.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+    {{- if and (eq (include "rocketchat-livekit.isTrue" .Values.monitoring.prometheus.enabled) "true") (not (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1")) }}
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ .Values.monitoring.prometheus.port }}"
+    prometheus.io/path: "/metrics"
+    {{- end }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "rocketchat-livekit.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: 7880
+      targetPort: http
+      protocol: TCP
+    {{- if eq (include "rocketchat-livekit.isTrue" .Values.monitoring.prometheus.enabled) "true" }}
+    - name: prometheus-metrics
+      port: {{ .Values.monitoring.prometheus.port }}
+      targetPort: prometheus
+      protocol: TCP
+    {{- end }}

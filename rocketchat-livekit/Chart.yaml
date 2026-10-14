@@ -1,0 +1,13 @@
+apiVersion: v2
+name: rocketchat-livekit
+description: A Helm Chart for deploying a LiveKit server for Rocket.Chat's native video conference
+
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.1.0
+
+# The livekit-server release deployed by default. Pin a release you have tested.
+appVersion: "v1.13.9"

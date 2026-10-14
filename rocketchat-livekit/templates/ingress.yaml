@@ -1,0 +1,40 @@
+{{- if eq (include "rocketchat-livekit.isTrue" .Values.ingress.enabled) "true" }}
+{{- $certManager := eq (include "rocketchat-livekit.isTrue" .Values.ingress.certManager.enabled) "true" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.ingress.className }}
+    kubernetes.io/ingress.class: {{ . | quote }}
+    {{- end }}
+    {{- if $certManager }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.certManager.clusterIssuer }}
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . | quote }}
+  {{- end }}
+  rules:
+    - host: {{ include "rocketchat-livekit.host" . | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "rocketchat-livekit.fullname" . }}
+                port:
+                  name: http
+  {{- if $certManager }}
+  tls:
+    - hosts:
+        - {{ include "rocketchat-livekit.host" . | quote }}
+      secretName: {{ include "rocketchat-livekit.fullname" . }}-cert
+  {{- end }}
+{{- end }}

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+data:
+  livekit.yaml: |
+    {{- include "rocketchat-livekit.config" . | nindent 4 }}

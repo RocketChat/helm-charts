@@ -1,0 +1,14 @@
+Rocket.Chat LiveKit Plugin has been successfully installed!
+
+Signalling: wss://{{ include "rocketchat-livekit.host" . }}
+{{- if eq (include "rocketchat-livekit.mediaIsLoadBalancer" .) "true" }}
+{{- if not (tpl .Values.media.nodeIP .) }}
+
+Point {{ tpl .Values.media.externalAddress . | default "your media FQDN" }} at the media load balancer, LiveKit waits until it resolves.
+You can retrieve the external IP or hostname of the load balancer by running:
+kubectl get svc -n {{ .Release.Namespace }} {{ include "rocketchat-livekit.fullname" . }}-media
+{{- end }}
+{{- end }}
+
+Rocket.Chat reads the URL and API key pair from the "{{ include "rocketchat-livekit.credentialsSecretName" . }}" Secret.
+The `video-conference-native` license module is required for LiveKit to be offered.

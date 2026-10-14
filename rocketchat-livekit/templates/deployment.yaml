@@ -1,0 +1,170 @@
+{{- $prometheus := eq (include "rocketchat-livekit.isTrue" .Values.monitoring.prometheus.enabled) "true" }}
+{{- $tcp := eq (include "rocketchat-livekit.isTrue" .Values.media.tcp.enabled) "true" }}
+{{- $turn := eq (include "rocketchat-livekit.isTrue" .Values.turn.enabled) "true" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+spec:
+  # A single node: a multi-node LiveKit needs Redis (`config.redis.address`)
+  # and a media address per node, which this chart doesn't do.
+  replicas: 1
+  # Two LiveKit nodes without Redis don't know each other's rooms, so never
+  # run the old and the new one side by side.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "rocketchat-livekit.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include "rocketchat-livekit.config" . | sha256sum }}
+        checksum/credentials: {{ toYaml .Values.credentials | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "rocketchat-livekit.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "rocketchat-livekit.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: livekit
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # `node_ip` must be an IP, so resolve the media FQDN here. It's done
+          # once: if the load balancer's address changes, restart the pod.
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              if [ -z "$NODE_IP" ] && [ -n "$NODE_HOST" ]; then
+                until NODE_IP="$(getent ahostsv4 "$NODE_HOST" | awk 'NR==1 { print $1 }')" && [ -n "$NODE_IP" ]; do
+                  echo "Waiting for $NODE_HOST to resolve..."
+                  sleep 5
+                done
+                echo "Advertising $NODE_IP ($NODE_HOST) to clients"
+                export NODE_IP
+              fi
+              exec /livekit-server --config /etc/livekit/livekit.yaml
+          env:
+            - name: LIVEKIT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rocketchat-livekit.credentialsSecretName" . }}
+                  key: apiKey
+            - name: LIVEKIT_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "rocketchat-livekit.credentialsSecretName" . }}
+                  key: apiSecret
+            - name: LIVEKIT_KEYS
+              value: "$(LIVEKIT_API_KEY): $(LIVEKIT_API_SECRET)"
+            {{- with tpl .Values.media.nodeIP . }}
+            - name: NODE_IP
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with tpl .Values.media.externalAddress . }}
+            - name: NODE_HOST
+              value: {{ . | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 7880
+              protocol: TCP
+            - name: rtc-udp
+              containerPort: {{ .Values.media.udpPort }}
+              protocol: UDP
+            {{- if $tcp }}
+            - name: rtc-tcp
+              containerPort: {{ .Values.media.tcp.port }}
+              protocol: TCP
+            {{- end }}
+            {{- if $turn }}
+            - name: turn-tls
+              containerPort: {{ .Values.turn.tlsPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if $prometheus }}
+            - name: prometheus
+              containerPort: {{ .Values.monitoring.prometheus.port }}
+              protocol: TCP
+            {{- end }}
+          # Covers the wait for the media FQDN to resolve.
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+            failureThreshold: 120
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/livekit/livekit.yaml
+              subPath: livekit.yaml
+              readOnly: true
+            {{- if $turn }}
+            - name: turn-tls
+              mountPath: /etc/livekit/tls
+              readOnly: true
+            {{- end }}
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "rocketchat-livekit.fullname" . }}
+        {{- if $turn }}
+        - name: turn-tls
+          secret:
+            secretName: {{ include "rocketchat-livekit.turnTlsSecretName" . }}
+        {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

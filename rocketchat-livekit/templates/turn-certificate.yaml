@@ -1,0 +1,15 @@
+{{- if and (eq (include "rocketchat-livekit.isTrue" .Values.turn.enabled) "true") (eq (include "rocketchat-livekit.isTrue" .Values.turn.certManager.enabled) "true") (not .Values.turn.existingTlsSecret) }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}-turn
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "rocketchat-livekit.turnTlsSecretName" . }}
+  dnsNames:
+    - {{ include "rocketchat-livekit.turnHost" . | quote }}
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ .Values.turn.certManager.clusterIssuer }}
+{{- end }}

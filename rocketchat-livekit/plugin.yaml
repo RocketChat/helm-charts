@@ -1,0 +1,53 @@
+# launchcontrol Plugin for this chart. Enable it on a workspace with:
+#
+#   spec:
+#     plugins:
+#       - name: livekit
+#
+apiVersion: launchcontrol.cloud.rocket.chat/v1alpha1
+kind: Plugin
+metadata:
+  name: livekit
+spec:
+  chartRef: "https://rocketchat.github.io/helm-charts/charts/rocketchat-livekit-0.1.0.tgz"
+  chartVersion: "0.1.0"
+  # The order of priority for values is (from highest to lowest):
+  # 1. values from the workspace CR
+  # 2. mappings from the workspace CR to helm values
+  # 3. defaultValues from the plugin CR
+  # 4. defaultValues from the chart
+  defaultValues:
+    "host": "livekit.{{ .Values.launchcontrol.workspaceName }}.{{ .Values.launchcontrol.baseDomain }}"
+    "media.externalAddress": "rtc.{{ .Values.launchcontrol.workspaceName }}.{{ .Values.launchcontrol.baseDomain }}"
+    "media.serviceType": "nlb"
+    "ingress.className": "traefik"
+  workspaceMappings: # This will map properties from the workspace CR to helm values
+    - source: spec.baseDomain
+      target: launchcontrol.baseDomain
+    - source: metadata.name
+      target: launchcontrol.workspaceName
+  # cf. https://github.com/RocketChat/Rocket.Chat/blob/develop/docs/features/native-video-conference/deployment.md#4-rocketchat-settings
+  # Settings set this way are read-only in the admin UI.
+  workspaceEnvironment:
+    - name: OVERWRITE_SETTING_VideoConf_Conference_Window_Enabled
+      value: "true"
+      target: "rocket.chat"
+    - name: OVERWRITE_SETTING_VideoConf_LiveKit_Enabled
+      value: "true"
+      target: "rocket.chat"
+    # The Secret is created by the chart (credentials.secretName).
+    - name: OVERWRITE_SETTING_VideoConf_LiveKit_Url
+      value: "livekit-credentials"
+      secretKeyRef: "url"
+      target: "rocket.chat"
+    - name: OVERWRITE_SETTING_VideoConf_LiveKit_Api_Key
+      value: "livekit-credentials"
+      secretKeyRef: "apiKey"
+      target: "rocket.chat"
+    - name: OVERWRITE_SETTING_VideoConf_LiveKit_Api_Secret
+      value: "livekit-credentials"
+      secretKeyRef: "apiSecret"
+      target: "rocket.chat"
+    - name: OVERWRITE_SETTING_VideoConf_Default_Provider
+      value: "livekit"
+      target: "rocket.chat"

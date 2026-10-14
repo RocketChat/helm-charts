@@ -9,7 +9,7 @@
 
 This chart **doesn't** deploy Rocket.Chat. In fact, it doesn't even 
 require an workspace to be running. All it does is to deploy FreeSWITCH and 
-optionally Drachtio to the specified namespace. The way Rocket.Chat is deployed 
+Drachtio to the specified namespace. The way Rocket.Chat is deployed 
 is up to you, but for it to work, the instance has to be able to talk with 
 FreeSWITCH's API. 
 

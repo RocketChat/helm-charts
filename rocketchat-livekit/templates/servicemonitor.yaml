@@ -1,0 +1,18 @@
+{{- if eq (include "rocketchat-livekit.isTrue" .Values.monitoring.prometheus.enabled) "true" }}
+{{- if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "rocketchat-livekit.fullname" . }}
+  labels:
+    {{- include "rocketchat-livekit.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "rocketchat-livekit.selectorLabels" . | nindent 6 }}
+  endpoints:
+  - port: prometheus-metrics
+    interval: 30s
+    path: /metrics
+{{- end }}
+{{- end }}

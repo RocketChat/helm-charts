@@ -16,6 +16,7 @@ on:
           - rocketchat
           - monitoring
           - rocketchat-voip
+          - rocketchat-livekit
 
 
 permissions: {}
