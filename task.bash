@@ -10,6 +10,8 @@ PORTS["mock-rocketchat"]=8080
 PORTS["cluster-rocketchat"]=9080
 PORTS["mock-monitoring"]=8082
 PORTS["cluster-monitoring"]=9082
+PORTS["mock-rocketchat-livekit"]=8084
+PORTS["cluster-rocketchat-livekit"]=9084
 
 function _error() {
   for line in "${@}"; do
@@ -151,6 +153,10 @@ function monitoring() {
   ./bats/core/bin/bats ./monitoring/tests/tests.bats "$@"
 }
 
+function rocketchat-livekit() {
+  ./bats/core/bin/bats ./rocketchat-livekit/tests/tests.bats "$@"
+}
+
 function clean() {
   find . -name "*.tgz" -delete
   for mode in "microservices" "monolith"; do
@@ -163,6 +169,11 @@ function clean() {
   PROJECT_NAME="mock-monitoring" \
     mock.run delete || true
   PROJECT_NAME="cluster-monitoring" \
+    cluster.run delete || true
+
+  PROJECT_NAME="mock-rocketchat-livekit" \
+    mock.run delete || true
+  PROJECT_NAME="cluster-rocketchat-livekit" \
     cluster.run delete || true
 
   "$@"
@@ -184,6 +195,7 @@ function usage() {
   echo "  cluster          - Run cluster tests"
   echo "  rocketchat       - Run Rocket.Chat tests"
   echo "  monitoring       - Run monitoring tests"
+  echo "  rocketchat-livekit - Run rocketchat-livekit tests"
   echo "  clean            - Clean up generated files and resources"
   echo "  keep             - Keep resources after running tests"
   echo "  help             - Show this help message"

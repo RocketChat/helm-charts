@@ -1,0 +1,18 @@
+host: "${LIVEKIT_HOST}"
+
+media:
+  # A LoadBalancer never gets an address on the mock cluster, and helm --wait
+  # would hang on it.
+  serviceType: NodePort
+  udpPort: 31882
+  # Something the cluster's DNS resolves, to go through the startup lookup.
+  externalAddress: kubernetes.default.svc.cluster.local
+
+ingress:
+  certManager:
+    enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi

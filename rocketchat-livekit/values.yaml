@@ -38,9 +38,6 @@ credentials:
 media:
   # Options: "nlb", "LoadBalancer", "NodePort"
   serviceType: "nlb"
-  # Merged over the chart's own. With "nlb", that's cross-zone load balancing
-  # enabled (cf. README.md), which you can turn off by setting
-  # `service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "false"`
   serviceAnnotations: {}
     # Example: To use specific EIP allocations for AWS NLB, uncomment and configure:
     # service.beta.kubernetes.io/aws-load-balancer-eip-allocations: "eipalloc-xxxx,eipalloc-yyyy"
