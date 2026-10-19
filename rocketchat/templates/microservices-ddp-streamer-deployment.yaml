@@ -33,6 +33,7 @@ spec:
       annotations:
         {{ include "rocketchat.annotations" (dict "name" "ddpStreamer" "context" $) | indent 8 }}
     spec:
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" $ }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
           {{- toYaml . | nindent 8 }}
