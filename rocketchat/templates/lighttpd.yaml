@@ -50,6 +50,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
     spec:
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" $ }}
       containers:
         - name: lighttpd
           image: jitesoft/lighttpd
