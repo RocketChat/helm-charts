@@ -229,3 +229,38 @@ true
 true
 {{- end -}}
 {{- end -}}
+
+{{/*
+Render pod hostAliases from .Values.extraHosts, a list of {hostname: string, ip: string}.
+Entries sharing an ip are grouped into a single hostAlias.
+*/}}
+{{- define "rocketchat.hostAliases" -}}
+{{- $byIp := dict -}}
+{{- $ips := list -}}
+{{- range $i, $h := .Values.extraHosts -}}
+{{- if not (kindIs "map" $h) -}}
+{{- fail (printf "extraHosts[%d] must be an object of the form {hostname: string, ip: string}" $i) -}}
+{{- end -}}
+{{- if not (and (kindIs "string" $h.hostname) $h.hostname) -}}
+{{- fail (printf "extraHosts[%d].hostname must be a non-empty string" $i) -}}
+{{- end -}}
+{{- if not (and (kindIs "string" $h.ip) $h.ip) -}}
+{{- fail (printf "extraHosts[%d].ip must be a non-empty string" $i) -}}
+{{- end -}}
+{{- if not (hasKey $byIp $h.ip) -}}
+{{- $ips = append $ips $h.ip -}}
+{{- $_ := set $byIp $h.ip list -}}
+{{- end -}}
+{{- $_ := set $byIp $h.ip (append (get $byIp $h.ip) $h.hostname) -}}
+{{- end -}}
+{{- if $ips }}
+hostAliases:
+{{- range $ips }}
+  - ip: {{ . | quote }}
+    hostnames:
+    {{- range get $byIp . }}
+      - {{ . | quote }}
+    {{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}

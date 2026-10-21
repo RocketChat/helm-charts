@@ -108,6 +108,9 @@ spec:
         app.kubernetes.io/name: {{ include "rocketchat.fullname" . }}-synapse
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      {{- with (include "rocketchat.hostAliases" $ | trim) }}
+      {{- . | nindent 6 }}
+      {{- end }}
       initContainers:
         - name: generate
           image: {{ .Values.global.imageRegistry | default .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }}

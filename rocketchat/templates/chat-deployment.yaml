@@ -34,6 +34,9 @@ spec:
         checksum/secret: {{ include (print .Template.BasePath "/secret.yaml") . | sha256sum }}
 
     spec:
+      {{- with (include "rocketchat.hostAliases" $ | trim) }}
+      {{- . | nindent 6 }}
+      {{- end }}
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

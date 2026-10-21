@@ -50,6 +50,9 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
     spec:
+      {{- with (include "rocketchat.hostAliases" $ | trim) }}
+      {{- . | nindent 6 }}
+      {{- end }}
       containers:
         - name: lighttpd
           image: jitesoft/lighttpd
