@@ -35,6 +35,14 @@ image:
 
 imagePullSecrets: []
 
+## Extra entries for /etc/hosts of all pods (rendered as hostAliases)
+## Each entry is {hostname: string, ip: string}; entries sharing an ip are grouped
+## Ref: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+# extraHosts:
+#   - hostname: mongo.internal
+#     ip: 10.0.0.10
+extraHosts: []
+
 ## Host for the application
 ## set it to a domain pointing to your loadbalancer
 # host:

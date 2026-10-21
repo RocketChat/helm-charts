@@ -41,6 +41,9 @@ spec:
       annotations:
        {{ include "rocketchat.annotations" (dict "name" "streamHub" "context" $) | indent 8 }}
     spec:
+      {{- with (include "rocketchat.hostAliases" $ | trim) }}
+      {{- . | nindent 6 }}
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
           {{- toYaml . | nindent 8 }}

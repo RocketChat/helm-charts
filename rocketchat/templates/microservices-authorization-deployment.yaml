@@ -35,6 +35,9 @@ spec:
         {{ include "rocketchat.annotations" (dict "name" "authorization" "context" $) | indent 8 }}
    
     spec:
+      {{- with (include "rocketchat.hostAliases" $ | trim) }}
+      {{- . | nindent 6 }}
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
           {{- toYaml . | nindent 8 }}
