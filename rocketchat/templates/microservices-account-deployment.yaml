@@ -11,6 +11,10 @@ metadata:
     {{- if .Values.deploymentLabels }}
       {{- toYaml .Values.deploymentLabels | nindent 4 }}
     {{- end }}
+  {{- if .Values.deploymentAnnotations }}
+  annotations:
+    {{ toYaml .Values.deploymentAnnotations | indent 4 }}
+  {{- end }}
 spec:
   replicas: {{ .Values.microservices.account.replicas }}
   selector:
