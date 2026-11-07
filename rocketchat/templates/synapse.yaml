@@ -111,6 +111,7 @@ spec:
       {{- with (include "rocketchat.hostAliases" $ | trim) }}
       {{- . | nindent 6 }}
       {{- end }}
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" $ }}
       initContainers:
         - name: generate
           image: {{ .Values.global.imageRegistry | default .Values.federation.image.registry }}/{{ .Values.federation.image.repository }}:{{ .Values.federation.image.tag }}

@@ -53,6 +53,7 @@ spec:
       {{- with (include "rocketchat.hostAliases" $ | trim) }}
       {{- . | nindent 6 }}
       {{- end }}
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" $ }}
       containers:
         - name: lighttpd
           image: jitesoft/lighttpd

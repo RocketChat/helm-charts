@@ -37,6 +37,7 @@ spec:
       {{- with (include "rocketchat.hostAliases" $ | trim) }}
       {{- . | nindent 6 }}
       {{- end }}
+      serviceAccountName: {{ template "rocketchat.serviceAccountName" $ }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
           {{- toYaml . | nindent 8 }}
