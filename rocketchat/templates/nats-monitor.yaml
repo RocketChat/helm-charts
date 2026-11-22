@@ -16,6 +16,9 @@ metadata:
   labels:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/name: nats
+    {{- with .Values.podMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   name: {{ .Release.Name }}-nats-monitor
   namespace: {{ .Release.Namespace }}
 spec:
