@@ -356,6 +356,9 @@ podMonitor:
   # podmonitor interval
   interval: 30s
 
+  ## Additional labels for the Rocket.Chat and NATS PodMonitor resources
+  additionalLabels: {}
+
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
 ##

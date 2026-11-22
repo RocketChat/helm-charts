@@ -30,6 +30,9 @@ metadata:
     app.kubernetes.io/name: {{ include "rocketchat.name" . }}
     helm.sh/chart: {{ include "rocketchat.chart" . }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- with .Values.podMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   podMetricsEndpoints:
     - port: metrics
